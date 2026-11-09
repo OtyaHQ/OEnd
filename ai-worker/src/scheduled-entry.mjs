@@ -163,7 +163,7 @@ async function daily(env,scheduledTime=Date.now()){
   await email(
     env,
     `Otya · Morning operations · ${date}`,
-    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\\n'),
+    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'),
     `otya-next/daily-operations/${dateKey}`,
   )
 }
@@ -177,7 +177,7 @@ async function weekly(env,scheduledTime=Date.now()){
   await email(
     env,
     `Otya · Weekly review · ${date}`,
-    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\\n'),
+    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'),
     `otya-next/weekly-operations/${dateKey}`,
   )
 }
