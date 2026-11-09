@@ -1,51 +1,71 @@
-# OTYA Backend
+# Otya End
 
-The private production backend for **OTYA** by PeterSmart Link.
+**Otya End** is the shared backend and integration layer for **Otya OS** and its connected products.
 
-**Official service:** https://petersmartlink.com
+It provides reusable server-side identity, product-scoped APIs, integrations, delivery services, audit and operational capabilities. It is one shared backend—not a reason to merge every product's private data into one database.
 
-This repository contains production infrastructure for the shared OTYA account, OTYA Player APIs, OTYA AI, secure recovery, release delivery, notifications, support and future OTYA products.
+## Product boundaries
 
-## Production principles
+- **Otya OS** — the unified platform and shared experience.
+- **Otya End** — shared backend and integration layer.
+- **OtyaPoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
+- **Otya Media** — local-first music and video. Core playback must remain available without the backend.
+- **OtyaHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
+- **Leo / Otya Next** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
 
-- One shared OTYA identity across products
-- Product-specific data remains separately scoped
-- Real server-side authentication and session management
-- Server-side Google identity verification
-- Optional verified phone and linked identity support
-- Explicit opt-in recovery backup support
-- Transactional email through Resend
-- Signed application release delivery
-- Cloudflare Workers-based production infrastructure
-- Security scanning and dependency review through GitHub Actions
-- Secrets stored in protected platform/GitHub secret stores, never in client code
-- AI remains optional for OTYA Player and cannot block local playback
+Legacy repository slugs, Worker names, API paths, and database identifiers may remain where required for compatibility. Do not rename or delete a deployed resource solely to make its name match the product label.
 
-## Public product information
+## Shared responsibilities
 
-Customer-facing product information, Docs, downloads, support and release notices are published through the official OTYA website rather than this private source repository.
+- Otya identity, session and account-security services.
+- Server-side authorization and product-scoped service contracts.
+- Transactional email through the existing Resend integration.
+- Otya Media release delivery and supporting APIs.
+- Otya Next owner intelligence, support, incidents and approved actions.
+- Secure recovery, audit trails, monitoring and operational readiness.
+- Private service-to-service integration between ecosystem products.
 
-- OTYA: https://petersmartlink.com
-- Docs: https://petersmartlink.com/docs
-- OTYA AI: https://petersmartlink.com/ai
-- OTYA Account: https://petersmartlink.com/my-account
-- OTYA Player: https://petersmartlink.com/otya-player
-- OTYA Player download: https://petersmartlink.com/download/otya-player
+## Engineering and safety principles
 
-## Public GitHub
+- One shared identity, with product-specific authorization and data ownership.
+- No browser-supplied roles, provider secrets, or trusted identity claims.
+- No cross-product direct writes to another product's database.
+- Financial operations must be idempotent, atomic, auditable and reconciled.
+- Unknown provider outcomes remain UNKNOWN until independently confirmed.
+- Email and internal service routes require server-side secrets and bounded permissions.
+- AI can prepare and recommend actions; privileged execution requires explicit authorization.
+- Production migrations, deployments, DNS changes, secret rotation and payment-provider activation require explicit authorization and a reviewed recovery plan.
+- Preserve user data, local-first guarantees and existing compatibility contracts.
 
-OTYA production source remains private. A separate public OTYA repository should be used for public Docs links, release/checksum information, public issue templates, security reporting guidance and future public examples/SDKs. Starter files are maintained under `public-github-template/` until that public repository is created.
+## Current backend layout
 
-## Security
+| Runtime | Responsibility |
+|---|---|
+| `otya-auth` | Shared identity, account security and Resend transport |
+| `otya-core` | Shared product APIs, release/notification transport and backend routing |
+| `otya-next` | Owner intelligence, scheduled operations and AI workflows |
+| OtyaPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
 
-Do not report vulnerabilities in public issues. Follow [SECURITY.md](SECURITY.md) for the private reporting process.
+These names describe separate runtime responsibilities; they are not duplicate backends. Do not add another Worker or database for a capability already owned by one of these services without a concrete isolation or scaling reason.
 
-## Source and licensing
+## Production and compatibility
 
-The OTYA backend is proprietary software and production infrastructure. Source code, deployment configuration, schemas, internal routes, operational documentation and platform integration logic may not be copied, redistributed, modified or commercially reused without prior written permission from PeterSmart Link, except for third-party components governed by their own licenses.
+GitHub is the source of truth for code and review. Cloudflare is the runtime and data platform. Resend is the shared transactional email provider. Provider-specific financial integrations remain disabled until their exact Uganda contracts, credential custody, callback verification, reconciliation and compliance requirements are approved.
 
-See [LICENSE](LICENSE).
+Merging source code is not a production deployment. The production deployment workflow remains explicitly approval-gated. Never apply a D1 migration to a remote database just because it exists in the repository.
+
+## Public information
+
+- Otya: https://petersmartlink.com
+- Documentation: https://petersmartlink.com/docs
+- OtyaHub: https://github.com/PeterSmartLink/OtyaHub
+
+Keep customer-facing product documentation on the official public surfaces. Do not publish secrets, private endpoints, internal infrastructure inventories, customer records, recovery material, signing keys or administrative procedures here.
+
+## Security and licensing
+
+Report vulnerabilities privately through [SECURITY.md](SECURITY.md). This repository contains proprietary Otya backend software and infrastructure; use is governed by [LICENSE](LICENSE).
 
 ---
 
-**OTYA · PeterSmart Link**
+**Otya End · Otya OS**
