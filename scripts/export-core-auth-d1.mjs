@@ -46,19 +46,23 @@ function safeDate(value) {
 }
 
 async function readJson(response, context) {
-  if (!response.ok) {
-    throw new Error(`${context} failed with HTTP ${response.status}.`);
-  }
   let payload;
   try {
     payload = await response.json();
   } catch {
+    if (!response.ok) {
+      throw new Error(`${context} failed with HTTP ${response.status} and returned a non-JSON response.`);
+    }
     throw new Error(`${context} returned invalid JSON.`);
   }
-  if (!payload || typeof payload !== "object" || payload.success !== true) {
+
+  if (!response.ok || !payload || typeof payload !== "object" || payload.success !== true) {
     const first = Array.isArray(payload?.errors) ? payload.errors[0] : null;
     const code = Number.isInteger(first?.code) ? ` (code ${first.code})` : "";
-    throw new Error(`${context} was rejected by Cloudflare${code}.`);
+    const detail = typeof first?.message === "string"
+      ? first.message.replace(/[\\r\\n\\t]/g, " ").slice(0, 240)
+      : "request rejected";
+    throw new Error(`${context} failed with HTTP ${response.status}${code}: ${detail}`);
   }
   return payload.result;
 }
