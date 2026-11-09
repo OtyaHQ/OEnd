@@ -343,7 +343,6 @@ export interface ChurnPredictionResult {
 export interface UserChurnStats {
   user_id:      string
   last_seen_at: string   // ISO datetime
-  pro_expiry?:  number   // ms timestamp, optional
   play_count?:  number
 }
 
@@ -361,7 +360,6 @@ export async function predictChurn(
     const daysSinceLastSeen = Math.floor(
       (Date.now() - new Date(userStats.last_seen_at).getTime()) / (1000 * 60 * 60 * 24),
     )
-    const proExpired = userStats.pro_expiry != null && userStats.pro_expiry < Date.now()
     const playCount  = userStats.play_count ?? 0
 
     const messages = [
@@ -377,7 +375,6 @@ export async function predictChurn(
         role: 'user',
         content:
           `Days since last seen: ${daysSinceLastSeen}\n` +
-          `Pro subscription expired: ${proExpired}\n` +
           `Total play count: ${playCount}`,
       },
     ]
