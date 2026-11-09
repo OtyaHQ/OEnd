@@ -96,6 +96,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
     return authError('Invalid JSON body', 400)
   }
 
+  const invitationId = typeof body.invitationId === 'string' ? body.invitationId.trim().toLowerCase() : ''
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
   const displayName = typeof body.displayName === 'string'
     ? body.displayName.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 120)
@@ -118,12 +119,15 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   if (!env.RESEND_API_KEY) return authError('Email service is unavailable', 503)
 
   const safeName = displayName || email.split('@')[0] || 'there'
+  const tokenDigest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token)))
+  const digestHex = Array.from(tokenDigest).map(byte => byte.toString(16).padStart(2, '0')).join('')
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
       from: 'Otya <noreply@petersmartlink.com>',
       to: [email],
       replyTo: 'support@petersmartlink.com',
       subject: 'You have been invited to OtyaPoint',
+      idempotencyKey: `otyapoint/staff-invitation/${invitationId}/${digestHex}`,
       text: [
         `Hi ${safeName},`,
         '',
