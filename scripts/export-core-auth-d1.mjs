@@ -1,223 +1,112 @@
 import { createHash } from "node:crypto";
-import { createWriteStream } from "node:fs";
-import { mkdir, rm, stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { mkdir, rm, stat, appendFile } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { Transform } from "node:stream";
-import { pipeline } from "node:stream/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
+const execFileAsync = promisify(execFile);
 const MAX_BACKUP_BYTES = 512 * 1024 * 1024;
-const MAX_POLL_ATTEMPTS = 36;
-const POLL_INTERVAL_MS = 5_000;
 
 export const DATABASE_TARGETS = Object.freeze([
-  {
-    key: "store",
-    name: "otya-store-db",
-    id: "ab157fc6-2cbb-4d46-9789-2e4392e16aea",
-    bucket: "otya-core-backups",
-  },
-  {
-    key: "auth",
-    name: "otya-auth-db",
-    id: "b05595f6-260a-4720-acca-4f8b13f5c43e",
-    bucket: "otya-auth-backups",
-  },
+  { key: "store", name: "otya-store-db", config: "wrangler.toml", bucket: "otya-core-backups" },
+  { key: "auth", name: "otya-auth-db", config: "auth-worker/wrangler.toml", bucket: "otya-auth-backups" },
 ]);
 
-function requireNonEmpty(value, name) {
+function requireText(value, name) {
   if (typeof value !== "string" || !value.trim()) {
     throw new Error(`Missing required configuration: ${name}`);
   }
   return value.trim();
 }
 
-function safeBookmark(value) {
-  if (typeof value !== "string" || !/^[a-f0-9-]{16,128}$/i.test(value)) {
-    throw new Error("Cloudflare returned an invalid D1 export bookmark.");
-  }
-  return value;
-}
-
-function safeDate(value) {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new Error("Invalid backup date.");
-  }
-  return value;
-}
-
-async function readJson(response, context) {
-  let payload;
-  try {
-    payload = await response.json();
-  } catch {
-    if (!response.ok) {
-      throw new Error(`${context} failed with HTTP ${response.status} and returned a non-JSON response.`);
-    }
-    throw new Error(`${context} returned invalid JSON.`);
-  }
-
-  if (!response.ok || !payload || typeof payload !== "object" || payload.success !== true) {
-    const first = Array.isArray(payload?.errors) ? payload.errors[0] : null;
-    const code = Number.isInteger(first?.code) ? ` (code ${first.code})` : "";
-    const detail = typeof first?.message === "string"
-      ? first.message.replace(/[\\r\\n\\t]/g, " ").slice(0, 240)
-      : "request rejected";
-    throw new Error(`${context} failed with HTTP ${response.status}${code}: ${detail}`);
-  }
-  return payload.result;
-}
-
-async function startOrPollExport({ endpoint, token, body, fetchImpl }) {
-  const serializedBody = JSON.stringify(body);
-  const response = await fetchImpl(endpoint, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      "Content-Length": String(new TextEncoder().encode(serializedBody).byteLength),
-      Accept: "application/json",
-    },
-    body: serializedBody,
-    redirect: "error",
-    signal: AbortSignal.timeout(30_000),
-  });
-  return readJson(response, "Cloudflare D1 export request");
-}
-
-async function downloadToFile({ url, filePath, fetchImpl, maxBytes }) {
-  const response = await fetchImpl(url, {
-    method: "GET",
-    redirect: "manual",
-    signal: AbortSignal.timeout(120_000),
-  });
-  if (!response.ok || response.status >= 300 || !response.body) {
-    throw new Error(`D1 export download failed with HTTP ${response.status}.`);
-  }
-
+async function hashFile(filePath) {
   const hash = createHash("sha256");
   let bytes = 0;
-  const meter = new Transform({
-    transform(chunk, _encoding, callback) {
-      bytes += chunk.length;
-      if (bytes > maxBytes) {
-        callback(new Error("D1 export exceeds the configured 512 MiB safety limit."));
-        return;
-      }
-      hash.update(chunk);
-      callback(null, chunk);
-    },
-  });
-
-  await pipeline(response.body, meter, createWriteStream(filePath, { flags: "wx" }));
+  for await (const chunk of createReadStream(filePath)) {
+    bytes += chunk.length;
+    if (bytes > MAX_BACKUP_BYTES) {
+      throw new Error("D1 export exceeds the configured 512 MiB safety limit.");
+    }
+    hash.update(chunk);
+  }
   if (bytes < 1) throw new Error("D1 export file is empty.");
   return { bytes, sha256: hash.digest("hex") };
 }
 
-export async function exportDatabase({
+async function invokeWrangler({ database, outputPath, accountId, apiToken, runWrangler }) {
+  const args = [
+    "--yes", "wrangler@4.158.0",
+    "d1", "export", database.name,
+    "--remote",
+    "--output", outputPath,
+    "--skip-confirmation",
+    "--config", database.config,
+  ];
+  await runWrangler("npx", args, {
+    env: {
+      ...process.env,
+      CLOUDFLARE_ACCOUNT_ID: accountId,
+      CLOUDFLARE_API_TOKEN: apiToken,
+    },
+    timeout: 10 * 60 * 1000,
+    maxBuffer: 8 * 1024 * 1024,
+    windowsHide: true,
+  });
+}
+
+export async function exportDatabases({
   accountId,
   apiToken,
-  database,
   backupDir,
-  date = new Date().toISOString().slice(0, 10),
-  fetchImpl = fetch,
-  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-  maxBytes = MAX_BACKUP_BYTES,
-  pollAttempts = MAX_POLL_ATTEMPTS,
-  pollIntervalMs = POLL_INTERVAL_MS,
+  runWrangler = (command, args, options) => execFileAsync(command, args, options),
 }) {
-  accountId = requireNonEmpty(accountId, "CLOUDFLARE_ACCOUNT_ID");
-  apiToken = requireNonEmpty(apiToken, "CLOUDFLARE_API_TOKEN");
-  if (!database || !/^[a-z0-9][a-z0-9-]{1,62}$/.test(database.name)) {
-    throw new Error("Invalid D1 database target.");
-  }
-  const databaseId = requireNonEmpty(database.id, "D1 database ID");
-  date = safeDate(date);
-  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1024) {
-    throw new Error("Invalid maximum backup size.");
-  }
-  if (!Number.isSafeInteger(pollAttempts) || pollAttempts < 1 || pollAttempts > 100) {
-    throw new Error("Invalid export polling limit.");
-  }
+  accountId = requireText(accountId, "CLOUDFLARE_ACCOUNT_ID");
+  apiToken = requireText(apiToken, "CLOUDFLARE_API_TOKEN");
+  if (typeof runWrangler !== "function") throw new TypeError("runWrangler must be a function.");
+  await mkdir(backupDir, { recursive: true });
+  const date = new Date().toISOString().slice(0, 10);
+  const results = [];
 
-  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${databaseId}/export`;
-  const started = await startOrPollExport({
-    endpoint,
-    token: apiToken,
-    body: { output_format: "polling" },
-    fetchImpl,
-  });
-  const bookmark = safeBookmark(started?.at_bookmark);
-  let current = started;
-
-  for (let attempt = 0; attempt < pollAttempts; attempt += 1) {
-    const signedUrl = current?.result?.signed_url;
-    if (current?.status === "complete" && typeof signedUrl === "string" && signedUrl.startsWith("https://")) {
-      const url = new URL(signedUrl);
-      if (!url.hostname.endsWith(".r2.cloudflarestorage.com")) {
-        throw new Error("D1 export returned an untrusted download host.");
-      }
-      const safeKey = `d1/${database.name}/${date}/backup-${bookmark}.sql`;
-      const filePath = join(backupDir, basename(safeKey));
-      await mkdir(backupDir, { recursive: true });
-      try {
-        const digest = await downloadToFile({
-          url: signedUrl,
-          filePath,
-          fetchImpl,
-          maxBytes,
-        });
-        const fileStats = await stat(filePath);
-        if (fileStats.size !== digest.bytes) throw new Error("D1 backup size verification failed.");
-        return {
-          key: database.key,
-          database: database.name,
-          objectKey: safeKey,
-          filePath,
-          bytes: digest.bytes,
-          sha256: digest.sha256,
-          bookmark,
-        };
-      } catch (error) {
-        await rm(filePath, { force: true }).catch(() => {});
-        throw error;
-      }
-    }
-
-    if (current?.status === "error" || current?.status === "failed") {
-      throw new Error(`Cloudflare D1 export did not complete for ${database.name}.`);
-    }
-    if (attempt + 1 < pollAttempts) {
-      await sleep(pollIntervalMs);
-      current = await startOrPollExport({
-        endpoint,
-        token: apiToken,
-        body: { current_bookmark: bookmark },
-        fetchImpl,
+  for (const database of DATABASE_TARGETS) {
+    const outputPath = join(backupDir, `backup-${database.key}-${date}.sql`);
+    await rm(outputPath, { force: true });
+    await invokeWrangler({
+      database,
+      outputPath,
+      accountId,
+      apiToken,
+      runWrangler,
+    });
+    try {
+      const fileStats = await stat(outputPath);
+      if (!fileStats.isFile()) throw new Error("Wrangler did not produce a regular SQL file.");
+      const digest = await hashFile(outputPath);
+      if (fileStats.size !== digest.bytes) throw new Error("D1 export size verification failed.");
+      results.push({
+        key: database.key,
+        database: database.name,
+        bucket: database.bucket,
+        objectKey: `d1/${database.name}/${date}/backup-${date}-${digest.sha256.slice(0, 16)}.sql`,
+        filePath: outputPath,
+        bytes: digest.bytes,
+        sha256: digest.sha256,
       });
+    } catch (error) {
+      await rm(outputPath, { force: true }).catch(() => {});
+      throw error;
     }
   }
-
-  throw new Error(`Cloudflare D1 export timed out for ${database.name}.`);
+  return results;
 }
 
 async function main() {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-  const backupDir = process.env.RUNNER_TEMP || process.env.TMPDIR || "/tmp";
-  const outputs = [];
-
-  for (const database of DATABASE_TARGETS) {
-    const result = await exportDatabase({
-      accountId,
-      apiToken,
-      database,
-      backupDir,
-    });
-    outputs.push(result);
-  }
-
+  const outputs = await exportDatabases({
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+    apiToken: process.env.CLOUDFLARE_API_TOKEN,
+    backupDir: process.env.RUNNER_TEMP || process.env.TMPDIR || "/tmp",
+  });
   if (process.env.GITHUB_OUTPUT) {
-    const { appendFile } = await import("node:fs/promises");
     const lines = [];
     for (const item of outputs) {
       lines.push(`${item.key}_file=${item.filePath}`);
@@ -227,10 +116,9 @@ async function main() {
     }
     await appendFile(process.env.GITHUB_OUTPUT, lines.join("\n") + "\n", { mode: 0o600 });
   }
-
   for (const item of outputs) {
     process.stdout.write(
-      `Prepared ${item.database}: ${item.bytes} bytes; SHA-256 ${item.sha256}; bookmark ${item.bookmark}.\n`,
+      `Prepared ${item.database}: ${item.bytes} bytes; SHA-256 ${item.sha256}.\n`,
     );
   }
 }
