@@ -70,6 +70,14 @@ dead_letter_queue = "otya-next-jobs-dlq"
 # Monday 06:00 UTC = 09:00 Africa/Kampala: deeper weekly review.
 crons = ["0 * * * *", "0 5 * * *", "0 6 * * 1"]
 # Next owns intelligence and approved provider actions. Core owns Telegram and
-# push transport. Required secret: RESEND_API_KEY. Optional integrations:
-# INTERNAL_SECRET, GMAIL_GOOGLE_CLIENT_SECRET, CONNECTOR_ENCRYPTION_KEY.
-# Never commit secret values.
+# push transport. Auth owns Resend delivery; Next has no direct Resend key.
+# Required on both otya-next and otya-auth: OTYA_NEXT_MAIL_SERVICE_TOKEN.
+# Optional integrations: INTERNAL_SECRET, GMAIL_GOOGLE_CLIENT_SECRET,
+# CONNECTOR_ENCRYPTION_KEY. Never commit secret values.
+
+
+# Otya Next uses Otya Auth as the shared private transactional-email gateway.
+# Both Workers require the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN secret.
+[[services]]
+binding = "AUTH"
+service = "otya-auth"
