@@ -6,15 +6,15 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { HomeStart } from '@/components/HomeStart'
 
 export const metadata: Metadata = {
-  title: 'PeterSmart Link — Practical software products',
-  description: 'PeterSmart Link is the developer and publisher behind Otya Player and Otya Space.',
-  keywords: ['PeterSmart Link', 'Otya Player', 'Otya', 'Uganda software developer', 'Android media player'],
+  title: 'Otya — Digital products and real-world services',
+  description: 'Explore Otya digital products, account services and OtyaPoint physical shop services in Mbirizi, Lwengo, Uganda.',
+  keywords: ['Otya', 'OtyaPoint', 'Otya Media', 'Otya ecosystem', 'Mbirizi electronics shop', 'mobile money agency Mbirizi', 'Uganda technology'],
   alternates: { canonical: 'https://petersmartlink.com' },
   openGraph: {
     type: 'website',
     url: 'https://petersmartlink.com',
-    title: 'PeterSmart Link — Practical software products',
-    description: 'The developer and publisher behind Otya Player and Otya Space.',
+    title: 'Otya — Digital products and real-world services',
+    description: 'Explore Otya products and services, including OtyaPoint physical shop services in Mbirizi, Uganda.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'PeterSmart Link and Otya' }],
   },
 }
@@ -27,14 +27,14 @@ export default function HomePage() {
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_10%,rgba(41,121,255,.07),transparent_31%),radial-gradient(circle_at_88%_18%,rgba(46,168,201,.06),transparent_27%),radial-gradient(circle_at_68%_90%,rgba(41,121,255,.04),transparent_25%)]" />
         <div className="otya-shell relative py-12 sm:py-16 lg:py-20 grid lg:grid-cols-[1.02fr_.98fr] gap-8 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/[.06] dark:border-white/[.08] px-3 py-2 text-xs font-black bg-white/55 dark:bg-white/[.03]">PeterSmart Link · Uganda</div>
-            <h1 className="mt-7 max-w-[800px] text-[clamp(44px,7vw,84px)] font-bold tracking-[-.055em] leading-[1.04]">Practical software.<br/><span className="otya-muted">Made for your day.</span></h1>
-            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya from PeterSmart Link. Enjoy the music and videos already on your phone, then manage your account privately in Space.</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/[.06] dark:border-white/[.08] px-3 py-2 text-xs font-black bg-white/55 dark:bg-white/[.03]">Otya · Built in Uganda</div>
+            <h1 className="mt-7 max-w-[800px] text-[clamp(44px,7vw,84px)] font-bold tracking-[-.055em] leading-[1.04]">Connected technology.<br/><span className="otya-muted">Made for everyday life.</span></h1>
+            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Discover the Otya family: useful digital products, private account services and OtyaPoint's physical shop in Mbirizi, Lwengo.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/download/otya-player" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Get Otya Player</Link>
-              <Link href="/company" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">About PeterSmart Link</Link>
+              <Link href="/apps" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Explore products</Link>
+              <Link href="/otyapoint" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Visit OtyaPoint</Link>
             </div>
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Made for Android</span><span>Local playback, even offline</span><span>Built by PeterSmart Link</span></div>
+            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Digital products</span><span>Physical shop in Mbirizi</span><span>Built in Uganda</span></div>
           </div>
 
           <div className="relative">
