@@ -266,7 +266,9 @@ function withRequestSecurityHeaders(response, requestId, pathname) {
   if (pathname === '/auth' || pathname.startsWith('/auth/')
     || pathname === '/api' || pathname.startsWith('/api/')) {
     headers.set('Cache-Control', 'private, no-store, max-age=0')
-    headers.append('Vary', 'Authorization')
+    const vary = new Set((headers.get('Vary') || '').split(',').map(value => value.trim()).filter(Boolean))
+    vary.add('Authorization')
+    headers.set('Vary', [...vary].join(', '))
   }
 
   return new Response(response.body, {
