@@ -6,6 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: BASE,                           changeFrequency: 'daily',   priority: 1.0 },
     { url: `${BASE}/company`,              changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${BASE}/shop`,                 changeFrequency: 'monthly', priority: 0.9 },
     { url: `${BASE}/apps`,                 changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/otya-player`,          changeFrequency: 'weekly',  priority: 0.95 },
     { url: `${BASE}/music`,                changeFrequency: 'daily',   priority: 0.9 },
