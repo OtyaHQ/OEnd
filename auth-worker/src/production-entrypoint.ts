@@ -139,7 +139,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
         '',
         token,
         '',
-        `This invitation expires at ${expiration.toISOString()}.`,
+        `This invitation expires at ${new Date(expiration).toISOString()}.`,
         'After you accept, the shop owner must activate your membership before you can access shop operations.',
         '',
         'If you were not expecting this invitation, you can ignore this email.',
