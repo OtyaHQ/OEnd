@@ -7,20 +7,25 @@ const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font
 const SITE_URL = 'https://petersmartlink.com'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
 const OTYA_MARK = '/otya-app-icon.webp'
+const SHOP_MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Old+Market%2C+Mbirizi+Town+Council%2C+Lwengo+District%2C+Uganda'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Otya — Offline Music & Video for Android | PeterSmart Link',
+    default: 'PeterSmart Link | Mbirizi Technology Shop & Otya Software',
     template: '%s | PeterSmart Link',
   },
   description:
-    'Otya by PeterSmart Link is an offline-first Android music and video app for local media, Otya Transfer, Watch Together, Private media and practical media tools.',
+    'PeterSmart Link operates a physical technology shop in Mbirizi, Uganda, and develops Otya software products. Visit for phones and accessories, electronics and in-person mobile-money services.',
   keywords: [
     'Otya',
     'Otya Player',
     'Otya Android',
     'PeterSmart Link',
+    'Mbirizi technology shop',
+    'phones and accessories Mbirizi',
+    'electronics Mbirizi',
+    'mobile money Mbirizi',
     'offline music player',
     'offline video player',
     'local music player Android',
@@ -33,7 +38,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'PeterSmart Link', url: SITE_URL }],
   creator: 'PeterSmart Link',
   publisher: 'PeterSmart Link',
-  applicationName: 'Otya',
+  applicationName: 'PeterSmart Link',
   category: 'multimedia',
   robots: {
     index: true,
@@ -51,7 +56,7 @@ export const metadata: Metadata = {
     locale: 'en_UG',
     url: SITE_URL,
     siteName: 'PeterSmart Link',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'PeterSmart Link | Mbirizi Shop & Otya Software',
     description:
       'Official Otya by PeterSmart Link for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
@@ -66,8 +71,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Otya — Offline Music & Video for Android',
-    description: 'Official Otya by PeterSmart Link for local Android media, Otya Transfer and Watch Together.',
+    title: 'PeterSmart Link | Mbirizi Shop & Otya Software',
+    description: 'A physical technology shop in Mbirizi and the home of Otya software products.'
     images: [OTYA_MARK],
   },
   icons: {
@@ -76,7 +81,7 @@ export const metadata: Metadata = {
     shortcut: OTYA_MARK,
   },
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, title: 'Otya', statusBarStyle: 'black-translucent' },
+  appleWebApp: { capable: true, title: 'PeterSmart Link', statusBarStyle: 'black-translucent' },
 }
 
 export const viewport: Viewport = {
@@ -97,6 +102,23 @@ const schemaOrg = {
       url: SITE_URL,
       logo: `${SITE_URL}${OTYA_MARK}`,
       email: 'support@petersmartlink.com',
+    },
+    {
+      '@type': 'Store',
+      '@id': `${SITE_URL}/#shop`,
+      name: 'PeterSmart Link — Mbirizi Shop',
+      url: `${SITE_URL}/shop`,
+      parentOrganization: { '@id': `${SITE_URL}/#organization` },
+      email: 'support@petersmartlink.com',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Old Market',
+        addressLocality: 'Mbirizi',
+        addressRegion: 'Lwengo District',
+        addressCountry: 'UG',
+      },
+      hasMap: SHOP_MAP_URL,
+      description: 'Physical technology shop for phones and accessories, electronics and in-person mobile-money services. This website provides information and directions; products are not sold online.',
     },
     {
       '@type': 'SoftwareApplication',
