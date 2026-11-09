@@ -2,6 +2,7 @@ import { OTYA } from '@/lib/constants'
 import Link from 'next/link'
 
 const GROUPS = [
+  { title: 'Visit', links: [['Shop in Mbirizi', '/shop'], ['About PeterSmart Link', '/company'], ['Contact', '/contact']] },
   { title: 'Otya', links: [['Otya Player', '/otya-player'], ['Download for Android', '/download/otya-player'], ['Your Space', 'https://space.petersmartlink.com']] },
   { title: 'Support', links: [['Help', '/help'], ['Journal', '/blog'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Delete account', '/delete-account']] },
 ] as const
@@ -12,7 +13,7 @@ export function SiteFooter() {
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
         <div>
           <Link href={OTYA.website} className="inline-block text-base font-black tracking-[-.035em]">PeterSmart Link</Link>
-          <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">Building practical software, starting with Otya Player for Android.</p>
+          <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">A physical technology shop in Mbirizi and the home of Otya software products.</p>
         </div>
         <div className="grid grid-cols-2 gap-5 sm:gap-8">
           {GROUPS.map(group => <div key={group.title}>
@@ -25,7 +26,7 @@ export function SiteFooter() {
       </div>
       <div className="mt-6 flex flex-col gap-1 border-t border-black/[.05] pt-4 text-xs otya-muted sm:flex-row sm:items-center sm:justify-between dark:border-white/[.06]">
         <span>© {new Date().getFullYear()} PeterSmart Link</span>
-        <span>Otya Player · Made in Uganda</span>
+        <span>Phones · Electronics · Mobile money · Otya software</span>
       </div>
     </div>
   </footer>
