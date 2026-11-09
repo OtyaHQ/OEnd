@@ -12,7 +12,7 @@ type Session = { authenticated?: boolean; user?: User }
 const publicLinks = [
   ['Products', '/apps'],
   ['OtyaPoint', '/otyapoint'],
-  ['Otya Media', '/otya-player'],
+  ['Otya', '/otya-player'],
   ['Developers', '/developers'],
   ['Company', '/company'],
   ['Journal', '/blog'],
@@ -31,7 +31,7 @@ function AccountGlyph() { return <svg viewBox="0 0 24 24" className="h-5 w-5" fi
 function SpaceGlyph() { return <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg> }
 
 function Brand() {
-  return <Link href={OTYA.website} className="inline-flex items-center gap-2.5 shrink-0" aria-label="Otya home">
+  return <Link href={OTYA.website} className="inline-flex items-center gap-2.5 shrink-0" aria-label="PeterSmart Link home — Otya">
     <span className="grid h-11 w-11 place-items-center rounded-xl border border-[color:var(--cosmos-divider)] bg-[color:var(--cosmos-surface)] shadow-[0_0_24px_rgba(18,107,255,.10)]"><OtyaBrandMark size={32} /></span>
     <span className="hidden sm:block leading-tight">
       <span className="block font-black text-[15px] tracking-[-.035em] whitespace-nowrap">Otya</span>
