@@ -69,7 +69,7 @@ jobs:
             echo 'WARNING: Auth D1 has migration-ledger drift; inspect before changing the repair path.'
           fi
 
-      - name: Verify D1 Time Travel is available for both production databases
+      - name: Verify D1 Time Travel is available for Core and Auth
         id: time_travel
         continue-on-error: true
         env:
@@ -123,6 +123,7 @@ jobs:
           CORE_MIGRATIONS: ${{ steps.core_migrations.outcome }}
           AUTH_MIGRATIONS: ${{ steps.auth_migrations.outcome }}
           TIME_TRAVEL: ${{ steps.time_travel.outcome }}
+          OTYAPOINT_TIME_TRAVEL: ${{ steps.otyapoint_time_travel.outcome }}
         run: |
           set -euo pipefail
           for result in "$MIGRATION_LAYOUT" "$CORE_MIGRATIONS" "$AUTH_MIGRATIONS" "$TIME_TRAVEL" "$OTYAPOINT_TIME_TRAVEL"; do
