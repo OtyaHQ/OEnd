@@ -244,7 +244,7 @@ async function urgent(env,scheduledTime=Date.now()){
     '',
     'Review the Otya Console before taking any destructive or customer-facing action.',
     `Generated ${new Date(scheduledTime).toISOString()}`,
-  ].join('\n'),`otya-next/crash-alert/${hour}`
+  ].join('\n'),`otya-next/crash-alert/${hour}`)
   if(env.KV)await env.KV.put(key,'1',{expirationTtl:7200})
 }
 
