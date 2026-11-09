@@ -124,6 +124,7 @@ jobs:
       auth: ${{ steps.plan.outputs.auth }}
       next: ${{ steps.plan.outputs.next }}
       core: ${{ steps.plan.outputs.core }}
+      otyapoint: ${{ steps.plan.outputs.otyapoint }}
       any_runtime: ${{ steps.plan.outputs.any_runtime }}
     steps:
       - name: Select requested runtime components
@@ -136,6 +137,7 @@ jobs:
           auth=false
           next=false
           core=false
+          otyapoint=false
           case "$COMPONENT" in
             auth) auth=true ;;
             next) next=true ;;
@@ -144,6 +146,7 @@ jobs:
               auth=true
               next=true
               core=true
+              otyapoint=true
               ;;
             *)
               echo "ERROR: unsupported production component $COMPONENT"
@@ -153,6 +156,7 @@ jobs:
           echo "auth=$auth" >> "$GITHUB_OUTPUT"
           echo "next=$next" >> "$GITHUB_OUTPUT"
           echo "core=$core" >> "$GITHUB_OUTPUT"
+          echo "otyapoint=$otyapoint" >> "$GITHUB_OUTPUT"
           echo "any_runtime=true" >> "$GITHUB_OUTPUT"
           echo "Deploy plan: auth=$auth next=$next core=$core"
 
@@ -285,7 +289,7 @@ jobs:
 
   deploy-otyapoint:
     name: Deploy private OtyaPoint API
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.core == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.otyapoint == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
     runs-on: ubuntu-latest
     timeout-minutes: 30
