@@ -1,0 +1,96 @@
+name: Backup Otya Core and Auth D1 databases
+
+on:
+  schedule:
+    - cron: '15 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: otya-core-auth-d1-backup
+  cancel-in-progress: false
+
+jobs:
+  export:
+    name: Export, store and verify Core and Auth databases
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Verify D1 backup safeguards
+        run: node --test scripts/export-core-auth-d1.test.mjs
+
+      - name: Export both production D1 databases
+        id: export
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/export-core-auth-d1.mjs
+
+      - name: Install pinned Wrangler CLI
+        run: npx --yes wrangler@4.158.0 --version
+
+      - name: Upload Core backup to private R2 and verify read-back
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BACKUP_FILE: ${{ steps.export.outputs.otya-store-db_file }}
+          BACKUP_KEY: ${{ steps.export.outputs.otya-store-db_key }}
+          EXPECTED_SHA256: ${{ steps.export.outputs.otya-store-db_sha256 }}
+          EXPECTED_BYTES: ${{ steps.export.outputs.otya-store-db_bytes }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          test -f "$BACKUP_FILE" && test -n "$BACKUP_KEY"
+          OBJECT="otya-core-backups/$BACKUP_KEY"
+          VERIFY="$RUNNER_TEMP/otya-core-verify-$GITHUB_RUN_ID.sql"
+          npx --yes wrangler@4.158.0 r2 object put "$OBJECT" --remote --file "$BACKUP_FILE" --content-type application/sql --config wrangler.toml
+          npx --yes wrangler@4.158.0 r2 object get "$OBJECT" --remote --file "$VERIFY" --config wrangler.toml
+          ACTUAL_SHA256="$(sha256sum "$VERIFY" | cut -d ' ' -f1)"
+          ACTUAL_BYTES="$(wc -c < "$VERIFY" | tr -d ' ')"
+          test "$ACTUAL_SHA256" = "$EXPECTED_SHA256"
+          test "$ACTUAL_BYTES" = "$EXPECTED_BYTES"
+          echo "Verified Core database backup: $OBJECT ($ACTUAL_BYTES bytes; SHA-256 $ACTUAL_SHA256)."
+
+      - name: Upload Auth backup to private R2 and verify read-back
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          BACKUP_FILE: ${{ steps.export.outputs.otya-auth-db_file }}
+          BACKUP_KEY: ${{ steps.export.outputs.otya-auth-db_key }}
+          EXPECTED_SHA256: ${{ steps.export.outputs.otya-auth-db_sha256 }}
+          EXPECTED_BYTES: ${{ steps.export.outputs.otya-auth-db_bytes }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          test -f "$BACKUP_FILE" && test -n "$BACKUP_KEY"
+          OBJECT="otya-auth-backups/$BACKUP_KEY"
+          VERIFY="$RUNNER_TEMP/otya-auth-verify-$GITHUB_RUN_ID.sql"
+          npx --yes wrangler@4.158.0 r2 object put "$OBJECT" --remote --file "$BACKUP_FILE" --content-type application/sql --config wrangler.toml
+          npx --yes wrangler@4.158.0 r2 object get "$OBJECT" --remote --file "$VERIFY" --config wrangler.toml
+          ACTUAL_SHA256="$(sha256sum "$VERIFY" | cut -d ' ' -f1)"
+          ACTUAL_BYTES="$(wc -c < "$VERIFY" | tr -d ' ')"
+          test "$ACTUAL_SHA256" = "$EXPECTED_SHA256"
+          test "$ACTUAL_BYTES" = "$EXPECTED_BYTES"
+          echo "Verified Auth database backup: $OBJECT ($ACTUAL_BYTES bytes; SHA-256 $ACTUAL_SHA256)."
+
+      - name: Remove temporary SQL files from the runner
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$RUNNER_TEMP" -maxdepth 1 -type f \( -name 'backup-*.sql' -o -name 'otya-core-verify-*.sql' -o -name 'otya-auth-verify-*.sql' \) -delete
