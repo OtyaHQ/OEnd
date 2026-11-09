@@ -11,15 +11,19 @@ const OTYA_MARK = '/otya-app-icon.webp'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Otya — Offline Music & Video for Android | PeterSmart Link',
-    template: '%s | PeterSmart Link',
+    default: 'Otya — Digital products and real-world services | PeterSmart Link',
+    template: '%s | Otya',
   },
   description:
-    'Otya by PeterSmart Link is an offline-first Android music and video app for local media, Otya Transfer, Watch Together, Private media and practical media tools.',
+    'Explore Otya digital products, account services, official support and OtyaPoint physical shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
     'Otya Player',
     'Otya Android',
+    'OtyaPoint',
+    'Otya ecosystem',
+    'Mbirizi physical shop',
+    'Lwengo mobile money agency',
     'PeterSmart Link',
     'offline music player',
     'offline video player',
@@ -34,7 +38,7 @@ export const metadata: Metadata = {
   creator: 'PeterSmart Link',
   publisher: 'PeterSmart Link',
   applicationName: 'Otya',
-  category: 'multimedia',
+  category: 'technology',
   robots: {
     index: true,
     follow: true,
@@ -50,7 +54,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_UG',
     url: SITE_URL,
-    siteName: 'PeterSmart Link',
+    siteName: 'Otya',
     title: 'Otya — Offline Music & Video for Android',
     description:
       'Official Otya by PeterSmart Link for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
@@ -131,8 +135,8 @@ const schemaOrg = {
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
       url: SITE_URL,
-      name: 'PeterSmart Link',
-      alternateName: 'Otya',
+      name: 'Otya',
+      alternateName: 'PeterSmart Link',
       publisher: { '@id': `${SITE_URL}/#organization` },
     },
   ],
