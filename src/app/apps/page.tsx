@@ -6,8 +6,8 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 export const metadata: Metadata = {
-  title: 'Products | PeterSmart Link',
-  description: 'Explore PeterSmart Link products and connected Otya services.',
+  title: 'Otya products and services',
+  description: 'Explore Otya digital products, account services and the OtyaPoint physical shop.',
   alternates: { canonical: 'https://petersmartlink.com/apps' },
 }
 
@@ -17,9 +17,9 @@ export default function ProductsPage() {
     <main className="flex-1">
       <section className="otya-shell py-14 sm:py-20">
         <div className="max-w-[820px]">
-          <div className="otya-kicker">Products</div>
-          <h1 className="mt-3 text-[clamp(42px,7vw,78px)] font-black tracking-[-.065em] leading-[.95]">Software with a clear job to do.</h1>
-          <p className="mt-5 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">PeterSmart Link builds focused products and services that share one identity system without pretending every feature is a separate app.</p>
+          <div className="otya-kicker">Otya ecosystem</div>
+          <h1 className="mt-3 text-[clamp(42px,7vw,78px)] font-black tracking-[-.065em] leading-[.95]">Digital products and real-world services.</h1>
+          <p className="mt-5 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Explore our digital products and the physical OtyaPoint shop. Each experience has a clear purpose and its own customer journey.</p>
         </div>
       </section>
 
@@ -49,6 +49,15 @@ export default function ProductsPage() {
             <p className="mt-3 text-sm leading-7 otya-muted">One signed-in place for your Otya account, security, devices, providers, settings, Next and role-authorized Admin controls.</p>
             <Link href="https://space.petersmartlink.com" className="mt-6 inline-flex text-sm font-black">Open Space →</Link>
           </article>
+        <article className="overflow-hidden rounded-[30px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-7 sm:p-9 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-7 items-center">
+          <div>
+            <div className="otya-kicker">Physical shop · Mbirizi, Lwengo</div>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-black tracking-[-.055em]">OtyaPoint</h2>
+            <p className="mt-4 max-w-[720px] text-sm sm:text-base leading-7 otya-muted">Phones and accessories, electronics, and mobile-money agency services at our physical shop in the Old Market area of Mbirizi. Check availability before visiting.</p>
+            <p className="mt-4 text-xs otya-muted">This is an in-person shop, not an online checkout.</p>
+          </div>
+          <Link href="/otyapoint" className="cosmos-button inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-black">Visit OtyaPoint ↗</Link>
+        </article>
         </div>
       </section>
     </main>
