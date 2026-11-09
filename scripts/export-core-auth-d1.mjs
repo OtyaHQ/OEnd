@@ -36,7 +36,7 @@ async function hashFile(filePath) {
 
 async function invokeWrangler({ database, outputPath, accountId, apiToken, runWrangler }) {
   const args = [
-    "--yes", "wrangler@4.158.0",
+    "--yes", "wrangler@4.159.0",
     "d1", "export", database.name,
     "--remote",
     "--output", outputPath,
