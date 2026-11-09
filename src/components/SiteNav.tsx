@@ -10,6 +10,7 @@ type User = { name?: string; email?: string; avatar_url?: string }
 type Session = { authenticated?: boolean; user?: User }
 
 const publicLinks = [
+  ['Shop', '/shop'],
   ['Products', '/apps'],
   ['Otya', '/otya-player'],
   ['Developers', '/developers'],
@@ -34,7 +35,7 @@ function Brand() {
     <span className="grid h-11 w-11 place-items-center rounded-xl border border-[color:var(--cosmos-divider)] bg-[color:var(--cosmos-surface)] shadow-[0_0_24px_rgba(18,107,255,.10)]"><OtyaBrandMark size={32} /></span>
     <span className="hidden sm:block leading-tight">
       <span className="block font-black text-[15px] tracking-[-.035em] whitespace-nowrap">PeterSmart Link</span>
-      <span className="block text-sm font-semibold tracking-[.04em] otya-muted">Otya Player</span>
+      <span className="block text-sm font-semibold tracking-[.04em] otya-muted">Technology & Services</span>
     </span>
   </Link>
 }
