@@ -9,6 +9,7 @@ const statusClient = readFileSync(new URL('../src/app/status/StatusClient.tsx', 
 
 test('documentation product links and help preserve their destinations', () => {
   assert.ok(router.includes('publicDestinations.has(publicPath)'))
+  assert.match(router, /'\/otyapoint'/)
   assert.ok(router.includes('redirectToHost(url, APP_HOST, url.pathname)'))
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/help/')"))
 })
