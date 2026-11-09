@@ -20,6 +20,11 @@ binding = "TELEGRAM_MINIAPP_BOT_TOKEN"
 store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
 secret_name = "TELEGRAM_BOT_TOKEN"
 
+[[secrets_store_secrets]]
+binding = "OTYAPOINT_INVITE_SERVICE_TOKEN"
+store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
+secret_name = "OTYAPOINT_INVITE_SERVICE_TOKEN"
+
 [[d1_databases]]
 binding       = "AUTH_DB"
 database_name = "otya-auth-db"
