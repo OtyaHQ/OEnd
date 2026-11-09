@@ -1,6 +1,13 @@
 name: Backup Otya Core and Auth D1 databases
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/backup-core-auth-d1.yml'
+      - 'scripts/export-core-auth-d1.mjs'
+      - 'scripts/export-core-auth-d1.test.mjs'
+      - 'docs/D1_BACKUP_AUTOMATION.md'
   schedule:
     - cron: '15 4 * * *'
   workflow_dispatch:
@@ -13,8 +20,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Validate D1 backup safeguards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Run D1 backup safeguards
+        run: node --test scripts/export-core-auth-d1.test.mjs
+
   export:
     name: Export, store and verify Core and Auth databases
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -47,10 +72,10 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          BACKUP_FILE: ${{ steps.export.outputs.otya-store-db_file }}
-          BACKUP_KEY: ${{ steps.export.outputs.otya-store-db_key }}
-          EXPECTED_SHA256: ${{ steps.export.outputs.otya-store-db_sha256 }}
-          EXPECTED_BYTES: ${{ steps.export.outputs.otya-store-db_bytes }}
+          BACKUP_FILE: ${{ steps.export.outputs.store_file }}
+          BACKUP_KEY: ${{ steps.export.outputs.store_key }}
+          EXPECTED_SHA256: ${{ steps.export.outputs.store_sha256 }}
+          EXPECTED_BYTES: ${{ steps.export.outputs.store_bytes }}
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
@@ -70,10 +95,10 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          BACKUP_FILE: ${{ steps.export.outputs.otya-auth-db_file }}
-          BACKUP_KEY: ${{ steps.export.outputs.otya-auth-db_key }}
-          EXPECTED_SHA256: ${{ steps.export.outputs.otya-auth-db_sha256 }}
-          EXPECTED_BYTES: ${{ steps.export.outputs.otya-auth-db_bytes }}
+          BACKUP_FILE: ${{ steps.export.outputs.auth_file }}
+          BACKUP_KEY: ${{ steps.export.outputs.auth_key }}
+          EXPECTED_SHA256: ${{ steps.export.outputs.auth_sha256 }}
+          EXPECTED_BYTES: ${{ steps.export.outputs.auth_bytes }}
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
