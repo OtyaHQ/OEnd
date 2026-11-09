@@ -71,6 +71,13 @@ async function telegramCoreStatus() {
   }
 }
 
+function sharedEmailGatewayReady(env) {
+  return Boolean(
+    env.AUTH?.fetch
+    && String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN || '').length >= 32
+  )
+}
+
 async function pluginRegistry(env) {
   const [gmail, control, telegram] = await Promise.all([
     gmailStatus(env),
@@ -78,15 +85,19 @@ async function pluginRegistry(env) {
     telegramCoreStatus(),
   ])
   const firebase = control.firebase_remote_config
+  const emailGatewayReady = sharedEmailGatewayReady(env)
 
   return [
     {
       id: 'resend',
-      name: 'Resend',
+      name: 'Shared email gateway (Resend via Otya Auth)',
       category: 'Email',
-      status: env.RESEND_API_KEY ? 'connected' : 'setup_required',
-      capabilities: ['transactional email', 'outbound support replies', 'operational alerts'],
+      status: emailGatewayReady ? 'ready_to_connect' : 'setup_required',
+      capabilities: ['transactional email via Otya Auth', 'outbound support replies', 'operational alerts'],
       write: true,
+      setup_hint: emailGatewayReady
+        ? 'Otya Next can reach the private Otya Auth gateway. Resend credentials remain owned by Otya Auth; provider acceptance is verified there.'
+        : 'Configure the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN on Otya Next and Otya Auth. Do not add a direct RESEND_API_KEY to Otya Next.'
     },
     {
       id: 'telegram',
@@ -190,7 +201,9 @@ async function systemSnapshot(env) {
     ai_search: Boolean(env.AI_SEARCH?.search),
     browser: Boolean(env.BROWSER),
     push: Boolean(env.PUSH_QUEUE?.send),
-    email: Boolean(env.RESEND_API_KEY),
+    email: sharedEmailGatewayReady(env),
+    email_transport: 'Otya Auth (shared Resend gateway)',
+    direct_email_provider_key_required: false,
     control_plane: await controlPlaneStatus(env),
   }
 
