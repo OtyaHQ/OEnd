@@ -1,3 +1,4 @@
+# Production release gate: deploy only after the mainline validation workflow succeeds.
 name = "otya-core"
 main = "src/production-router.mjs"
 compatibility_date = "2026-11-09"
