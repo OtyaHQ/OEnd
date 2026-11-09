@@ -68,14 +68,16 @@ async function readJson(response, context) {
 }
 
 async function startOrPollExport({ endpoint, token, body, fetchImpl }) {
+  const serializedBody = JSON.stringify(body);
   const response = await fetchImpl(endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      "Content-Length": String(new TextEncoder().encode(serializedBody).byteLength),
       Accept: "application/json",
     },
-    body: JSON.stringify(body),
+    body: serializedBody,
     redirect: "error",
     signal: AbortSignal.timeout(30_000),
   });
