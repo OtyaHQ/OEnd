@@ -23,10 +23,10 @@ jobs:
     timeout-minutes: 12
     environment: production
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22'
+          node-version: '22.23.4'
           package-manager-cache: false
 
       - name: Install locked Core tooling
@@ -83,6 +83,19 @@ jobs:
           test -s /tmp/auth-time-travel.json
           echo 'D1 Time Travel recovery points are available for Core and Auth.'
 
+      - name: Verify OtyaPoint D1 Time Travel recovery point
+        id: otyapoint_time_travel
+        continue-on-error: true
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
+          npx --yes wrangler@4.159.0 d1 time-travel info otyapoint-db --config "$RUNNER_TEMP/OtyaPoint/wrangler.toml" --json > /tmp/otyapoint-time-travel.json
+          test -s /tmp/otyapoint-time-travel.json
+          echo 'OtyaPoint D1 Time Travel recovery point is available.'
+
       - name: Write readiness summary
         if: always()
         env:
@@ -90,6 +103,7 @@ jobs:
           CORE_MIGRATIONS: ${{ steps.core_migrations.outcome }}
           AUTH_MIGRATIONS: ${{ steps.auth_migrations.outcome }}
           TIME_TRAVEL: ${{ steps.time_travel.outcome }}
+          OTYAPOINT_TIME_TRAVEL: ${{ steps.otyapoint_time_travel.outcome }}
         run: |
           {
             echo '## Otya production operations readiness'
@@ -97,7 +111,8 @@ jobs:
             echo "- Repository migration layout: ${MIGRATION_LAYOUT}."
             echo "- Core production migration drift check: ${CORE_MIGRATIONS}."
             echo "- Auth migration visibility check: ${AUTH_MIGRATIONS}."
-            echo "- D1 Time Travel availability check: ${TIME_TRAVEL}."
+            echo "- Core/Auth D1 Time Travel availability check: ${TIME_TRAVEL}."
+            echo "- OtyaPoint D1 Time Travel availability check: ${OTYAPOINT_TIME_TRAVEL}."
             echo '- This workflow is diagnostic only: it never applies migrations or restores a database.'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -110,7 +125,7 @@ jobs:
           TIME_TRAVEL: ${{ steps.time_travel.outcome }}
         run: |
           set -euo pipefail
-          for result in "$MIGRATION_LAYOUT" "$CORE_MIGRATIONS" "$AUTH_MIGRATIONS" "$TIME_TRAVEL"; do
+          for result in "$MIGRATION_LAYOUT" "$CORE_MIGRATIONS" "$AUTH_MIGRATIONS" "$TIME_TRAVEL" "$OTYAPOINT_TIME_TRAVEL"; do
             if [ "$result" != 'success' ]; then
               echo 'ERROR: Otya production operations readiness is not green. Review the failed diagnostic above.'
               exit 1

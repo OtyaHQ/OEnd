@@ -18,12 +18,21 @@ test('critical deployment stack is pinned instead of floating across deploys', (
   assert.equal(pkg.dependencies.react, '19.2.8')
   assert.equal(pkg.dependencies['react-dom'], '19.2.8')
   assert.equal(pkg.devDependencies['@opennextjs/cloudflare'], '1.20.6')
-  assert.equal(pkg.devDependencies.wrangler, '4.130.0')
+  assert.equal(pkg.devDependencies.wrangler, '4.159.0')
   assert.equal(pkg.devDependencies.typescript, '5.9.3')
   assert.equal(pkg.devDependencies.postcss, '8.5.25')
   assert.equal(pkg.overrides.postcss, '8.5.25')
   assert.equal(pkg.overrides.sharp, '0.35.5')
   assert.doesNotMatch(pkg.dependencies.next, /^16\./)
+
+  for (const path of ['package-lock.json', 'auth-worker/package-lock.json', 'ai-worker/package-lock.json']) {
+    const lock = JSON.parse(read(path))
+    assert.equal(lock.packages['node_modules/wrangler'].version, '4.159.0', `${path} must lock Wrangler 4.159.0`)
+  }
+
+  for (const path of ['wrangler.toml', 'auth-worker/wrangler.toml', 'ai-worker/wrangler.toml']) {
+    assert.match(read(path), /compatibility_date = "2026-11-09"/)
+  }
 })
 
 test('high-severity dependency audits are deployment gates', () => {
@@ -42,8 +51,8 @@ test('high-severity dependency audits are deployment gates', () => {
   assert.match(auditRetry, /ECONNRESET\|ETIMEDOUT\|EAI_AGAIN/)
   assert.match(auditRetry, /if \(!transient \|\| attempt === maxAttempts\)/)
   assert.match(auditRetry, /process\.exit\(result\.status \?\? 1\)/)
-  assert.match(securityWorkflow, /actions\/checkout@v6/)
-  assert.match(securityWorkflow, /actions\/setup-node@v6/)
+  assert.match(securityWorkflow, /actions\/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\.0\.1/)
+  assert.match(securityWorkflow, /actions\/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7\.1\.0/)
 })
 
 test('public web security headers keep HSTS at Cloudflare and browser isolation in app', () => {
@@ -59,7 +68,7 @@ test('public web security headers keep HSTS at Cloudflare and browser isolation 
 
 test('sensitive browser surfaces remain explicitly non-cacheable', () => {
   for (const path of ['/sign-in/:path*', '/account/:path*', '/telegram-login/:path*', '/admin/:path*']) {
-    assert.match(nextConfig, new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+    assert.match(nextConfig, new RegExp(path.replace(/[.*+?^\{}$|()\[\]\\]/g, '\\$&')))
   }
   assert.match(nextConfig, /private, no-store, no-cache, max-age=0, must-revalidate/)
 })

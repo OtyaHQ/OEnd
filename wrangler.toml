@@ -1,6 +1,6 @@
 name = "otya-core"
 main = "src/production-router.mjs"
-compatibility_date = "2026-07-19"
+compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 workers_dev = false
