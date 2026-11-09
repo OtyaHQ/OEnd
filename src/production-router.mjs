@@ -213,7 +213,7 @@ async function routeOtyaRequest(request, env, ctx) {
       // not another copy of the documentation index.
       const publicPath = url.pathname.replace(/\/$/, '')
       const publicDestinations = new Set([
-        '/apps', '/otya-player', '/download/otya-player', '/music',
+        '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
         '/developers', '/company', '/contact', '/privacy', '/terms',
         '/delete-account',
       ])
