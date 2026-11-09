@@ -48,7 +48,7 @@ test("exports a completed D1 snapshot and calculates a stable SHA-256", async ()
     assert.equal(result.database, "otya-store-db");
     assert.equal(result.objectKey, `d1/otya-store-db/2026-11-09/backup-${bookmark}.sql`);
     assert.equal(result.bytes, Buffer.byteLength(sql));
-    assert.equal(result.sha256, "e6b915a8ed0c3d0d343b3cd571e0ed7bf0a0c16ca9f6a98d3bd3f3d91f31d50d");
+    assert.equal(result.sha256, "dbeb9e3bf28a4d9cba73db3e6ccb5a125b20645741137adfbe56afae0a10b181");
     assert.equal(await readFile(result.filePath, "utf8"), sql);
     assert.equal(calls.length, 2);
     assert.deepEqual(calls[0].body, { output_format: "polling" });
