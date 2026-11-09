@@ -55,6 +55,18 @@ Never put Telegram client secrets or Gateway tokens in Flutter or browser code.
 
 OTYA uses **Resend** for verification, password reset, welcome and security email.
 
+### Private OtyaPoint staff invitations
+
+The Auth Worker also owns the private `POST /internal/notifications/omnipoint/staff-invitation` service-binding route. It sends invitation messages on behalf of OtyaPoint using the existing Resend account; OtyaPoint does not receive a Resend API key. The route rejects requests without both the expected `x-otya-service: otyapoint` marker and a high-entropy shared service secret.
+
+To enable this integration after an approved isolated OtyaPoint deployment, generate a unique high-entropy value and set the exact same value as a Worker secret in both OtyaPoint and Otya Auth:
+
+```sh
+wrangler secret put OTYAPOINT_INVITE_SERVICE_TOKEN
+```
+
+Do not use a Wrangler `[vars]` value, GitHub source file, app bundle, or browser storage for this secret. The invitation code is one-time, short-lived and stored only as a digest by OtyaPoint. Do not configure this secret or enable invitation delivery on production during the development freeze. The internal route is not a public API and must not be attached to a public route or workers.dev hostname.
+
 ## API
 
 All endpoints return `{ error: string }` on failure.
