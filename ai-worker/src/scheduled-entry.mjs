@@ -46,21 +46,29 @@ function withAiGateway(env){
   }
 }
 
-async function email(env,subject,text){
-  if(!env.RESEND_API_KEY)throw new Error('RESEND_API_KEY missing on otya-ai')
-  const r=await fetch('https://api.resend.com/emails',{
+async function email(env,subject,text,idempotencyKey){
+  if(!env.AUTH?.fetch)throw new Error('Shared Otya Auth email service is unavailable')
+  const serviceToken=String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN||'')
+  if(serviceToken.length<32)throw new Error('OTYA_NEXT_MAIL_SERVICE_TOKEN is not configured on otya-next')
+  if(typeof idempotencyKey!=='string'||!idempotencyKey.trim()||idempotencyKey.length>256){
+    throw new Error('A stable email idempotency key is required')
+  }
+  const response=await env.AUTH.fetch(new Request('https://auth/internal/notifications/otya-next/ops-report',{
     method:'POST',
-    headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},
-    body:JSON.stringify({
-      from:'Otya <noreply@petersmartlink.com>',
-      to:[env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'],
-      reply_to:'support@petersmartlink.com',
-      subject,
-      text,
-    }),
+    headers:{
+      'content-type':'application/json',
+      'x-otya-service':'otya-next',
+      'x-otya-service-token':serviceToken,
+    },
+    body:JSON.stringify({subject,text,idempotencyKey}),
     signal:AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
-  })
-  if(!r.ok)throw new Error(`Resend HTTP ${r.status}`)
+  }))
+  if(!response.ok)throw new Error(`Shared Otya Auth email service HTTP ${response.status}`)
+  const result=await response.json().catch(()=>null)
+  if(result?.accepted!==true||typeof result.emailId!=='string'||!result.emailId){
+    throw new Error('Shared Otya Auth email service did not confirm acceptance')
+  }
+  return result.emailId
 }
 
 async function scalar(env,sql,bindings=[]){
@@ -103,7 +111,7 @@ async function operationsSnapshot(env,window='-24 hours'){
   try{latestRelease=await env.DB.prepare('SELECT tag,version,released_at FROM releases ORDER BY released_at DESC LIMIT 1').first()}catch{}
   return{
     generated_at:new Date().toISOString(),
-    services:{database:Boolean(env.DB),kv:Boolean(env.KV),ai:Boolean(env.AI?.run),email:Boolean(env.RESEND_API_KEY),delivery_evidence:Boolean(env.DB?.prepare)},
+    services:{database:Boolean(env.DB),kv:Boolean(env.KV),ai:Boolean(env.AI?.run),email:Boolean(env.AUTH?.fetch&&String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN||'').length>=32),delivery_evidence:Boolean(env.DB?.prepare)},
     users,devices,active_devices:active,downloads,crashes,feedback,support_actions:supportActions,
     queue_delivery_failures:queueFailures,
     queue_delivery:queueDeliveryRows,
@@ -136,25 +144,47 @@ function rawFallback(snapshot){
   ].join('\n')
 }
 
-async function daily(env){
+function kampalaDateKey(timestamp){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Africa/Kampala',year:'numeric',month:'2-digit',day:'2-digit',
+  }).formatToParts(new Date(timestamp))
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]))
+  return `${values.year}-${values.month}-${values.day}`
+}
+
+async function daily(env,scheduledTime=Date.now()){
+  const dateKey=kampalaDateKey(scheduledTime)
   const snapshot=await operationsSnapshot(env,'-24 hours')
+  snapshot.generated_at=new Date(scheduledTime).toISOString()
   const summary=await summarize(env,snapshot,'daily')
-  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date())
-  await email(env,`Otya · Morning operations · ${date}`,[summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'))
+  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date(scheduledTime))
+  await email(
+    env,
+    `Otya · Morning operations · ${date}`,
+    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'),
+    `otya-next/daily-operations/${dateKey}`,
+  )
 }
 
-async function weekly(env){
+async function weekly(env,scheduledTime=Date.now()){
+  const dateKey=kampalaDateKey(scheduledTime)
   const snapshot=await operationsSnapshot(env,'-7 days')
+  snapshot.generated_at=new Date(scheduledTime).toISOString()
   const summary=await summarize(env,snapshot,'weekly')
-  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date())
-  await email(env,`Otya · Weekly review · ${date}`,[summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'))
+  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date(scheduledTime))
+  await email(
+    env,
+    `Otya · Weekly review · ${date}`,
+    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'),
+    `otya-next/weekly-operations/${dateKey}`,
+  )
 }
 
-async function urgent(env){
+async function urgent(env,scheduledTime=Date.now()){
   const crashes=await scalar(env,"SELECT COUNT(*) count FROM crash_reports WHERE created_at>=datetime('now','-1 hour')")
   const threshold=Math.max(3,Number(env.ADMIN_CRASH_ALERT_THRESHOLD||5))
   if(crashes<threshold)return
-  const hour=new Date().toISOString().slice(0,13)
+  const hour=new Date(scheduledTime).toISOString().slice(0,13)
   const key=`ops:crash-alert:${hour}`
   if(env.KV&&await env.KV.get(key))return
   const groups=await rows(env,`
@@ -211,8 +241,8 @@ async function urgent(env){
     ...groupLines,
     '',
     'Review the Otya Console before taking any destructive or customer-facing action.',
-    `Generated ${new Date().toISOString()}`,
-  ].join('\n'))
+    `Generated ${new Date(scheduledTime).toISOString()}`,
+  ].join('\n'),`otya-next/crash-alert/${hour}`)
   if(env.KV)await env.KV.put(key,'1',{expirationTtl:7200})
 }
 
@@ -273,9 +303,9 @@ export default {
   async scheduled(event,env,ctx){
     const runtimeEnv=withAiGateway(env)
     let task=Promise.resolve()
-    if(event.cron==='0 6 * * 1')task=weekly(runtimeEnv)
-    else if(event.cron==='0 5 * * *')task=Promise.all([daily(runtimeEnv),churnSignals(runtimeEnv)])
-    else if(event.cron==='0 * * * *')task=urgent(runtimeEnv)
+    if(event.cron==='0 6 * * 1')task=weekly(runtimeEnv,event.scheduledTime)
+    else if(event.cron==='0 5 * * *')task=Promise.all([daily(runtimeEnv,event.scheduledTime),churnSignals(runtimeEnv)])
+    else if(event.cron==='0 * * * *')task=urgent(runtimeEnv,event.scheduledTime)
     ctx.waitUntil(task)
   }
 }

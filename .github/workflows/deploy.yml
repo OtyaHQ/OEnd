@@ -158,6 +158,8 @@ jobs:
           TELEGRAM_GATEWAY_TOKEN: ${{ secrets.TELEGRAM_GATEWAY_TOKEN }}
           ACCOUNT_ENCRYPTION_KEY: ${{ secrets.ACCOUNT_ENCRYPTION_KEY }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
+          OTYAPOINT_INVITE_SERVICE_TOKEN: ${{ secrets.OTYAPOINT_INVITE_SERVICE_TOKEN }}
+          OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
@@ -171,6 +173,8 @@ jobs:
           if [ -n "${TELEGRAM_GATEWAY_TOKEN:-}" ]; then printf '%s' "$TELEGRAM_GATEWAY_TOKEN" | npx wrangler secret put TELEGRAM_GATEWAY_TOKEN; fi
           if [ -n "${ACCOUNT_ENCRYPTION_KEY:-}" ]; then printf '%s' "$ACCOUNT_ENCRYPTION_KEY" | npx wrangler secret put ACCOUNT_ENCRYPTION_KEY; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
+          if [ -n "${OTYAPOINT_INVITE_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYAPOINT_INVITE_SERVICE_TOKEN" | npx wrangler secret put OTYAPOINT_INVITE_SERVICE_TOKEN; fi
+          if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
           npx wrangler deploy
 
   deploy-next:
@@ -189,6 +193,7 @@ jobs:
         working-directory: ai-worker
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
           GMAIL_GOOGLE_CLIENT_SECRET: ${{ secrets.GMAIL_GOOGLE_CLIENT_SECRET }}
           CONNECTOR_ENCRYPTION_KEY: ${{ secrets.CONNECTOR_ENCRYPTION_KEY }}
@@ -198,6 +203,7 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
           if [ -n "${RESEND_API_KEY:-}" ]; then printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY; fi
+          if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
           if [ -n "${GMAIL_GOOGLE_CLIENT_SECRET:-}" ]; then printf '%s' "$GMAIL_GOOGLE_CLIENT_SECRET" | npx wrangler secret put GMAIL_GOOGLE_CLIENT_SECRET; fi
           if [ -n "${CONNECTOR_ENCRYPTION_KEY:-}" ]; then printf '%s' "$CONNECTOR_ENCRYPTION_KEY" | npx wrangler secret put CONNECTOR_ENCRYPTION_KEY; fi

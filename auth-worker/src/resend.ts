@@ -8,6 +8,8 @@ export interface ResendEmail {
   subject: string
   text: string
   replyTo?: string
+  /** Stable per logical notification; reused on retries within Resend's window. */
+  idempotencyKey?: string
 }
 
 interface ResendResponse { id?: string; message?: string; name?: string; statusCode?: number }
@@ -61,13 +63,21 @@ class ResendDeliveryError extends Error {
   }
 }
 
-async function postEmail(apiKey: string, payload: Record<string, unknown>): Promise<ResendResponse> {
+async function postEmail(apiKey: string, payload: Record<string, unknown>, idempotencyKey?: string): Promise<ResendResponse> {
+  if (idempotencyKey && (idempotencyKey.length > 256 || !idempotencyKey.trim())) {
+    throw new Error('Invalid Resend idempotency key')
+  }
   const controller = new AbortController()
   const deadline = setTimeout(() => controller.abort(), 10000)
   try {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    }
+    if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload), signal: controller.signal,
     })
     let data: ResendResponse = {}
@@ -91,7 +101,7 @@ export async function sendResendEmail(apiKey:string|undefined,email:ResendEmail)
         from: email.from.replaceAll('OTYA', 'Otya'), to: email.to,
         subject: email.subject.replaceAll('OTYA', 'Otya'),
         template, reply_to: email.replyTo ?? OTYA_SUPPORT_EMAIL,
-      })
+      }, email.idempotencyKey)
       return data.id!
     } catch (error) {
       // Retry with HTML only after explicit rejection, never ambiguous failure.
@@ -99,5 +109,6 @@ export async function sendResendEmail(apiKey:string|undefined,email:ResendEmail)
       console.warn('[auth/email] template rejected; using branded fallback')
     }
   }
-  const data=await postEmail(apiKey,fallbackPayload(email));return data.id!
+  const fallbackKey = email.idempotencyKey ? `${email.idempotencyKey}:fallback` : undefined
+  const data=await postEmail(apiKey,fallbackPayload(email),fallbackKey);return data.id!
 }
