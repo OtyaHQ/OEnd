@@ -81,6 +81,9 @@ export async function exportDatabases({
     try {
       const fileStats = await stat(outputPath);
       if (!fileStats.isFile()) throw new Error("Wrangler did not produce a regular SQL file.");
+      if (fileStats.size > MAX_BACKUP_BYTES) {
+        throw new Error("D1 export exceeds the configured 512 MiB safety limit.");
+      }
       const digest = await hashFile(outputPath);
       if (fileStats.size !== digest.bytes) throw new Error("D1 export size verification failed.");
       results.push({
