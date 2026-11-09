@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     siteName: 'PeterSmart Link',
     title: 'PeterSmart Link | Mbirizi Shop & Otya Software',
     description:
-      'Official Otya by PeterSmart Link for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
+      'A physical technology shop in Mbirizi and the home of Otya software products, including Otya Player for Android.',
     images: [
       {
         url: OTYA_MARK,
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'PeterSmart Link | Mbirizi Shop & Otya Software',
-    description: 'A physical technology shop in Mbirizi and the home of Otya software products.'
+    description: 'A physical technology shop in Mbirizi and the home of Otya software products.',
     images: [OTYA_MARK],
   },
   icons: {
