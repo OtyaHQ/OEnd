@@ -47,30 +47,28 @@ function withAiGateway(env){
 }
 
 async function email(env,subject,text,idempotencyKey){
-  if(!env.RESEND_API_KEY)throw new Error('RESEND_API_KEY missing on otya-ai')
+  if(!env.AUTH?.fetch)throw new Error('Shared Otya Auth email service is unavailable')
+  const serviceToken=String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN||'')
+  if(serviceToken.length<32)throw new Error('OTYA_NEXT_MAIL_SERVICE_TOKEN is not configured on otya-next')
   if(typeof idempotencyKey!=='string'||!idempotencyKey.trim()||idempotencyKey.length>256){
-    throw new Error('A stable Resend idempotency key is required')
+    throw new Error('A stable email idempotency key is required')
   }
-  const r=await fetch('https://api.resend.com/emails',{
+  const response=await env.AUTH.fetch(new Request('https://auth/internal/notifications/otya-next/ops-report',{
     method:'POST',
     headers:{
-      Authorization:`Bearer ${env.RESEND_API_KEY}`,
-      'Content-Type':'application/json',
-      'Idempotency-Key':idempotencyKey,
+      'content-type':'application/json',
+      'x-otya-service':'otya-next',
+      'x-otya-service-token':serviceToken,
     },
-    body:JSON.stringify({
-      from:'Otya <noreply@petersmartlink.com>',
-      to:[env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'],
-      reply_to:'support@petersmartlink.com',
-      subject,
-      text,
-    }),
+    body:JSON.stringify({subject,text,idempotencyKey}),
     signal:AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
-  })
-  if(!r.ok)throw new Error(`Resend HTTP ${r.status}`)
-  const result=await r.json().catch(()=>null)
-  if(!result?.id)throw new Error('Resend did not confirm email acceptance')
-  return result.id
+  }))
+  if(!response.ok)throw new Error(`Shared Otya Auth email service HTTP ${response.status}`)
+  const result=await response.json().catch(()=>null)
+  if(result?.accepted!==true||typeof result.emailId!=='string'||!result.emailId){
+    throw new Error('Shared Otya Auth email service did not confirm acceptance')
+  }
+  return result.emailId
 }
 
 async function scalar(env,sql,bindings=[]){
@@ -113,7 +111,7 @@ async function operationsSnapshot(env,window='-24 hours'){
   try{latestRelease=await env.DB.prepare('SELECT tag,version,released_at FROM releases ORDER BY released_at DESC LIMIT 1').first()}catch{}
   return{
     generated_at:new Date().toISOString(),
-    services:{database:Boolean(env.DB),kv:Boolean(env.KV),ai:Boolean(env.AI?.run),email:Boolean(env.RESEND_API_KEY),delivery_evidence:Boolean(env.DB?.prepare)},
+    services:{database:Boolean(env.DB),kv:Boolean(env.KV),ai:Boolean(env.AI?.run),email:Boolean(env.AUTH?.fetch&&String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN||'').length>=32),delivery_evidence:Boolean(env.DB?.prepare)},
     users,devices,active_devices:active,downloads,crashes,feedback,support_actions:supportActions,
     queue_delivery_failures:queueFailures,
     queue_delivery:queueDeliveryRows,
