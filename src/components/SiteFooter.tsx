@@ -2,7 +2,8 @@ import { OTYA } from '@/lib/constants'
 import Link from 'next/link'
 
 const GROUPS = [
-  { title: 'Otya', links: [['Otya Player', '/otya-player'], ['Download for Android', '/download/otya-player'], ['Your Space', 'https://space.petersmartlink.com']] },
+  { title: 'Otya', links: [['Otya Media', '/otya-player'], ['Download for Android', '/download/otya-player'], ['Your Space', 'https://space.petersmartlink.com']] },
+  { title: 'Visit', links: [['OtyaPoint shop', '/otyapoint'], ['Products', '/apps'], ['Company', '/company']] },
   { title: 'Support', links: [['Help', '/help'], ['Journal', '/blog'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Delete account', '/delete-account']] },
 ] as const
 
@@ -12,9 +13,9 @@ export function SiteFooter() {
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
         <div>
           <Link href={OTYA.website} className="inline-block text-base font-black tracking-[-.035em]">PeterSmart Link</Link>
-          <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">Building practical software, starting with Otya Player for Android.</p>
+          <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">A connected family of digital products and real-world services, built in Uganda.</p>
         </div>
-        <div className="grid grid-cols-2 gap-5 sm:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 sm:gap-8">
           {GROUPS.map(group => <div key={group.title}>
             <div className="text-xs font-black uppercase tracking-[.12em] otya-muted">{group.title}</div>
             <div className="mt-3 grid gap-1">
@@ -25,7 +26,7 @@ export function SiteFooter() {
       </div>
       <div className="mt-6 flex flex-col gap-1 border-t border-black/[.05] pt-4 text-xs otya-muted sm:flex-row sm:items-center sm:justify-between dark:border-white/[.06]">
         <span>© {new Date().getFullYear()} PeterSmart Link</span>
-        <span>Otya Player · Made in Uganda</span>
+        <span>Otya · Products & services</span>
       </div>
     </div>
   </footer>
