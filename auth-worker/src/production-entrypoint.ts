@@ -7,6 +7,7 @@ import { deliverNewDeviceAlert, deliverRegistrationEmails } from './production-e
 import { handleSecureOtpRoute, type SecureOtpEnv } from './secure-otp'
 import { handleSecureAccountRoute, type SecureAccountEnv } from './secure-account'
 import { withAuthSecurityEvent } from './security-events'
+import { sendResendEmail } from './resend'
 
 interface GoogleTokenPayload {
   sub?: string
@@ -23,6 +24,7 @@ interface GoogleTokenPayload {
 type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & SecureOtpEnv & SecureAccountEnv & {
   GOOGLE_CLIENT_ID?: string
   GOOGLE_WEB_CLIENT_ID?: string
+  RESEND_API_KEY?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
 }
 
@@ -55,6 +57,82 @@ function authError(message: string, status: number, code?: string): Response {
 
 function googleError(message: string, status: number): Response {
   return authError(message, status)
+}
+
+async function handleOtyaPointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
+  const url = new URL(request.url)
+  if (url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
+  if (request.method !== 'POST') return authError('Method not allowed', 405)
+  // This route is intentionally reachable only through a Cloudflare Service
+  // Binding from OtyaPoint; the auth Worker has no public workers.dev route.
+  if (request.headers.get('x-otya-service') !== 'otyapoint') return authError('Service not allowed', 403)
+  if (Number(request.headers.get('content-length') || '0') > 4096) return authError('Payload too large', 413)
+
+  let body: Record<string, unknown>
+  try {
+    const value = await request.json()
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return authError('Invalid invitation payload', 400)
+    body = value as Record<string, unknown>
+  } catch {
+    return authError('Invalid JSON body', 400)
+  }
+
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+  const displayName = typeof body.displayName === 'string'
+    ? body.displayName.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 120)
+    : ''
+  const role = typeof body.role === 'string' ? body.role.trim() : ''
+  const token = typeof body.token === 'string' ? body.token.trim().toLowerCase() : ''
+  const expiresAt = typeof body.expiresAt === 'string' ? body.expiresAt.trim() : ''
+  const expiration = Date.parse(expiresAt)
+
+  if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) || email.length > 254) {
+    return authError('Invalid invitation email', 400)
+  }
+  if (!/^[a-f0-9]{64}$/.test(token)) return authError('Invalid invitation token', 400)
+  if (!['ATTENDANT', 'MANAGER', 'MANAGING_DIRECTOR', 'CHAIRMAN'].includes(role)) {
+    return authError('Invalid invitation role', 400)
+  }
+  if (!Number.isFinite(expiration) || expiration <= Date.now() || expiration > Date.now() + 49 * 60 * 60 * 1000) {
+    return authError('Invalid invitation expiry', 400)
+  }
+  if (!env.RESEND_API_KEY) return authError('Email service is unavailable', 503)
+
+  const safeName = displayName || email.split('@')[0] || 'there'
+  try {
+    await sendResendEmail(env.RESEND_API_KEY, {
+      from: 'Otya <noreply@petersmartlink.com>',
+      to: [email],
+      replyTo: 'support@petersmartlink.com',
+      subject: 'You have been invited to OtyaPoint',
+      text: [
+        `Hi ${safeName},`,
+        '',
+        'You have been invited to join the OtyaPoint shop operations workspace.',
+        `Your invitation role: ${role}.`,
+        '',
+        'Sign in to your Otya Account, then enter this one-time invitation code in OtyaPoint:',
+        '',
+        token,
+        '',
+        `This invitation expires at ${expiration.toISOString()}.`,
+        'After you accept, the shop owner must activate your membership before you can access shop operations.',
+        '',
+        'If you were not expecting this invitation, you can ignore this email.',
+        '— The Otya Team',
+      ].join('\n'),
+    })
+    return new Response(JSON.stringify({ accepted: true }), {
+      status: 202,
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
+    })
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: 'otya_staff_invitation_email_failed',
+      errorType: error instanceof Error ? error.name : 'UnknownError',
+    }))
+    return authError('Invitation email could not be delivered', 502)
+  }
 }
 
 async function ensureIdentitySchema(env: ProductionEnv): Promise<Response | null> {
@@ -182,6 +260,9 @@ async function audited(request: Request, response: Response, env: ProductionEnv)
 export default {
   async fetch(request: Request, env: ProductionEnv): Promise<Response> {
     const url = new URL(request.url)
+
+    const invitationResponse = await handleOtyaPointStaffInvitation(request, env)
+    if (invitationResponse) return invitationResponse
 
     if (url.pathname.startsWith('/auth/admin/')) {
       const response = await handleAdminMfa(request, env)
