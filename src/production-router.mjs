@@ -166,9 +166,7 @@ async function dispatchSurface(request, url, env, ctx, pathname = url.pathname) 
   return dispatchOpenNext(new Request(target.toString(), init), env, ctx)
 }
 
-export default {
-  ...backendWorker,
-  async fetch(request, env, ctx) {
+async function routeOtyaRequest(request, env, ctx) {
     const url = new URL(request.url)
     const host = url.hostname.toLowerCase()
 
@@ -245,5 +243,57 @@ export default {
     }
 
     return dispatchOpenNext(request, env, ctx)
+}
+
+function requestCorrelationId(request) {
+  const ray = request.headers.get('CF-Ray')
+  if (ray && /^[a-f0-9]{16,32}(?:-[a-z0-9]+)?$/i.test(ray)) return ray
+  return crypto.randomUUID()
+}
+
+function withRequestSecurityHeaders(response, requestId, pathname) {
+  const headers = new Headers(response.headers)
+  headers.set('X-Otya-Request-Id', requestId)
+  headers.set('X-Content-Type-Options', 'nosniff')
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  headers.set('X-Frame-Options', 'DENY')
+
+  // Auth and API responses can contain account, owner or business data.
+  // Never allow shared caches to retain them, even when an inner handler
+  // accidentally forgets its own cache policy.
+  if (pathname === '/auth' || pathname.startsWith('/auth/')
+    || pathname === '/api' || pathname.startsWith('/api/')) {
+    headers.set('Cache-Control', 'private, no-store, max-age=0')
+    headers.append('Vary', 'Authorization')
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
+}
+
+export default {
+  ...backendWorker,
+  async fetch(request, env, ctx) {
+    const requestId = requestCorrelationId(request)
+    const pathname = new URL(request.url).pathname
+    try {
+      const response = await routeOtyaRequest(request, env, ctx)
+      return withRequestSecurityHeaders(response, requestId, pathname)
+    } catch (error) {
+      // Deliberately do not log request bodies, credentials, query strings or
+      // provider payloads. The request ID is the safe correlation handle.
+      console.error(JSON.stringify({
+        event: 'otya_core_request_failed',
+        requestId,
+        errorType: error instanceof Error ? error.name : 'UnknownError',
+      }))
+      const response = json({ error: 'internal_error', requestId }, 500)
+      return withRequestSecurityHeaders(response, requestId, pathname)
+    }
   },
 }
