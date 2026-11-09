@@ -163,6 +163,7 @@ export async function exportDatabase({
         const fileStats = await stat(filePath);
         if (fileStats.size !== digest.bytes) throw new Error("D1 backup size verification failed.");
         return {
+          key: database.key,
           database: database.name,
           objectKey: safeKey,
           filePath,
@@ -213,10 +214,10 @@ async function main() {
     const { appendFile } = await import("node:fs/promises");
     const lines = [];
     for (const item of outputs) {
-      lines.push(`${item.database}_file=${item.filePath}`);
-      lines.push(`${item.database}_key=${item.objectKey}`);
-      lines.push(`${item.database}_bytes=${item.bytes}`);
-      lines.push(`${item.database}_sha256=${item.sha256}`);
+      lines.push(`${item.key}_file=${item.filePath}`);
+      lines.push(`${item.key}_key=${item.objectKey}`);
+      lines.push(`${item.key}_bytes=${item.bytes}`);
+      lines.push(`${item.key}_sha256=${item.sha256}`);
     }
     await appendFile(process.env.GITHUB_OUTPUT, lines.join("\n") + "\n", { mode: 0o600 });
   }
