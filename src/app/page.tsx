@@ -29,7 +29,7 @@ export default function HomePage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-black/[.06] dark:border-white/[.08] px-3 py-2 text-xs font-black bg-white/55 dark:bg-white/[.03]">Otya · Built in Uganda</div>
             <h1 className="mt-7 max-w-[800px] text-[clamp(44px,7vw,84px)] font-bold tracking-[-.055em] leading-[1.04]">Connected technology.<br/><span className="otya-muted">Made for everyday life.</span></h1>
-            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya from PeterSmart Link. Explore useful digital products, private account services and OtyaPoint's physical shop in Mbirizi, Lwengo.</p>
+            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya from PeterSmart Link. Explore useful digital products, private account services and OtyaPoint&apos;s physical shop in Mbirizi, Lwengo.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/apps" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Explore products</Link>
               <Link href="/otyapoint" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Visit OtyaPoint</Link>
