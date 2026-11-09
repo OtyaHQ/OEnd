@@ -5,7 +5,8 @@ import { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 import { clearAdminSessionCache, getAdminSession } from '@/lib/admin_session_client'
 
-type Msg = { id?: number; role: 'user' | 'assistant'; content: string }
+type SpecialistMeta = { title: string; role: string; confidence?: string }
+type Msg = { id?: number; role: 'user' | 'assistant'; content: string; specialist?: SpecialistMeta }
 type Conv = { id: string; title: string; updated_at?: string }
 type Session = { loading: boolean; authenticated: boolean }
 
@@ -93,7 +94,10 @@ export default function ConsoleClient() {
     try{
       const d=await api('/api/admin/ai-console/chat',{method:'POST',body:JSON.stringify({message:text,conversation_id:current||undefined})})
       setCurrent(d.conversation_id||current)
-      setMessages(m=>[...m,{role:'assistant',content:d.answer||'I could not produce a response.'}])
+      const specialist: SpecialistMeta | undefined = d.specialist && typeof d.specialist.title === 'string'
+        ? { title: d.specialist.title.slice(0, 80), role: typeof d.specialist.role === 'string' ? d.specialist.role.slice(0, 60) : 'team_lead', confidence: typeof d.specialist.confidence === 'string' ? d.specialist.confidence : undefined }
+        : undefined
+      setMessages(m=>[...m,{role:'assistant',content:d.answer||'I could not produce a response.',specialist}])
       if(d.tool) setActivity(toolLabels[d.tool]||`Used ${String(d.tool).replaceAll('_',' ')}`)
       await loadConvs()
     }catch(e){
@@ -120,7 +124,7 @@ export default function ConsoleClient() {
       {notice&&<div className="mx-4 mt-3 rounded-xl border px-3 py-2 text-sm" style={{borderColor:'var(--cosmos-divider)',background:'var(--cosmos-card)'}}>{notice}</div>}
       <div ref={scrollRef} className="flex-1 overflow-auto px-4 sm:px-8 py-6">
         <div className="mx-auto max-w-3xl">
-          {messages.length===0?<div className="pt-[12vh] max-w-xl"><OtyaBrandMark ai size={68}/><h1 className="mt-5 text-3xl sm:text-5xl font-black tracking-[-.055em]">What should Next handle?</h1><p className="mt-3 otya-muted leading-7">Ask naturally. Next can inspect your Otya system, explain what it finds, prepare safe changes and ask before meaningful external or destructive actions are executed.</p></div>:<div className="space-y-7">{messages.map((m,i)=>m.role==='user'?<div key={i} className="ml-auto max-w-[86%] rounded-[22px] rounded-br-md px-4 py-3 bg-black/[.055] dark:bg-white/[.08] text-sm leading-6">{m.content}</div>:<div key={i} className="max-w-[98%]"><div className="mb-2"><OtyaBrandMark ai size={34}/></div><div className="whitespace-pre-wrap text-sm sm:text-[15px] leading-7">{m.content}</div></div>)}{busy&&<div className="flex items-start gap-3 py-2" role="status" aria-live="polite"><OtyaBrandMark ai size={44} thinking label="Next is working"/><div><div className="text-sm font-semibold">{stages[stage]}</div><div className="text-xs otya-muted mt-1">Next is working securely in the background.</div></div></div>}{activity&&!busy&&<div className="text-xs otya-muted border-l-2 pl-3" style={{borderColor:'var(--cosmos-divider)'}}>{activity}</div>}</div>}
+          {messages.length===0?<div className="pt-[12vh] max-w-xl"><OtyaBrandMark ai size={68}/><h1 className="mt-5 text-3xl sm:text-5xl font-black tracking-[-.055em]">What should Next handle?</h1><p className="mt-3 otya-muted leading-7">Ask naturally. Next can inspect your Otya system, explain what it finds, prepare safe changes and ask before meaningful external or destructive actions are executed.</p></div>:<div className="space-y-7">{messages.map((m,i)=>m.role==='user'?<div key={i} className="ml-auto max-w-[86%] rounded-[22px] rounded-br-md px-4 py-3 bg-black/[.055] dark:bg-white/[.08] text-sm leading-6">{m.content}</div>:<div key={i} className="max-w-[98%]"><div className="mb-2"><OtyaBrandMark ai size={34}/></div>{m.specialist&&<div className="mb-2 inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.08em] otya-muted" style={{borderColor:"var(--cosmos-divider)"}}><span>{m.specialist.title}</span><span>· Advisory</span></div>}<div className="whitespace-pre-wrap text-sm sm:text-[15px] leading-7">{m.content}</div></div>)}{busy&&<div className="flex items-start gap-3 py-2" role="status" aria-live="polite"><OtyaBrandMark ai size={44} thinking label="Next is working"/><div><div className="text-sm font-semibold">{stages[stage]}</div><div className="text-xs otya-muted mt-1">Next is working securely in the background.</div></div></div>}{activity&&!busy&&<div className="text-xs otya-muted border-l-2 pl-3" style={{borderColor:'var(--cosmos-divider)'}}>{activity}</div>}</div>}
         </div>
       </div>
       <div className="shrink-0 p-3 sm:p-5"><div className="mx-auto max-w-3xl"><div className="flex items-end gap-2 rounded-[22px] border p-1.5" style={{background:'var(--cosmos-card)',borderColor:'var(--cosmos-divider)'}}><textarea rows={1} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={composerKey} placeholder="Ask Next anything about your system" className="max-h-36 min-h-12 flex-1 resize-none bg-transparent px-3 py-3 outline-none text-sm"/><button onClick={()=>void send()} disabled={busy||!input.trim()} className="cosmos-button min-h-12 min-w-12 rounded-[17px] font-black disabled:opacity-50" aria-label="Send">↑</button></div><div className="mt-2 text-center text-[10px] otya-muted">Owner access is enforced by the server. Next chooses only the tools your verified session is allowed to use.</div></div></div>
