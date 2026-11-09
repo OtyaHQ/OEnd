@@ -6,15 +6,15 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { HomeStart } from '@/components/HomeStart'
 
 export const metadata: Metadata = {
-  title: 'PeterSmart Link — Practical software products',
-  description: 'PeterSmart Link is the developer and publisher behind Otya Player and Otya Space.',
-  keywords: ['PeterSmart Link', 'Otya Player', 'Otya', 'Uganda software developer', 'Android media player'],
+  title: 'PeterSmart Link | Mbirizi Technology Shop & Otya Software',
+  description: 'Visit our physical shop in Mbirizi for phones and accessories, electronics and in-person mobile-money services. Explore Otya software products built in Uganda.',
+  keywords: ['PeterSmart Link', 'Mbirizi technology shop', 'phones and accessories Mbirizi', 'electronics Mbirizi', 'mobile money Mbirizi', 'Otya Player', 'Uganda software'],
   alternates: { canonical: 'https://petersmartlink.com' },
   openGraph: {
     type: 'website',
     url: 'https://petersmartlink.com',
     title: 'PeterSmart Link — Practical software products',
-    description: 'The developer and publisher behind Otya Player and Otya Space.',
+    description: 'A physical technology shop in Mbirizi and the home of Otya software products.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'PeterSmart Link and Otya' }],
   },
 }
@@ -28,13 +28,13 @@ export default function HomePage() {
         <div className="otya-shell relative py-12 sm:py-16 lg:py-20 grid lg:grid-cols-[1.02fr_.98fr] gap-8 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-black/[.06] dark:border-white/[.08] px-3 py-2 text-xs font-black bg-white/55 dark:bg-white/[.03]">PeterSmart Link · Uganda</div>
-            <h1 className="mt-7 max-w-[800px] text-[clamp(44px,7vw,84px)] font-bold tracking-[-.055em] leading-[1.04]">Practical software.<br/><span className="otya-muted">Made for your day.</span></h1>
-            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya from PeterSmart Link. Enjoy the music and videos already on your phone, then manage your account privately in Space.</p>
+            <h1 className="mt-7 max-w-[800px] text-[clamp(44px,7vw,84px)] font-bold tracking-[-.055em] leading-[1.04]">Technology & services.<br/><span className="otya-muted">Made for everyday life.</span></h1>
+            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Visit our physical shop at Old Market, Mbirizi for phones and accessories, electronics and mobile-money services. Explore Otya software products developed in Uganda.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/download/otya-player" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Get Otya Player</Link>
-              <Link href="/company" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">About PeterSmart Link</Link>
+              <Link href="/shop" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Visit our shop</Link>
+              <Link href="/otya-player" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Explore Otya</Link>
             </div>
-            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Made for Android</span><span>Local playback, even offline</span><span>Built by PeterSmart Link</span></div>
+            <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Physical shop in Mbirizi</span><span>Services in person</span><span>Otya software from Uganda</span></div>
           </div>
 
           <div className="relative">
