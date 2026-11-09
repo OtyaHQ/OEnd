@@ -25,7 +25,7 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
   GOOGLE_CLIENT_ID?: string
   GOOGLE_WEB_CLIENT_ID?: string
   RESEND_API_KEY?: string
-  OTYAPOINT_INVITE_SERVICE_TOKEN?: string
+  OTYAPOINT_INVITE_SERVICE_TOKEN?: string | { get(): Promise<string> }
   OTYA_NEXT_MAIL_SERVICE_TOKEN?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
 }
@@ -61,6 +61,17 @@ function googleError(message: string, status: number): Response {
   return authError(message, status)
 }
 
+async function resolveSecretStoreValue(value: string | { get(): Promise<string> } | undefined): Promise<string> {
+  if (typeof value === 'string') return value
+  if (!value || typeof value.get !== 'function') return ''
+  try {
+    const secret = await value.get()
+    return typeof secret === 'string' ? secret : ''
+  } catch {
+    return ''
+  }
+}
+
 async function matchesInternalServiceSecret(provided: string, expected: string): Promise<boolean> {
   if (provided.length < 32 || expected.length < 32 || provided.length > 512 || expected.length > 512) return false
   const encoder = new TextEncoder()
@@ -81,10 +92,11 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   if (request.method !== 'POST') return authError('Method not allowed', 405)
   // The service binding is the network boundary; the shared secret is a second
   // authorization boundary so another bound Worker cannot impersonate OtyaPoint.
+  const expectedServiceSecret = await resolveSecretStoreValue(env.OTYAPOINT_INVITE_SERVICE_TOKEN)
   if (request.headers.get('x-otya-service') !== 'otyapoint'
     || !(await matchesInternalServiceSecret(
       request.headers.get('x-otya-service-token') || '',
-      env.OTYAPOINT_INVITE_SERVICE_TOKEN || '',
+      expectedServiceSecret,
     ))) return authError('Service not allowed', 403)
   if (Number(request.headers.get('content-length') || '0') > 4096) return authError('Payload too large', 413)
 
