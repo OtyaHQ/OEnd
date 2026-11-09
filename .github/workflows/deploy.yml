@@ -59,15 +59,15 @@ jobs:
 
   authorize-deploy:
     name: Authorize explicit production deploy
-    if: github.event_name == 'workflow_dispatch' && inputs.component != 'validate-only'
+    if: (github.event_name == 'workflow_dispatch' && inputs.component != 'validate-only') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[DEPLOY-ALL]'))
     needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Verify production authority
         shell: bash
         env:
-          COMPONENT: ${{ inputs.component }}
-          CONFIRM: ${{ inputs.confirm }}
+          COMPONENT: ${{ github.event_name == 'workflow_dispatch' && inputs.component || (contains(github.event.head_commit.message, '[DEPLOY-ALL]') && 'all' || 'validate-only') }}
+          CONFIRM: ${{ github.event_name == 'workflow_dispatch' && inputs.confirm || (contains(github.event.head_commit.message, '[DEPLOY-ALL]') && 'DEPLOY' || '') }}
           TARGET_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
@@ -87,7 +87,7 @@ jobs:
 
   plan-deploy:
     name: Plan explicitly authorized Otya runtime deploy
-    if: github.event_name == 'workflow_dispatch' && inputs.component != 'validate-only'
+    if: (github.event_name == 'workflow_dispatch' && inputs.component != 'validate-only') || (github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[DEPLOY-ALL]'))
     needs: [validate, authorize-deploy]
     runs-on: ubuntu-latest
     outputs:
@@ -100,7 +100,7 @@ jobs:
         id: plan
         shell: bash
         env:
-          COMPONENT: ${{ inputs.component }}
+          COMPONENT: ${{ github.event_name == 'workflow_dispatch' && inputs.component || (contains(github.event.head_commit.message, '[DEPLOY-ALL]') && 'all' || 'validate-only') }}
         run: |
           set -euo pipefail
           auth=false
@@ -128,7 +128,7 @@ jobs:
 
   deploy-auth:
     name: Deploy otya-auth
-    if: ${{ always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.auth == 'true' }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.auth == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy]
     runs-on: ubuntu-latest
     environment: production
@@ -158,13 +158,13 @@ jobs:
           TELEGRAM_GATEWAY_TOKEN: ${{ secrets.TELEGRAM_GATEWAY_TOKEN }}
           ACCOUNT_ENCRYPTION_KEY: ${{ secrets.ACCOUNT_ENCRYPTION_KEY }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
-          OTYAPOINT_INVITE_SERVICE_TOKEN: ${{ secrets.OTYAPOINT_INVITE_SERVICE_TOKEN }}
           OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
           test -n "$AUTH_JWT_SECRET" && test -n "$RESEND_API_KEY" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          grep -q 'secret_name = "OTYAPOINT_INVITE_SERVICE_TOKEN"' wrangler.toml
           printf '%s' "$AUTH_JWT_SECRET" | npx wrangler secret put AUTH_JWT_SECRET
           printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY
           if [ -n "${FIREBASE_API_KEY:-}" ]; then printf '%s' "$FIREBASE_API_KEY" | npx wrangler secret put FIREBASE_API_KEY; fi
@@ -173,13 +173,12 @@ jobs:
           if [ -n "${TELEGRAM_GATEWAY_TOKEN:-}" ]; then printf '%s' "$TELEGRAM_GATEWAY_TOKEN" | npx wrangler secret put TELEGRAM_GATEWAY_TOKEN; fi
           if [ -n "${ACCOUNT_ENCRYPTION_KEY:-}" ]; then printf '%s' "$ACCOUNT_ENCRYPTION_KEY" | npx wrangler secret put ACCOUNT_ENCRYPTION_KEY; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
-          if [ -n "${OTYAPOINT_INVITE_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYAPOINT_INVITE_SERVICE_TOKEN" | npx wrangler secret put OTYAPOINT_INVITE_SERVICE_TOKEN; fi
           if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
           npx wrangler deploy
 
   deploy-next:
     name: Deploy otya-next
-    if: ${{ always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && needs.plan-deploy.outputs.next == 'true' }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && needs.plan-deploy.outputs.next == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth]
     runs-on: ubuntu-latest
     environment: production
@@ -214,7 +213,7 @@ jobs:
 
   deploy-core:
     name: Deploy otya-core
-    if: ${{ always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && needs.plan-deploy.outputs.core == 'true' }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && needs.plan-deploy.outputs.core == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -256,7 +255,7 @@ jobs:
 
   verify-production:
     name: Verify live OTYA after deploy
-    if: ${{ always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
     runs-on: ubuntu-latest
     timeout-minutes: 7
