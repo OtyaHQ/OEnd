@@ -22,7 +22,10 @@ test('browser admin routes stay unavailable while their protected backend bounda
   assert.doesNotMatch(adminLayout, /ConsoleClient/)
 })
 
-test('PeterSmart Link remains the public parent brand', () => {
-  assert.match(home, /PeterSmart Link is the developer and publisher behind Otya Player/)
-  assert.match(home, /Meet Otya from PeterSmart Link\./)
+test('PeterSmart Link remains the public parent brand and the homepage explains both business areas', () => {
+  assert.match(home, /PeterSmart Link · Uganda/)
+  assert.match(home, /physical shop at Old Market, Mbirizi/)
+  assert.match(home, /phones and accessories, electronics and mobile-money services/)
+  assert.match(home, /Otya Player/)
+  assert.match(home, /Visit our shop/)
 })
