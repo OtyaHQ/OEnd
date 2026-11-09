@@ -32,7 +32,9 @@ jobs:
   validate:
     name: Validate complete OTYA backend
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 30
+    outputs:
+      otyapoint_sha: ${{ steps.otyapoint_source.outputs.sha }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -50,6 +52,33 @@ jobs:
           npm ci --ignore-scripts
           npm test
           npx tsc --noEmit
+      - name: Fetch exact OtyaPoint main commit for release validation
+        id: otyapoint_source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
+          echo "sha=$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate OtyaPoint backend, security boundaries and dashboard build
+        working-directory: ${{ runner.temp }}/OtyaPoint
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund --ignore-scripts
+          npm run check:worker
+          npm run test:sale-fingerprint
+          npm run test:sale-route-idempotency
+          npm run test:auth-boundary
+          npm run test:agency-list
+          npm run test:legacy-products-bridge
+          npm run dev:local:check
+          npm run test:local-auth
+          npm run test:local-runtime
+          node --test scripts/export-d1-backup.test.mjs
+          npm run lint
+          npm run build
+          npx --yes wrangler@4.158.0 deploy --dry-run --config wrangler.toml
+
       - name: Validate Next worker
         working-directory: ai-worker
         run: |
@@ -270,13 +299,19 @@ jobs:
         uses: actions/setup-node@v6
         with: { node-version: '22', package-manager-cache: false }
 
-      - name: Fetch public OtyaPoint main source
+      - name: Fetch the exact OtyaPoint commit that passed validation
         shell: bash
+        env:
+          OTYAPOINT_SHA: ${{ needs.validate.outputs.otyapoint_sha }}
         run: |
           set -euo pipefail
-          git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
+          test -n "$OTYAPOINT_SHA"
+          git init "$RUNNER_TEMP/OtyaPoint"
+          git -C "$RUNNER_TEMP/OtyaPoint" remote add origin https://github.com/PeterSmartLink/OtyaPoint.git
+          git -C "$RUNNER_TEMP/OtyaPoint" fetch --depth 1 origin "$OTYAPOINT_SHA"
+          git -C "$RUNNER_TEMP/OtyaPoint" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)" = "$OTYAPOINT_SHA"
           test -f "$RUNNER_TEMP/OtyaPoint/wrangler.toml"
-          git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD
 
       - name: Install OtyaPoint dependencies
         working-directory: ${{ runner.temp }}/OtyaPoint
