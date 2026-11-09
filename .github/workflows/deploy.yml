@@ -36,9 +36,9 @@ jobs:
     outputs:
       otyapoint_sha: ${{ steps.otyapoint_source.outputs.sha }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: '22', package-manager-cache: false }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
       - name: Validate OTYA core/web
         run: |
           npm ci --ignore-scripts
@@ -78,7 +78,7 @@ jobs:
           node --test scripts/export-d1-backup.test.mjs
           npm run lint
           npm run build
-          npx --yes wrangler@4.158.0 deploy --dry-run --config wrangler.toml
+          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
       - name: Validate Next worker
         working-directory: ai-worker
@@ -167,9 +167,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: '22', package-manager-cache: false }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
       - working-directory: auth-worker
         run: npm ci --ignore-scripts
       - name: Repair and verify preserved auth D1
@@ -217,9 +217,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: '22', package-manager-cache: false }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
       - working-directory: ai-worker
         run: npm ci --ignore-scripts
       - name: Configure and deploy Next
@@ -253,9 +253,9 @@ jobs:
     timeout-minutes: 20
     environment: production
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with: { node-version: '22', package-manager-cache: false }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
       - run: npm ci --ignore-scripts
       - name: Build and deploy OTYA core
         env:
@@ -296,13 +296,13 @@ jobs:
     environment: production
     steps:
       - name: Check out the ecosystem release controller
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with: { node-version: '22', package-manager-cache: false }
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
 
       - name: Fetch the exact OtyaPoint commit that passed validation
         shell: bash
@@ -338,7 +338,7 @@ jobs:
           node --test scripts/export-d1-backup.test.mjs
           npm run lint
           npm run build
-          npx --yes wrangler@4.158.0 deploy --dry-run --config wrangler.toml
+          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
       - name: Require existing production Cloudflare deployment credentials
         shell: bash
@@ -356,7 +356,7 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npx --yes wrangler@4.158.0 deploy --config wrangler.toml
+        run: npx --yes wrangler@4.159.0 deploy --config wrangler.toml
 
       - name: Verify OtyaPoint is deployed privately at 100 percent
         shell: bash
