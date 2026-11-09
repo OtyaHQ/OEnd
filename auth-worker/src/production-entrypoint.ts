@@ -25,6 +25,7 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
   GOOGLE_CLIENT_ID?: string
   GOOGLE_WEB_CLIENT_ID?: string
   RESEND_API_KEY?: string
+  OTYAPOINT_INVITE_SERVICE_TOKEN?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
 }
 
@@ -59,13 +60,31 @@ function googleError(message: string, status: number): Response {
   return authError(message, status)
 }
 
+async function matchesInternalServiceSecret(provided: string, expected: string): Promise<boolean> {
+  if (provided.length < 32 || expected.length < 32 || provided.length > 512 || expected.length > 512) return false
+  const encoder = new TextEncoder()
+  const [left, right] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(provided)),
+    crypto.subtle.digest('SHA-256', encoder.encode(expected)),
+  ])
+  const a = new Uint8Array(left)
+  const b = new Uint8Array(right)
+  let difference = 0
+  for (let index = 0; index < a.length; index++) difference |= a[index] ^ b[index]
+  return difference === 0
+}
+
 async function handleOtyaPointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
   const url = new URL(request.url)
   if (url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
   if (request.method !== 'POST') return authError('Method not allowed', 405)
-  // This route is intentionally reachable only through a Cloudflare Service
-  // Binding from OtyaPoint; the auth Worker has no public workers.dev route.
-  if (request.headers.get('x-otya-service') !== 'otyapoint') return authError('Service not allowed', 403)
+  // The service binding is the network boundary; the shared secret is a second
+  // authorization boundary so another bound Worker cannot impersonate OtyaPoint.
+  if (request.headers.get('x-otya-service') !== 'otyapoint'
+    || !(await matchesInternalServiceSecret(
+      request.headers.get('x-otya-service-token') || '',
+      env.OTYAPOINT_INVITE_SERVICE_TOKEN || '',
+    ))) return authError('Service not allowed', 403)
   if (Number(request.headers.get('content-length') || '0') > 4096) return authError('Payload too large', 413)
 
   let body: Record<string, unknown>
