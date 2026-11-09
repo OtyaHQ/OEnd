@@ -113,31 +113,6 @@ jobs:
           test "$ACTUAL_BYTES" = "$EXPECTED_BYTES"
           echo "Verified Auth database backup: $OBJECT ($ACTUAL_BYTES bytes; SHA-256 $ACTUAL_SHA256)."
 
-      - name: Remove temporary SQL files from the runner
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          find "$RUNNER_TEMP" -maxdepth 1 -type f \( -name 'backup-*.sql' -o -name 'otya-core-verify-*.sql' -o -name 'otya-auth-verify-*.sql' \) -delete
-
-  backup-otyapoint:
-    name: Export, store and verify OtyaPoint D1
-    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    needs: validate
-    runs-on: ubuntu-latest
-    timeout-minutes: 35
-    steps:
-      - name: Check out the Otya ecosystem operations repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '22'
-          package-manager-cache: false
-
       - name: Fetch OtyaPoint main
         shell: bash
         run: |
@@ -149,15 +124,12 @@ jobs:
         run: node --test scripts/export-d1-backup.test.mjs
 
       - name: Export complete OtyaPoint production D1
-        id: export
+        id: otyapoint_export
         working-directory: ${{ runner.temp }}/OtyaPoint
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: node scripts/export-d1-backup.mjs
-
-      - name: Install pinned Wrangler
-        run: npx --yes wrangler@4.158.0 --version
 
       - name: Upload OtyaPoint export to private R2 and verify read-back
         shell: bash
@@ -165,10 +137,10 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          BACKUP_FILE: ${{ steps.export.outputs.backup_file }}
-          BACKUP_KEY: ${{ steps.export.outputs.object_key }}
-          EXPECTED_SHA256: ${{ steps.export.outputs.sha256 }}
-          EXPECTED_BYTES: ${{ steps.export.outputs.bytes }}
+          BACKUP_FILE: ${{ steps.otyapoint_export.outputs.backup_file }}
+          BACKUP_KEY: ${{ steps.otyapoint_export.outputs.object_key }}
+          EXPECTED_SHA256: ${{ steps.otyapoint_export.outputs.sha256 }}
+          EXPECTED_BYTES: ${{ steps.otyapoint_export.outputs.bytes }}
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
@@ -184,11 +156,11 @@ jobs:
           test "$ACTUAL_BYTES" = "$EXPECTED_BYTES"
           echo "Verified full OtyaPoint D1 backup: $OBJECT ($ACTUAL_BYTES bytes; SHA-256 $ACTUAL_SHA256)."
 
-      - name: Remove temporary OtyaPoint SQL exports
+      - name: Remove temporary SQL files from the runner
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          rm -f \
-            "$RUNNER_TEMP/otyapoint-d1-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.sql" \
-            "$RUNNER_TEMP/otyapoint-verify-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.sql"
+          find "$RUNNER_TEMP" -maxdepth 1 -type f \( -name 'backup-*.sql' -o -name 'otyapoint-d1-*.sql' -o -name 'otya-core-verify-*.sql' -o -name 'otya-auth-verify-*.sql' -o -name 'otyapoint-verify-*.sql' \) -delete
+          rm -rf "$RUNNER_TEMP/OtyaPoint"
+
