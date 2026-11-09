@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://petersmartlink.com',
-    title: 'PeterSmart Link — Practical software products',
+    title: 'PeterSmart Link | Mbirizi Shop & Otya Software',
     description: 'A physical technology shop in Mbirizi and the home of Otya software products.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'PeterSmart Link and Otya' }],
   },
