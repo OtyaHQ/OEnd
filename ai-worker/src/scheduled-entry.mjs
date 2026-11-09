@@ -46,11 +46,18 @@ function withAiGateway(env){
   }
 }
 
-async function email(env,subject,text){
+async function email(env,subject,text,idempotencyKey){
   if(!env.RESEND_API_KEY)throw new Error('RESEND_API_KEY missing on otya-ai')
+  if(typeof idempotencyKey!=='string'||!idempotencyKey.trim()||idempotencyKey.length>256){
+    throw new Error('A stable Resend idempotency key is required')
+  }
   const r=await fetch('https://api.resend.com/emails',{
     method:'POST',
-    headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},
+    headers:{
+      Authorization:`Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type':'application/json',
+      'Idempotency-Key':idempotencyKey,
+    },
     body:JSON.stringify({
       from:'Otya <noreply@petersmartlink.com>',
       to:[env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'],
@@ -61,6 +68,9 @@ async function email(env,subject,text){
     signal:AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
   })
   if(!r.ok)throw new Error(`Resend HTTP ${r.status}`)
+  const result=await r.json().catch(()=>null)
+  if(!result?.id)throw new Error('Resend did not confirm email acceptance')
+  return result.id
 }
 
 async function scalar(env,sql,bindings=[]){
@@ -136,25 +146,47 @@ function rawFallback(snapshot){
   ].join('\n')
 }
 
-async function daily(env){
+function kampalaDateKey(timestamp){
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Africa/Kampala',year:'numeric',month:'2-digit',day:'2-digit',
+  }).formatToParts(new Date(timestamp))
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]))
+  return `${values.year}-${values.month}-${values.day}`
+}
+
+async function daily(env,scheduledTime=Date.now()){
+  const dateKey=kampalaDateKey(scheduledTime)
   const snapshot=await operationsSnapshot(env,'-24 hours')
+  snapshot.generated_at=new Date(scheduledTime).toISOString()
   const summary=await summarize(env,snapshot,'daily')
-  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date())
-  await email(env,`Otya · Morning operations · ${date}`,[summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'))
+  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date(scheduledTime))
+  await email(
+    env,
+    `Otya · Morning operations · ${date}`,
+    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\\n'),
+    `otya-next/daily-operations/${dateKey}`,
+  )
 }
 
-async function weekly(env){
+async function weekly(env,scheduledTime=Date.now()){
+  const dateKey=kampalaDateKey(scheduledTime)
   const snapshot=await operationsSnapshot(env,'-7 days')
+  snapshot.generated_at=new Date(scheduledTime).toISOString()
   const summary=await summarize(env,snapshot,'weekly')
-  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date())
-  await email(env,`Otya · Weekly review · ${date}`,[summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'))
+  const date=new Intl.DateTimeFormat('en-UG',{timeZone:'Africa/Kampala',dateStyle:'medium'}).format(new Date(scheduledTime))
+  await email(
+    env,
+    `Otya · Weekly review · ${date}`,
+    [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\\n'),
+    `otya-next/weekly-operations/${dateKey}`,
+  )
 }
 
-async function urgent(env){
+async function urgent(env,scheduledTime=Date.now()){
   const crashes=await scalar(env,"SELECT COUNT(*) count FROM crash_reports WHERE created_at>=datetime('now','-1 hour')")
   const threshold=Math.max(3,Number(env.ADMIN_CRASH_ALERT_THRESHOLD||5))
   if(crashes<threshold)return
-  const hour=new Date().toISOString().slice(0,13)
+  const hour=new Date(scheduledTime).toISOString().slice(0,13)
   const key=`ops:crash-alert:${hour}`
   if(env.KV&&await env.KV.get(key))return
   const groups=await rows(env,`
@@ -211,8 +243,8 @@ async function urgent(env){
     ...groupLines,
     '',
     'Review the Otya Console before taking any destructive or customer-facing action.',
-    `Generated ${new Date().toISOString()}`,
-  ].join('\n'))
+    `Generated ${new Date(scheduledTime).toISOString()}`,
+  ].join('\n'),`otya-next/crash-alert/${hour}`
   if(env.KV)await env.KV.put(key,'1',{expirationTtl:7200})
 }
 
@@ -273,9 +305,9 @@ export default {
   async scheduled(event,env,ctx){
     const runtimeEnv=withAiGateway(env)
     let task=Promise.resolve()
-    if(event.cron==='0 6 * * 1')task=weekly(runtimeEnv)
-    else if(event.cron==='0 5 * * *')task=Promise.all([daily(runtimeEnv),churnSignals(runtimeEnv)])
-    else if(event.cron==='0 * * * *')task=urgent(runtimeEnv)
+    if(event.cron==='0 6 * * 1')task=weekly(runtimeEnv,event.scheduledTime)
+    else if(event.cron==='0 5 * * *')task=Promise.all([daily(runtimeEnv,event.scheduledTime),churnSignals(runtimeEnv)])
+    else if(event.cron==='0 * * * *')task=urgent(runtimeEnv,event.scheduledTime)
     ctx.waitUntil(task)
   }
 }
