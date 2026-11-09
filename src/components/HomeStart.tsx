@@ -5,10 +5,16 @@ export function HomeStart() {
     <div className="grid gap-5 lg:grid-cols-[1fr_1fr]">
       <div>
         <p className="otya-kicker">Start here</p>
-        <h2 id="start-heading" className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.045em] leading-[1.1]">One product.<br/>Clear next steps.</h2>
-        <p className="mt-4 max-w-md text-base leading-7 otya-muted">Otya is for the media already on your Android phone. Space is the private place for your account.</p>
+        <h2 id="start-heading" className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.045em] leading-[1.1]">A local shop.<br/>A growing software family.</h2>
+        <p className="mt-4 max-w-md text-base leading-7 otya-muted">Visit us in Mbirizi for in-person services, or explore Otya products and account tools online.</p>
       </div>
       <div className="grid gap-3">
+        <Link href="/shop" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
+          <p className="text-xs font-black otya-muted">PeterSmart Link · Mbirizi</p>
+          <h3 className="mt-1 text-xl font-black tracking-[-.03em]">Visit the physical shop.</h3>
+          <p className="mt-2 text-sm leading-6 otya-muted">Phones and accessories, electronics and mobile-money services at Old Market, Mbirizi.</p>
+          <span className="mt-4 inline-flex text-sm font-black">Shop information & directions <span aria-hidden="true" className="ml-1">→</span></span>
+        </Link>
         <Link href="/download/otya-player" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
           <p className="text-xs font-black otya-muted">Otya Player · Android</p>
           <h3 className="mt-1 text-xl font-black tracking-[-.03em]">Play the media already on your phone.</h3>
