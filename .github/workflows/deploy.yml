@@ -253,10 +253,93 @@ jobs:
           npm run deploy
           node scripts/sync-production-kv.mjs
 
+  deploy-otyapoint:
+    name: Deploy private OtyaPoint API
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.core == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-otyapoint.result == 'success' || needs.deploy-otyapoint.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Check out the ecosystem release controller
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with: { node-version: '22', package-manager-cache: false }
+
+      - name: Fetch public OtyaPoint main source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
+          test -f "$RUNNER_TEMP/OtyaPoint/wrangler.toml"
+          git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD
+
+      - name: Install OtyaPoint dependencies
+        working-directory: ${{ runner.temp }}/OtyaPoint
+        run: npm install --no-audit --no-fund --ignore-scripts
+
+      - name: Test and validate OtyaPoint release
+        working-directory: ${{ runner.temp }}/OtyaPoint
+        run: |
+          set -euo pipefail
+          npm run check:worker
+          npm run test:sale-fingerprint
+          npm run test:sale-route-idempotency
+          npm run test:auth-boundary
+          npm run test:agency-list
+          npm run test:legacy-products-bridge
+          npm run dev:local:check
+          npm run test:local-auth
+          npm run test:local-runtime
+          node --test scripts/export-d1-backup.test.mjs
+          npm run lint
+          npm run build
+          npx --yes wrangler@4.158.0 deploy --dry-run --config wrangler.toml
+
+      - name: Require existing production Cloudflare deployment credentials
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$CLOUDFLARE_API_TOKEN"
+          echo "Cloudflare deployment credentials are present; application secrets are read from the account Secrets Store."
+
+      - name: Deploy the private OtyaPoint API
+        working-directory: ${{ runner.temp }}/OtyaPoint
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4.158.0 deploy --config wrangler.toml
+
+      - name: Verify OtyaPoint is deployed privately at 100 percent
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/otyapoint-api/deployments?per_page=1")"
+          printf '%s' "$response" | jq -e '
+            .success == true and
+            (.result.deployments | length) > 0 and
+            .result.deployments[0].versions[0].percentage == 100
+          ' >/dev/null
+          echo "OtyaPoint API deployment is present and receives 100% of its Worker traffic."
+          echo "The Worker remains private: workers.dev is disabled and no public custom route is attached."
+
   verify-production:
     name: Verify live OTYA after deploy
     if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
+    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-otyapoint]
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
