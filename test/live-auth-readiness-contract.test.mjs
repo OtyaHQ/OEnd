@@ -24,6 +24,8 @@ test('Account and Google deep smoke is manual and independent of Telegram creden
   // rather than creating separate workflow_run fan-out records.
   assert.match(deploy, /verify-production:/)
   assert.match(deploy, /Smoke-test OTYA public surfaces/)
+  assert.match(deploy, /check https:\/\/petersmartlink\.com\/otyapoint/)
+  assert.match(deploy, /check https:\/\/petersmartlink\.com\/sitemap\.xml/)
 })
 
 test('Telegram provider deep verification is manual and keeps the production security boundary', () => {
