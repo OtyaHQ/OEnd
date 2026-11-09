@@ -1,156 +1,84 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { exportDatabase } from "./export-core-auth-d1.mjs";
+import { exportDatabases, DATABASE_TARGETS } from "./export-core-auth-d1.mjs";
 
-const accountId = "6c76d2a9e5f95d5f9b393e97374d9afb";
-const apiToken = "test-token";
-const database = { name: "otya-store-db", id: "ab157fc6-2cbb-4d46-9789-2e4392e16aea" };
-const bookmark = "00000017-00000000-0000511e-cc513c61d018459ac4d53ffe9b658495";
 const sql = "CREATE TABLE example (id INTEGER PRIMARY KEY);\n";
+const accountId = "6c76d2a9e5f95d5f9b393e97374d9afb";
+const apiToken = "secret-test-token";
 
-function response(payload, status = 200) {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
+async function withTempDir(fn) {
+  const dir = await mkdtemp(join(tmpdir(), "otya-core-auth-export-"));
+  try { await fn(dir); } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
-test("exports a completed D1 snapshot and calculates a stable SHA-256", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "otya-d1-backup-"));
-  const calls = [];
-  const fetchImpl = async (url, options) => {
-    calls.push({ url: String(url), body: options?.body ? JSON.parse(options.body) : null });
-    if (String(url).includes("/export")) {
-      return response({
-        success: true,
-        result: {
-          at_bookmark: bookmark,
-          status: "complete",
-          result: { signed_url: "https://example.r2.cloudflarestorage.com/dump.sql" },
-        },
-      });
-    }
-    return new Response(sql, { status: 200 });
-  };
-
-  try {
-    const result = await exportDatabase({
-      accountId,
-      apiToken,
-      database,
-      backupDir: dir,
-      date: "2026-11-09",
-      fetchImpl,
-    });
-    assert.equal(result.database, "otya-store-db");
-    assert.equal(result.objectKey, `d1/otya-store-db/2026-11-09/backup-${bookmark}.sql`);
-    assert.equal(result.bytes, Buffer.byteLength(sql));
-    assert.equal(result.sha256, "dbeb9e3bf28a4d9cba73db3e6ccb5a125b20645741137adfbe56afae0a10b181");
-    assert.equal(await readFile(result.filePath, "utf8"), sql);
-    assert.equal(calls.length, 2);
-    assert.deepEqual(calls[0].body, { output_format: "polling" });
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
-});
-
-test("polls until the signed export URL becomes available", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "otya-d1-poll-"));
-  let call = 0;
-  try {
-    const result = await exportDatabase({
-      accountId,
-      apiToken,
-      database,
-      backupDir: dir,
-      date: "2026-11-09",
-      sleep: async () => {},
-      fetchImpl: async (url) => {
-        if (!String(url).includes("/export")) return new Response(sql);
-        call += 1;
-        return response({
-          success: true,
-          result: call === 1
-            ? { at_bookmark: bookmark, status: "running" }
-            : { at_bookmark: bookmark, status: "complete", result: { signed_url: "https://example.r2.cloudflarestorage.com/dump.sql" } },
-        });
+test("exports both databases using the official remote Wrangler D1 command", async () => {
+  await withTempDir(async backupDir => {
+    const calls = [];
+    const result = await exportDatabases({
+      accountId, apiToken, backupDir,
+      runWrangler: async (command, args, options) => {
+        calls.push({ command, args, options });
+        const output = args[args.indexOf("--output") + 1];
+        await writeFile(output, sql, { flag: "wx" });
       },
-      pollAttempts: 3,
     });
-    assert.equal(call, 2);
-    assert.equal(result.bytes, Buffer.byteLength(sql));
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+    assert.equal(result.length, 2);
+    assert.deepEqual(result.map(x => x.key), ["store", "auth"]);
+    assert.equal(result[0].bucket, "otya-core-backups");
+    assert.equal(result[1].bucket, "otya-auth-backups");
+    assert.equal(result[0].bytes, Buffer.byteLength(sql));
+    assert.equal(await readFile(result[1].filePath, "utf8"), sql);
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].command, "npx");
+    assert.ok(calls[0].args.includes("d1"));
+    assert.ok(calls[0].args.includes("export"));
+    assert.ok(calls[0].args.includes("--remote"));
+    assert.equal(calls[0].options.env.CLOUDFLARE_API_TOKEN, apiToken);
+    assert.equal(calls[0].args.includes(apiToken), false);
+    assert.equal(calls[1].args[calls[1].args.indexOf("--config") + 1], "auth-worker/wrangler.toml");
+  });
 });
 
-test("fails closed when Cloudflare rejects the export", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "otya-d1-reject-"));
-  try {
-    await assert.rejects(
-      exportDatabase({
-        accountId,
-        apiToken,
-        database,
-        backupDir: dir,
-        fetchImpl: async () => response({ success: false, errors: [{ code: 9109 }] }, 403),
-      }),
-      /failed with HTTP 403/,
-    );
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+test("refuses to export without protected Cloudflare credentials", async () => {
+  await withTempDir(async backupDir => {
+    await assert.rejects(exportDatabases({
+      accountId: "", apiToken, backupDir,
+      runWrangler: async () => { throw new Error("must not execute"); },
+    }), /CLOUDFLARE_ACCOUNT_ID/);
+  });
 });
 
-test("rejects untrusted export URLs before downloading", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "otya-d1-host-"));
-  try {
-    await assert.rejects(
-      exportDatabase({
-        accountId,
-        apiToken,
-        database,
-        backupDir: dir,
-        fetchImpl: async () => response({
-          success: true,
-          result: { at_bookmark: bookmark, status: "complete", result: { signed_url: "https://attacker.invalid/dump.sql" } },
-        }),
-      }),
-      /untrusted download host/,
-    );
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+test("fails if Wrangler returns success without writing an export file", async () => {
+  await withTempDir(async backupDir => {
+    await assert.rejects(exportDatabases({
+      accountId, apiToken, backupDir,
+      runWrangler: async () => {},
+    }), /ENOENT|no such file/i);
+  });
 });
 
-test("times out when the export never becomes ready", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "otya-d1-timeout-"));
-  let call = 0;
-  try {
-    await assert.rejects(
-      exportDatabase({
-        accountId,
-        apiToken,
-        database,
-        backupDir: dir,
-        sleep: async () => {},
-        pollAttempts: 2,
-        fetchImpl: async () => {
-          call += 1;
-          return response({
-            success: true,
-            result: call === 1
-              ? { at_bookmark: bookmark, status: "running" }
-              : { at_bookmark: bookmark, status: "running" },
-          });
-        },
-      }),
-      /timed out/,
-    );
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+test("rejects oversized exports and removes the unsafe temporary file", async () => {
+  await withTempDir(async backupDir => {
+    const hugeSize = 512 * 1024 * 1024 + 1;
+    await assert.rejects(exportDatabases({
+      accountId, apiToken, backupDir,
+      runWrangler: async (_command, args) => {
+        const output = args[args.indexOf("--output") + 1];
+        // Sparse file: stat catches the full size; no large RAM allocation.
+        const { truncate } = await import("node:fs/promises");
+        await writeFile(output, "");
+        await truncate(output, hugeSize);
+      },
+    }), /512 MiB safety limit/);
+  });
+});
+
+test("database targets remain explicit and point to canonical Cloudflare configs", () => {
+  assert.deepEqual(DATABASE_TARGETS.map(x => [x.name, x.config]), [
+    ["otya-store-db", "wrangler.toml"],
+    ["otya-auth-db", "auth-worker/wrangler.toml"],
+  ]);
 });
