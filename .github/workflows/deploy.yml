@@ -58,7 +58,8 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
-          echo "sha=$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          OTYAPOINT_SHA="$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)"
+          echo "sha=$OTYAPOINT_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Validate OtyaPoint backend, security boundaries and dashboard build
         working-directory: ${{ runner.temp }}/OtyaPoint
@@ -284,7 +285,7 @@ jobs:
 
   deploy-otyapoint:
     name: Deploy private OtyaPoint API
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.core == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-otyapoint.result == 'success' || needs.deploy-otyapoint.result == 'skipped') }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.core == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -373,7 +374,7 @@ jobs:
 
   verify-production:
     name: Verify live OTYA after deploy
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-otyapoint.result == 'success' || needs.deploy-otyapoint.result == 'skipped') }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-otyapoint]
     runs-on: ubuntu-latest
     timeout-minutes: 7
