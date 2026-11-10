@@ -295,7 +295,7 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
           'After enrollment, Next stays signed in on this phone until you sign out, revoke it, replace the trusted phone, or a security event requires re-verification.',
           '',
           'If you did not request this, do not share the code and review your Otya account security.',
-        ].join('\\n'),
+        ].join('\n'),
       })
     } catch {
       await env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`)
