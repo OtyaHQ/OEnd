@@ -23,6 +23,9 @@ head_sampling_rate = 0.25
 enabled = true
 head_sampling_rate = 0.05
 
+[observability.issues]
+enabled = true
+
 [vars]
 ENVIRONMENT = "production"
 APP_NAME    = "OTYA"
