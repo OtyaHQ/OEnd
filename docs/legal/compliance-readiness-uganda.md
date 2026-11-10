@@ -23,7 +23,7 @@ Actions:
 - Put processor agreements and access controls in place. Do not send payment secrets, authentication tokens or unnecessary customer identifiers to analytics or AI prompts.
 - Implement requests for access, correction, deletion, objection and other rights that apply under the Act.
 - Maintain a breach-response process, incident log and PDPO escalation path. The PDPO website states that organisations must report breaches that may compromise personal data immediately.
-- Submit the PDPO annual compliance report by the currently published 23 November 2026 deadline if the entity is registered / within scope. Confirm the applicable reporting instructions directly with PDPO.
+- Submit the PDPO annual compliance report within 90 days after the end of each applicable financial year if the entity is registered and within scope. PDPO guidance says the Government financial year runs from 1 July to 30 June; on that basis, the 90-day date following 30 June 2026 is 28 September 2026. As the current date is 10 November 2026, confirm the entity's applicable financial year and filing position with PDPO promptly; do not rely on an unverified 23 November 2026 date or treat it as a general statutory deadline.
 
 ## 3. Payments and agency services
 
@@ -80,6 +80,10 @@ Marketing consent must remain separate from service terms, optional, unbundled a
 - Maintain backup verification and restoration evidence for each database, not just a successful export.
 
 ## Official references
+
+Official references:
+- PDPO, Data Protection and Privacy Regulations, 2021 (Regulation 50): registered data collectors, processors and controllers submit a summary within 90 days after each financial year ends: https://pdpo.go.ug/media/2022/03/Data_Protection_and_Privacy_Regulations-2021.pdf
+- PDPO Annual Compliance Report Template: identifies the Government financial year as 1 July–30 June: https://pdpo.go.ug/media/2024/01/Data-Controller-Processor-Annual-Compliance-Report-Template.pdf
 
 - Uganda Data Protection and Privacy Act, Cap. 97: https://ulii.org/en/akn/ug/act/2019/9/eng%402023-12-31
 - Data Protection and Privacy Regulations, 2021: https://ulii.org/en/akn/ug/act/si/2021/21/eng%402021-03-12
