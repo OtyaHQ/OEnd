@@ -8,7 +8,7 @@ Private Admin surface inside Otya Space: `/admin/ai`
 - Reads an individual support message.
 - Produces an AI draft with category and risk level.
 - Requires explicit administrator approval before sending.
-- Sends approved replies through the configured PeterSmart Link support sender.
+- Sends approved replies through the configured Otya support sender.
 - Preserves normal email threading where supported.
 - Records draft/send audit metadata.
 
