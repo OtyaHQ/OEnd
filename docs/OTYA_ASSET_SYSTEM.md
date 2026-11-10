@@ -42,7 +42,7 @@ This document is the single source of truth for OTYA website, app-store, social,
 - App download badges.
 - Release update poster.
 
-### OTYA Player app store
+### Otya Media app store
 
 - App icon 512x512.
 - Feature graphic 1024x500.
