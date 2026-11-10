@@ -1,5 +1,5 @@
 import { verifyJwt } from './crypto'
-import { assertSchemaReady, getUserById, type D1Database, type UserRow } from './db'
+import { assertSchemaReady, getUserById, type D1Database } from './db'
 import { adminTelegramPending, markAdminTelegramComplete } from './admin-mfa'
 
 interface KVNamespaceLike {
