@@ -1,16 +1,27 @@
 const LINK_PROOF_TTL = 5 * 60
 
+async function sha256Hex(value) {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))
+  return [...digest].map(byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
 /**
- * Consume a one-use email proof before a legacy Telegram identity can be
- * linked or replaced. The proof is bound to the current verified email.
+ * Atomically consumes the short-lived owner Telegram link grant from D1.
+ * A conditional DELETE ... RETURNING makes parallel requests single-use.
+ * Only a hash of the verified email is stored in the proof table.
  */
-export async function consumeVerifiedTelegramIdentityLink({ kv, userId, currentEmail }) {
+export async function consumeVerifiedTelegramIdentityLink({ db, userId, currentEmail }) {
   const email = String(currentEmail ?? '').trim().toLowerCase()
   if (!email) return false
-  const key = `telegram_identity_link_verified:${userId}`
-  const storedEmail = await kv.get(key)
-  await kv.delete(key)
-  return storedEmail === email
+  const emailHash = await sha256Hex(email)
+  const row = await db.prepare(`
+    DELETE FROM telegram_identity_link_proofs
+    WHERE user_id = ?
+      AND email_hash = ?
+      AND expires_at > datetime('now')
+    RETURNING user_id
+  `).bind(userId, emailHash).first()
+  return Boolean(row)
 }
 
 export { LINK_PROOF_TTL }
