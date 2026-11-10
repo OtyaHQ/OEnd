@@ -8,6 +8,26 @@ export async function hashVerifiedTelegramEmail(value) {
 }
 
 /**
+ * Atomically consumes the emailed one-time code challenge from D1.
+ * The HMAC digest is compared inside the conditional DELETE, so parallel
+ * verification requests cannot both complete successfully.
+ */
+export async function consumeTelegramIdentityEmailChallenge({ db, userId, currentEmail, otpDigest }) {
+  const email = String(currentEmail ?? '').trim().toLowerCase()
+  if (!email || !otpDigest) return false
+  const emailHash = await hashVerifiedTelegramEmail(email)
+  const row = await db.prepare(`
+    DELETE FROM telegram_identity_link_challenges
+    WHERE user_id = ?
+      AND email_hash = ?
+      AND otp_digest = ?
+      AND expires_at > datetime('now')
+    RETURNING user_id
+  `).bind(userId, emailHash, otpDigest).first()
+  return Boolean(row)
+}
+
+/**
  * Atomically consumes the short-lived owner Telegram-link grant from D1.
  * A conditional DELETE ... RETURNING makes parallel requests single-use.
  * Only a hash of the verified email is stored in the proof table.
