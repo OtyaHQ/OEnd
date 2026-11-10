@@ -105,6 +105,11 @@ service = "otya-auth"
 [[services]]
 binding = "AI_SUPPORT"
 service = "otya-next"
+# OtyaPoint stays a private Worker. Browser traffic reaches it only through
+# this authenticated, same-origin server-side gateway.
+[[services]]
+binding = "OTYAPOINT_API"
+service = "otyapoint-api"
 
 [[workflows]]
 name = "otya-release"
