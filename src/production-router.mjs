@@ -226,7 +226,7 @@ async function routeOtyaRequest(request, env, ctx) {
     }
 
     if (host === STATUS_HOST) {
-      if (url.pathname === '/api/status' || url.pathname === '/api/status/') return dispatchSurface(request, url, env, ctx, '/api/status')
+      if (url.pathname === '/api/status' || url.pathname === '/api/status/') return dispatchSurface(request, url, env, ctx, '/api/status/')
       if (url.pathname === '/' || url.pathname === '/status' || url.pathname === '/status/') return dispatchSurface(request, url, env, ctx, '/status/')
       if (isSharedAppAssetPath(url.pathname)) return dispatchSurface(request, url, env, ctx)
       if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, STATUS_HOST, '/')
