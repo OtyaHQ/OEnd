@@ -1,6 +1,7 @@
 import { verifyJwt } from './crypto'
 import { assertSchemaReady, getUserById, type D1Database } from './db'
 import { adminTelegramPending, markAdminTelegramComplete } from './admin-mfa'
+import { consumeVerifiedTelegramIdentityLink } from './telegram-link-proof.mjs'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -298,6 +299,26 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
     const mode: Exclude<TelegramMode, 'login'> = requested === 'admin' ? 'admin' : 'link'
     const userId = await requireUser(request, env)
     if (!userId) return json({ error: 'Sign in to OTYA first' }, 401)
+    if (mode === 'link') {
+      const currentUser = await getUserById(env.AUTH_DB, userId)
+      if (!currentUser?.email || Number(currentUser.is_verified) !== 1) {
+        return json({ error: 'Verify your current Otya email before connecting a Telegram owner-verification identity.' }, 409)
+      }
+      let emailProofVerified = false
+      try {
+        emailProofVerified = await consumeVerifiedTelegramIdentityLink({
+          kv: env.AUTH_KV,
+          userId,
+          currentEmail: currentUser.email,
+        })
+      } catch (error) {
+        console.error('[telegram/link] Email proof lookup failed:', (error as Error)?.message)
+        return json({ error: 'Otya could not verify the email proof. Try again.' }, 503)
+      }
+      if (!emailProofVerified) {
+        return json({ error: 'Verify the code sent to your current Otya email before connecting or replacing this Telegram identity.' }, 403)
+      }
+    }
     if (mode === 'admin' && userId && !(await adminTelegramPending(env, userId))) {
       return json({ error: 'Verify your admin email code first.' }, 401)
     }
