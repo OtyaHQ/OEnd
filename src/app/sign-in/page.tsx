@@ -367,7 +367,7 @@ export default function SignInPage() {
           {ownerEligible && <button type="button" disabled={busy} onClick={() => void beginOwnerVerification()} className="cosmos-button w-full rounded-full min-h-12 px-5 font-black disabled:opacity-55">{busy ? 'Checking…' : 'Retry owner verification'}</button>}
           <button type="button" onClick={() => window.location.replace(DEFAULT_AFTER_AUTH)} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10]">Open Space</button>
         </div> : mode === 'owner-telegram' ? <div className="space-y-3">
-          <button type="button" disabled={busy} onClick={() => void startOwnerTelegram()} className="cosmos-button w-full rounded-full min-h-12 px-5 font-black disabled:opacity-55">{busy ? 'Completing verification…' : 'Continue with Telegram'}</button>
+          <button type="button" disabled={busy} onClick={() => void startOwnerTelegram()} className="cosmos-button w-full rounded-full min-h-12 px-5 font-black disabled:opacity-55">{busy ? 'Completing verification…' : 'Verify linked Telegram identity'}</button>
           <button type="button" onClick={() => window.location.replace(DEFAULT_AFTER_AUTH)} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10]">Open Space</button>
         </div> : <form onSubmit={submit} className="space-y-3">
           {registration && <Field value={name} onChange={setName} placeholder="Name" autoComplete="name" />}
