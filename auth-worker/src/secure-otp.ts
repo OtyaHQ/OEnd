@@ -2,7 +2,7 @@ import { generateOtp, hashPassword, verifyJwt } from './crypto'
 import { getUserByEmail, getUserById, updatePasswordHash, type D1Database } from './db'
 import { sendResendEmail } from './resend'
 import { commitVerifiedEmailChange } from './email-change-commit.mjs'
-import { LINK_PROOF_TTL } from './telegram-link-proof.mjs'
+import { hashVerifiedTelegramEmail, LINK_PROOF_TTL } from './telegram-link-proof.mjs'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -508,7 +508,6 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     const codeKey = `telegram_identity_link_email:${user.id}`
     const emailKey = `telegram_identity_link_email_address:${user.id}`
     await Promise.all([
-      env.AUTH_KV.delete(`telegram_identity_link_verified:${user.id}`),
       env.AUTH_KV.put(codeKey, await digestCode(env, 'telegram-identity-link', `${user.id}:${email}`, code), { expirationTtl: OTP_TTL }),
       env.AUTH_KV.put(emailKey, email, { expirationTtl: OTP_TTL }),
     ])
@@ -548,14 +547,33 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
 
     const codeKey = `telegram_identity_link_email:${user.id}`
     const emailKey = `telegram_identity_link_email_address:${user.id}`
-    const [stored, pendingEmail] = await Promise.all([
+    const [stored, pendingEmail, latest] = await Promise.all([
       env.AUTH_KV.get(codeKey),
       env.AUTH_KV.get(emailKey),
+      getUserById(env.AUTH_DB, user.id),
     ])
-    const currentEmail = user.email.trim().toLowerCase()
-    if (!stored || pendingEmail !== currentEmail
+    const currentEmail = latest?.email?.trim().toLowerCase() ?? ''
+    if (!latest || Number(latest.is_verified) !== 1 || !currentEmail
+      || !stored || pendingEmail !== currentEmail
       || !(await matchesStoredCode(env, stored, 'telegram-identity-link', `${user.id}:${currentEmail}`, supplied))) {
-      return json({ error: 'The email verification code is invalid or expired. No Telegram identity was changed.' }, 400)
+      return json({ error: 'The email verification code is invalid, expired or no longer matches your verified account email. No Telegram identity was changed.' }, 400)
+    }
+
+    const emailHash = await hashVerifiedTelegramEmail(currentEmail)
+    const proof = await env.AUTH_DB.prepare(`
+      INSERT INTO telegram_identity_link_proofs (user_id, email_hash, expires_at)
+      SELECT ?, ?, datetime('now', '+' || ? || ' seconds')
+      WHERE EXISTS (
+        SELECT 1 FROM users
+        WHERE id = ? AND email = ? AND is_verified = 1
+      )
+      ON CONFLICT(user_id) DO UPDATE SET
+        email_hash = excluded.email_hash,
+        expires_at = excluded.expires_at,
+        created_at = datetime('now')
+    `).bind(user.id, emailHash, LINK_PROOF_TTL, user.id, currentEmail).run()
+    if (Number(proof.meta.changes) !== 1) {
+      return json({ error: 'Your verified email changed. Start the Telegram owner-verification connection again.' }, 409)
     }
 
     await Promise.all([
@@ -563,11 +581,6 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       env.AUTH_KV.delete(emailKey),
       env.AUTH_KV.delete(`telegram_identity_link_attempt:${user.id}`),
     ])
-    await env.AUTH_KV.put(
-      `telegram_identity_link_verified:${user.id}`,
-      currentEmail,
-      { expirationTtl: LINK_PROOF_TTL },
-    )
     return json({
       ok: true,
       identity_link_authorized: true,
