@@ -229,6 +229,12 @@ test('Primary email change requires proof of current and new email control', () 
   assert.ok(commitCall > 0, 'confirmation must use the tested email-change commit helper')
   assert.match(confirmFlow, /revokeSessions: \(\) => revokeRefreshTokens\(env, user\.id\)/)
   assert.match(confirmFlow, /updatePrimaryEmail: async \(\)/)
+  const updateCallback = confirmFlow.slice(
+    confirmFlow.indexOf('updatePrimaryEmail: async ()'),
+    confirmFlow.indexOf('},\n      })', confirmFlow.indexOf('updatePrimaryEmail: async ()')),
+  )
+  assert.match(updateCallback, /UPDATE users SET email = \?, is_verified = 1/)
+  assert.match(updateCallback, /bind\(newEmail, user\.id, currentEmail\)/)
   assert.match(confirmFlow, /session_revocation_complete: commit\.sessionsRevoked/)
 
   assert.match(profile, /Changing an existing primary email requires the dedicated verified email-change flow/)
