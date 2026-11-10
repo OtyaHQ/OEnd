@@ -19,7 +19,8 @@ test('Telegram-first Otya identities can add a unique primary email without repl
 })
 
 test('Otya Space exposes one sign-in-method manager for email Google and Telegram', () => {
-  assert.match(methods, /Google and email are Otya sign-in methods; Telegram only delivers OTPs/)
+  assert.match(methods, /Google and email are Otya sign-in methods/)
+  assert.match(methods, /Telegram can be connected separately for one-time security codes/)
   assert.match(methods, /accountFetch\('google\/link'/)
   assert.match(methods, /accountFetch\('account', \{ method: 'PATCH', body: JSON\.stringify\(\{ email \}\) \}\)/)
   assert.match(methods, /accountFetch\('send-verification'/)
