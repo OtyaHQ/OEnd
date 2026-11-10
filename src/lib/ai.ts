@@ -254,8 +254,8 @@ export async function generateReleaseEmail(
 ): Promise<string> {
   const plainFallback = `
     <html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
-      <h1 style="color:#6366f1">🎉 OTYA Player ${release.version} is here!</h1>
-      <p>We're excited to announce a new release of OTYA Player.</p>
+      <h1 style="color:#6366f1">🎉 Otya Media ${release.version} is here!</h1>
+      <p>We're excited to announce a new release of Otya Media.</p>
       <h2>What's New</h2>
       <pre style="background:#f4f4f4;padding:16px;border-radius:8px">${release.changelog}</pre>
       <p>Released: ${release.date}</p>
@@ -264,7 +264,7 @@ export async function generateReleaseEmail(
         Download Now
       </a>
       <p style="color:#888;font-size:12px;margin-top:32px">
-        You're receiving this because you subscribed to OTYA Player updates.
+        You're receiving this because you subscribed to Otya Media updates.
       </p>
     </body></html>
   `.trim()
@@ -276,7 +276,7 @@ export async function generateReleaseEmail(
         content:
           'You are an email copywriter. Write a beautiful, engaging HTML email body for a mobile app release announcement. ' +
           'Use inline CSS for styling. Include a header, brief intro, changelog section, and a download CTA button. ' +
-          'The app is OTYA Player — a media player app. Keep it professional and exciting. ' +
+          'The app is Otya Media — a media player app. Keep it professional and exciting. ' +
           'Return ONLY the HTML body content (no <html> or <head> tags needed, just the body content). ' +
           'Use a purple/indigo color scheme (#6366f1).',
       },
@@ -307,14 +307,14 @@ export async function generateSmartReply(
   feedbackText: string,
   category: string,
 ): Promise<string> {
-  const fallback = `Thank you for your feedback! We appreciate you taking the time to share your experience with OTYA Player. Our team will review your ${category} and work to improve the app.`
+  const fallback = `Thank you for your feedback! We appreciate you taking the time to share your experience with Otya Media. Our team will review your ${category} and work to improve the app.`
 
   try {
     const messages = [
       {
         role: 'system',
         content:
-          'You are a friendly and professional customer support agent for OTYA Player, a media player app. ' +
+          'You are a friendly and professional customer support agent for Otya Media, a media player app. ' +
           'Write a concise, empathetic, and helpful reply to the user\'s feedback. ' +
           'Acknowledge their concern, thank them, and if applicable mention that the team will look into it. ' +
           'Keep the reply under 100 words. Do not use placeholders like [Name]. Be warm and genuine.',
@@ -418,7 +418,7 @@ export async function generatePersonalizedNotification(
 ): Promise<PersonalizedNotificationResult> {
   const fallback: PersonalizedNotificationResult = {
     title: '🎵 We miss you!',
-    body:  'Come back and enjoy your music with OTYA Player.',
+    body:  'Come back and enjoy your music with Otya Media.',
   }
 
   try {
@@ -429,7 +429,7 @@ export async function generatePersonalizedNotification(
       {
         role: 'system',
         content:
-          'You are a copywriter for a mobile music player app called OTYA Player. ' +
+          'You are a copywriter for a mobile music player app called Otya Media. ' +
           'Write a short, personalized push notification to re-engage a user who hasn\'t opened the app in a while. ' +
           'Use their listening history to make it feel personal. ' +
           'Respond with ONLY a JSON object: {"title": "<short title, max 50 chars>", "body": "<message, max 100 chars>"}. ' +
