@@ -96,7 +96,7 @@ export default function TelegramMiniAppPage() {
       <OtyaBrandMark size={44}/>
       <h1 className="text-2xl font-bold">{inTelegram ? 'Connect your Otya account' : 'Open Otya in Telegram'}</h1>
       <p className="text-base leading-7 otya-muted">{auth.error || (inTelegram ? 'Verifying your Telegram session…' : 'This Mini App is available through the official Otya bot.')}</p>
-      <a href={auth.needsAccount ? 'https://space.petersmartlink.com/sign-in' : 'https://t.me/OtyaPlayerBot'} className="cosmos-button inline-flex min-h-12 items-center px-5 font-bold">{auth.needsAccount ? 'Connect account' : 'Open Otya bot'}</a>
+      <a href={auth.needsAccount ? 'https://space.petersmartlink.com/sign-in?next=%2Ftelegram%2F' : 'https://t.me/OtyaPlayerBot'} className="cosmos-button inline-flex min-h-12 items-center px-5 font-bold">{auth.needsAccount ? 'Sign in with Google or email' : 'Open Otya bot'}</a>
     </section>
   </main>
 
