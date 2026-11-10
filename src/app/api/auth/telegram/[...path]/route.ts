@@ -1,19 +1,14 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { verifyTurnstileToken } from '@/lib/turnstile'
 
 export const dynamic = 'force-dynamic'
 
 const PUBLIC_PREFIX = '/api/auth/telegram/'
 const AUTH_PREFIX = '/auth/telegram/'
-const ACCESS_COOKIE = '__Secure-otya_access'
-const REFRESH_COOKIE = '__Secure-otya_refresh'
 const ADMIN_RETURN_COOKIE = 'otya_admin_return'
 const COOKIE_DOMAIN = '.petersmartlink.com'
 const SPACE_URL = 'https://space.petersmartlink.com/'
-const ACCESS_MAX_AGE = 15 * 60
-const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const ADMIN_RETURN_MAX_AGE = 10 * 60
 
 type AuthService = { fetch(request: Request): Promise<Response> }
@@ -21,8 +16,6 @@ type Payload = Record<string, unknown> & {
   telegram_login?: boolean
   admin_mfa?: boolean
   authenticated?: boolean
-  access_token?: string
-  refresh_token?: string
   provider_mode?: 'oidc' | 'widget'
   bot_username?: string
   widget_auth_url?: string
@@ -77,19 +70,6 @@ async function forward(request: NextRequest): Promise<Response> {
     const publicUrl = new URL(request.url)
     if (!publicUrl.pathname.startsWith(PUBLIC_PREFIX)) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-    const publicLoginStart = request.method === 'POST'
-      && publicUrl.pathname.endsWith('/start')
-      && publicUrl.searchParams.get('mode') === 'login'
-    if (publicLoginStart) {
-      const verification = await verifyTurnstileToken(request.headers.get('X-Otya-Turnstile'), request)
-      if (!verification.ok) {
-        return NextResponse.json(
-          { error: verification.error, code: verification.code },
-          { status: verification.status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } },
-        )
-      }
-    }
-
     const authUrl = new URL(request.url)
     authUrl.pathname = `${AUTH_PREFIX}${publicUrl.pathname.slice(PUBLIC_PREFIX.length)}`
     const headers = new Headers(request.headers)
@@ -127,25 +107,19 @@ async function forward(request: NextRequest): Promise<Response> {
       return response
     }
 
-    if (publicUrl.pathname.endsWith('/callback') && upstream.ok && data) {
-      if (data.telegram_login === true && data.admin_mfa === true) {
-        const response = NextResponse.redirect(new URL(callbackAdminReturn(request), SPACE_URL), 302)
-        clearAdminReturn(response)
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
-      if (data.telegram_login === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.redirect(SPACE_URL, 302)
-        response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
-        response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
+    if (publicUrl.pathname.endsWith('/callback') && upstream.ok && data
+      && data.admin_mfa === true && data.telegram_verified === true) {
+      // Telegram may complete only the elevated owner-verification ceremony.
+      // It can never set the normal Otya account access or refresh cookies.
+      const response = NextResponse.redirect(new URL(callbackAdminReturn(request), SPACE_URL), 302)
+      clearAdminReturn(response)
+      response.headers.set('Cache-Control', 'no-store')
+      return response
     }
     return upstream
   } catch (error) {
     console.error('[telegram-auth-proxy]', (error as Error)?.message)
-    return NextResponse.json({ error: 'Telegram Sign-In is temporarily unavailable', code: 'TELEGRAM_LOGIN_UNAVAILABLE' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ error: 'Telegram security verification is temporarily unavailable', code: 'TELEGRAM_LOGIN_UNAVAILABLE' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
   }
 }
 
