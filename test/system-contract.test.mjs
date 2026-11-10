@@ -67,7 +67,9 @@ test('Admin Telegram step-up preserves the existing normal browser session', () 
   assert.match(adminBlock, /admin_mfa:\s*true/)
   assert.doesNotMatch(adminBlock, /issueBrowserTokens/)
   assert.doesNotMatch(adminBlock, /refresh_token/)
-  assert.match(callback, /data\.admin_mfa === true/)
+  assert.match(callback, /isOwnerTelegramCallback\(data\)/)
+  const callbackHelper = read('src/lib/telegram-admin-callback.mjs')
+  assert.match(callbackHelper, /data\.admin_mfa === true/)
   assert.match(callback, /\/admin\?telegram=verified/)
 })
 
@@ -203,7 +205,7 @@ test('Telegram no longer invokes a remote music provider', () => {
 })
 
 
-test('Primary email change requires proof of current and new email control', () => {
+test('Primary email change requires proof of current email, Telegram security channel and new email', () => {
   const otp = read('auth-worker/src/secure-otp.ts')
   const profile = read('auth-worker/src/account-profile.ts')
   const account = read('src/app/account/page.tsx')
@@ -215,11 +217,14 @@ test('Primary email change requires proof of current and new email control', () 
   const addressLookup = otp.indexOf('getUserByEmail(env.AUTH_DB, newEmail)', requestStart)
   assert.ok(requestStart >= 0 && confirmStart > requestStart, 'both email-change endpoints must exist')
   assert.ok(sendLimit > requestStart && addressLookup > sendLimit, 'address lookups must be rate limited')
-  assert.match(otp, /email_change_current_otp:/)
+  assert.match(otp, /email_change_current_email_otp:/)
+  assert.match(otp, /email_change_telegram_otp:/)
   assert.match(otp, /email_change_new_otp:/)
-  assert.match(otp, /digestCode\(env, 'email-change-current'/)
+  assert.match(otp, /digestCode\(env, 'email-change-current-email'/)
+  assert.match(otp, /digestCode\(env, 'email-change-telegram'/)
   assert.match(otp, /digestCode\(env, 'email-change-new'/)
-  assert.match(otp, /matchesStoredCode\(env, currentStored, 'email-change-current'/)
+  assert.match(otp, /matchesStoredCode\(env, currentEmailStored, 'email-change-current-email'/)
+  assert.match(otp, /matchesStoredCode\(env, telegramStored, 'email-change-telegram'/)
   assert.match(otp, /matchesStoredCode\(env, newStored, 'email-change-new'/)
   assert.doesNotMatch(otp.slice(confirmStart, otp.indexOf("if (path === '/auth/send-verification')", confirmStart)), /delete\(otpKey\)/)
 
@@ -259,9 +264,10 @@ test('Primary email change requires proof of current and new email control', () 
   assert.doesNotMatch(adminMfa, /sendTelegramOtpToUser/)
   assert.match(adminMfa, /delivery: 'email' as const/)
   assert.match(profile, /Changing an existing primary email requires the dedicated verified email-change flow/)
-  assert.match(account, /current_otp: currentEmailChangeCode/)
+  assert.match(account, /current_email_otp: currentEmailProofCode/)
+  assert.match(account, /telegram_otp: currentEmailChangeCode/)
   assert.match(account, /new_otp: newEmailChangeCode/)
-  assert.match(account, /Both must be confirmed/)
+  assert.match(account, /All three must be confirmed/)
   const clearCookies = browserSession.slice(
     browserSession.indexOf('function clearSessionCookies'),
     browserSession.indexOf('function setSessionCookies'),
