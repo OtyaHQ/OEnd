@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('PeterSmart Journal uses the migrated publication schema', () => {
+test('Otya Journal uses the migrated publication schema', () => {
   const list = read('src/app/api/blog/route.ts')
   const article = read('src/app/api/blog/[slug]/route.ts')
   const migration = read('migrations/0012_blog_publication_hardening.sql')
@@ -19,7 +19,7 @@ test('PeterSmart Journal uses the migrated publication schema', () => {
 test('public journal routes are restored without sample-content seeding', () => {
   const index = read('src/app/blog/page.tsx')
   const seed = read('src/app/api/blog/seed/route.ts')
-  assert.match(index, /The PeterSmart Journal/)
+  assert.match(index, /The Otya Journal/)
   assert.match(index, /BlogIndexClient/)
   assert.match(seed, /status: 410/)
 })
