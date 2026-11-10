@@ -12,7 +12,7 @@ const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const MAX_BODY_BYTES = 64 * 1024
 
 type ServiceBinding = { fetch(request: Request): Promise<Response> }
-type RefreshResult = { accessToken: string; refreshToken: string }
+type RefreshResult = { accessToken: string; refreshToken?: string }
 
 function cookieOptions(maxAge: number) {
   return {
@@ -58,7 +58,7 @@ async function refreshSession(auth: ServiceBinding, request: NextRequest): Promi
     const data = await response.json().catch(() => ({})) as Record<string, unknown>
     const accessToken = typeof data.access_token === 'string' ? data.access_token : ''
     const rotatedRefresh = typeof data.refresh_token === 'string' ? data.refresh_token : ''
-    return accessToken && rotatedRefresh ? { accessToken, refreshToken: rotatedRefresh } : null
+    return accessToken ? { accessToken, ...(rotatedRefresh ? { refreshToken: rotatedRefresh } : {}) } : null
   } catch {
     return null
   }
@@ -66,7 +66,7 @@ async function refreshSession(auth: ServiceBinding, request: NextRequest): Promi
 
 function updateCookies(response: NextResponse, tokens: RefreshResult) {
   response.cookies.set(ACCESS_COOKIE, tokens.accessToken, cookieOptions(ACCESS_MAX_AGE))
-  response.cookies.set(REFRESH_COOKIE, tokens.refreshToken, cookieOptions(REFRESH_MAX_AGE))
+  if (tokens.refreshToken) response.cookies.set(REFRESH_COOKIE, tokens.refreshToken, cookieOptions(REFRESH_MAX_AGE))
 }
 
 function clearCookies(response: NextResponse) {
@@ -93,7 +93,7 @@ async function forward(
       return json({ error: 'This OtyaPoint request must come from the same origin.' }, 403)
     }
 
-    if (request.method !== 'GET' && request.method !== 'HEAD'
+    if (request.method !== 'GET'
       && request.headers.get('content-length')
       && Number(request.headers.get('content-length')) > MAX_BODY_BYTES) {
       return json({ error: 'Request body is too large.' }, 413)
@@ -118,7 +118,7 @@ async function forward(
 
     const method = request.method.toUpperCase()
     let body: ArrayBuffer | undefined
-    if (method !== 'GET' && method !== 'HEAD') {
+    if (method !== 'GET') {
       body = await request.arrayBuffer()
       if (body.byteLength > MAX_BODY_BYTES) return json({ error: 'Request body is too large.' }, 413)
     }
@@ -166,7 +166,5 @@ async function forward(
 }
 
 export const GET = forward
-export const HEAD = forward
 export const POST = forward
 export const PATCH = forward
-export const DELETE = forward
