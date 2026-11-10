@@ -117,7 +117,7 @@ export default function AccountPage() {
     event.preventDefault()
     if (emailChanging) return
     if (!currentEmailChangeCode.trim() || !newEmailChangeCode.trim()) {
-      setError('Enter both verification codes: one from your current email and one from your new email.')
+      setError('Enter both verification codes: one from your linked OtyaPlayerBot private chat and one from your new email.')
       return
     }
     setEmailChanging(true); setError(''); setNotice('')
@@ -166,7 +166,7 @@ export default function AccountPage() {
     {error && <div className="mb-5 rounded-2xl border border-red-500/25 px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div>}
     {notice && <div className="mb-5 rounded-2xl border border-emerald-500/25 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">{notice}</div>}
     {mustSignIn && <div className="mb-5 rounded-2xl border p-4 text-sm" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
-      <p>Your Otya ID and linked sign-in methods were preserved. {sessionsRevoked ? 'All refresh sessions were revoked for security.' : 'Your browser session was closed, but we could not confirm that every other session was revoked; contact Otya Support.'} Sign in again using the same Google or Telegram identity you previously linked.</p>
+      <p>Your Otya ID and linked sign-in methods were preserved. {sessionsRevoked ? 'All refresh sessions were revoked for security.' : 'Your browser session was closed, but we could not confirm that every other session was revoked; contact Otya Support.'} Sign in again using the Google account or email credentials already connected to your Otya ID.</p>
       <Link href="/sign-in" className="mt-3 inline-flex font-black underline underline-offset-4">Continue to sign in</Link>
     </div>}
 
@@ -193,7 +193,7 @@ export default function AccountPage() {
       {user?.email && Number(user.is_verified) === 1 && <section className="mt-6 rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
         <div className="mb-4">
           <h2 className="text-xl font-black">Change primary email</h2>
-          <p className="mt-1 text-sm otya-muted">To protect your existing account, Otya sends separate one-time codes to your current verified email and your new email. Both must be confirmed. Your Otya ID, profile, and linked Google or Telegram sign-in methods stay attached to the same account.</p>
+          <p className="mt-1 text-sm otya-muted">To protect your existing account, Otya sends one code to your linked private OtyaPlayerBot chat to prove control of the current account, and another code to your new email. Both must be confirmed. Your Otya ID, profile and Google sign-in stay attached to the same account; Telegram remains a separate security and OTP channel.</p>
         </div>
         <form onSubmit={requestEmailChange} className="grid gap-3">
           <Field label="New primary email" value={newEmail} onChange={setNewEmail} type="email" autoComplete="email" placeholder="otyaug@gmail.com" disabled={emailChanging || emailChangePending || mustSignIn} />
@@ -215,7 +215,7 @@ export default function AccountPage() {
       <section className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SectionLink href={`${base}/security`} title="Security" text="Email verification, two-step verification and recovery." />
         <SectionLink href={`${base}/devices`} title="Devices & sessions" text="Review and revoke active sessions." />
-        <SectionLink href={`${base}/providers`} title="Sign-in methods" text="Email, Google and Telegram for this same Otya ID." />
+        <SectionLink href={`${base}/providers`} title="Sign-in methods" text="Email and Google for sign-in; Telegram for security verification and OTP delivery." />
         <SectionLink href={`${base}/settings`} title="Preferences" text="Locale, timezone and account preferences." />
         <SectionLink href={`${base}/activity`} title="Activity" text="Review recent account session activity." />
         <SectionLink href={`${base}/storage`} title="Data & recovery" text="Understand device-first data and supported backups." />
