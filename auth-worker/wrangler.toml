@@ -50,11 +50,9 @@ CORS_ORIGIN = "https://petersmartlink.com"
 GOOGLE_CLIENT_ID = "82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv.apps.googleusercontent.com"
 GOOGLE_WEB_CLIENT_ID = "82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com"
 FIREBASE_PROJECT_ID = "otya-player"
-TELEGRAM_LOGIN_REDIRECT_URI = "https://petersmartlink.com/api/auth/telegram/callback"
-TELEGRAM_LOGIN_BOT_USERNAME = "OtyaPlayerBot"
 ADMIN_EMAILS = "petersmartlink@gmail.com"
 
-# Telegram account sign-in is disabled. The OIDC callback remains only for
-# an already authenticated user's linked-identity owner-verification step-up.
-# Mini App signature verification reads the centralized bot credential through
-# a purpose-specific Secrets Store binding. No secret value is stored in Git.
+# Telegram OIDC/Login Widget identity authentication is retired. The private bot
+# is used only for one-time-code delivery; authenticated Mini App support remains
+# separately protected by the existing Otya account session. Secrets stay in
+# Cloudflare Secrets Store and are never stored in Git.
