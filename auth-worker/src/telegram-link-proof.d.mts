@@ -1,9 +1,12 @@
-export type TelegramIdentityLinkProofKV = {
-  get(key: string): Promise<string | null>
-  delete(key: string): Promise<void>
+export type TelegramIdentityLinkProofDB = {
+  prepare(query: string): {
+    bind(...values: unknown[]): {
+      first<T = Record<string, unknown>>(): Promise<T | null>
+    }
+  }
 }
 export function consumeVerifiedTelegramIdentityLink(input: {
-  kv: TelegramIdentityLinkProofKV
+  db: TelegramIdentityLinkProofDB
   userId: string
   currentEmail: string | null | undefined
 }): Promise<boolean>
