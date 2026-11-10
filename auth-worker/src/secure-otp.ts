@@ -165,7 +165,6 @@ async function notifyEmailChange(
       from: 'OTYA <noreply@petersmartlink.com>',
       to: [recipient],
       subject: stage === 'requested' ? 'Otya primary email change requested' : 'Your Otya primary email was changed',
-      idempotencyKey: `otya-email-change:${stage}:${recipient}:${newEmail}`,
       text: stage === 'requested'
         ? `A request was made to change your Otya primary email to ${newEmail}. Your current email has not changed. If this was not you, sign in to Otya and secure your account.`
         : `Your Otya primary email has been changed to ${newEmail}. Your existing Otya ID and linked sign-in methods were preserved. If this was not you, recover your Google or Telegram account and contact Otya Support immediately.`,
@@ -386,14 +385,24 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       env.AUTH_KV.delete(otpKey),
       env.AUTH_KV.delete(`secure_otp_attempt:email-change:${user.id}:${ip}`),
       env.AUTH_KV.delete(`secure_otp_attempt_global:email-change:${user.id}`),
-      revokeRefreshTokens(env, user.id),
     ])
+
+    let sessionsRevoked = true
+    try {
+      await revokeRefreshTokens(env, user.id)
+    } catch (error) {
+      sessionsRevoked = false
+      console.error('[auth/email-change] Session revocation failed after email update:', (error as Error)?.message)
+    }
     await notifyEmailChange(env, currentEmail, newEmail, 'completed')
 
     return json({
       ok: true,
       sign_in_again: true,
-      message: 'Your primary email has been updated. All refresh sessions were revoked; sign in again to continue.',
+      session_revocation_complete: sessionsRevoked,
+      message: sessionsRevoked
+        ? 'Your primary email has been updated and all refresh sessions were revoked. Sign in again to continue.'
+        : 'Your primary email has been updated. Your browser session will be closed, but support must review other session revocation.',
     })
   }
 
