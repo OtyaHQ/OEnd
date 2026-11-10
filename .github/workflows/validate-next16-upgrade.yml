@@ -1,0 +1,65 @@
+name: Validate Next 16 and Cloudflare OpenNext upgrade
+
+on:
+  push:
+    branches:
+      - chore/next16-cloudflare-adapter
+
+permissions:
+  contents: write
+
+concurrency:
+  group: next16-cloudflare-adapter-\${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-lock:
+    if: \${{ !contains(github.event.head_commit.message, '[LOCKED]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out upgrade branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.23.4'
+          package-manager-cache: false
+
+      - name: Regenerate the npm lockfile from the exact supported release versions
+        run: npm install --no-audit --no-fund --ignore-scripts
+
+      - name: Confirm the resolved production stack
+        run: npm ls next react react-dom @opennextjs/cloudflare eslint eslint-config-next --depth=0
+
+      - name: Validate configuration, migrations and application tests
+        run: |
+          set -euo pipefail
+          npm run validate:config
+          npm run verify:migrations
+          npm test
+          npm run typecheck
+          npm run lint
+
+      - name: Build the Next.js application
+        run: npm run build
+
+      - name: Build the Cloudflare OpenNext Worker without deploying
+        run: npx opennextjs-cloudflare build
+
+      - name: Commit the regenerated lockfile to the upgrade branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add package-lock.json
+          if git diff --cached --quiet; then
+            echo "The lockfile is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "[LOCKED] Regenerate lockfile for the supported Next 16 stack"
+          git push origin HEAD:chore/next16-cloudflare-adapter

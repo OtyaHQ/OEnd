@@ -6,7 +6,7 @@ import {
   type RefreshTokenKv,
 } from './refresh-token-store'
 
-interface KVNamespaceLike extends RefreshTokenKv {}
+type KVNamespaceLike = RefreshTokenKv
 
 export interface SessionEnv {
   AUTH_KV: KVNamespaceLike
