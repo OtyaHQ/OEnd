@@ -108,9 +108,9 @@ export default function TelegramMiniAppPage() {
         <div className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold dark:border-white/10">{title}</div>
       </header>
 
-      {!auth.ready && <Card><p className="font-bold">Connecting securely…</p><p className="mt-1 text-sm otya-muted">Verifying Telegram with OTYA Account.</p></Card>}
+      {!auth.ready && <Card><p className="font-bold">Connecting securely…</p><p className="mt-1 text-sm otya-muted">Verifying this Telegram Mini App request for an already signed-in Otya account.</p></Card>}
       {auth.ready && !inTelegram && <Card><h1 className="text-xl font-black">Open OTYA from Telegram</h1><p className="mt-2 text-sm otya-muted">Use @OtyaPlayerBot → Open OTYA. This browser fallback never trusts Telegram identity data.</p></Card>}
-      {auth.needsAccount && <Card><h2 className="text-lg font-black">Connect your OTYA Account</h2><p className="mt-2 text-sm otya-muted">Telegram is verified, but it is not linked to an OTYA Account yet. Sign in first, then reopen OTYA from Telegram.</p><a className="cosmos-button mt-4 inline-flex rounded-full px-5 py-3 font-black" href="https://petersmartlink.com/sign-in">Sign in to OTYA</a></Card>}
+      {auth.needsAccount && <Card><h2 className="text-lg font-black">Connect your OTYA Account</h2><p className="mt-2 text-sm otya-muted">This Mini App does not sign you in. Sign in to your Otya account with Google or email first, then reopen Otya from Telegram.</p><a className="cosmos-button mt-4 inline-flex rounded-full px-5 py-3 font-black" href="https://petersmartlink.com/sign-in">Sign in to OTYA</a></Card>}
       {auth.error && !auth.needsAccount && inTelegram && <Card><p className="text-sm font-bold text-red-600 dark:text-red-300">{auth.error}</p></Card>}
 
       {tab === 'home' && <div className="space-y-3"><Card><h1 className="text-3xl font-black tracking-[-.04em]">OTYA in Telegram</h1><p className="mt-2 otya-muted">Ask Next, manage your account and check Otya updates without leaving Telegram.</p></Card><div className="grid grid-cols-2 gap-3">{TABS.slice(1).map(item => <button key={item.id} onClick={() => setTab(item.id)} className="rounded-3xl border border-black/10 bg-[color:var(--cosmos-surface)] p-5 text-left font-black dark:border-white/10">{item.label}</button>)}</div></div>}
