@@ -25,9 +25,9 @@ async function start(request: Request): Promise<Response | null> {
   if (url.pathname !== '/auth/telegram/start' || url.searchParams.get('mode') !== 'login') return null
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
   return json({
-    error: 'Telegram is an Otya security-code channel, not a sign-in method. Use Google or email to sign in.',
-    code: 'TELEGRAM_SIGN_IN_DISABLED',
-  }, 403)
+    error: 'Telegram account sign-in is retired. Use Otya email or Google; Telegram is only for private bot OTP delivery.',
+    code: 'TELEGRAM_LOGIN_RETIRED',
+  }, 410)
 }
 
 async function callback(request: Request, env: TelegramPrimaryLoginEnv): Promise<Response | null> {
