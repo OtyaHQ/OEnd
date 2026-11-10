@@ -717,7 +717,7 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       sign_in_again: true,
       session_revocation_complete: commit.sessionsRevoked,
       message: commit.sessionsRevoked
-        ? 'Your primary email has been updated, both verification steps succeeded, and all refresh sessions were revoked. Sign in again to continue.'
+        ? 'Your primary email has been updated, all three verification steps succeeded, and all refresh sessions were revoked. Sign in again to continue.'
         : 'Your primary email was updated, but Otya could not confirm that every refresh session was revoked. Sign in again and contact Otya Support.',
     })
   }
