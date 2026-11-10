@@ -1,129 +1,56 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextRequest, NextResponse } from 'next/server'
-import { isOwnerTelegramCallback } from '@/lib/telegram-admin-callback.mjs'
-
 
 export const dynamic = 'force-dynamic'
 
-const PUBLIC_PREFIX = '/api/auth/telegram/'
 const ACCESS_COOKIE = '__Secure-otya_access'
-const AUTH_PREFIX = '/auth/telegram/'
-const ADMIN_RETURN_COOKIE = 'otya_admin_return'
-const COOKIE_DOMAIN = '.petersmartlink.com'
-const SPACE_URL = 'https://space.petersmartlink.com/'
-const ADMIN_RETURN_MAX_AGE = 10 * 60
+const RETIRED = {
+  error: 'Telegram account sign-in and identity linking are retired. Sign in with Otya email or Google; Telegram is only an OTP delivery channel.',
+  code: 'TELEGRAM_LOGIN_RETIRED',
+}
 
 type AuthService = { fetch(request: Request): Promise<Response> }
-type Payload = Record<string, unknown> & {
-  telegram_login?: boolean
-  admin_mfa?: boolean
-  authenticated?: boolean
-  provider_mode?: 'oidc' | 'widget'
-  bot_username?: string
-  widget_auth_url?: string
-}
 
-function cookieOptions(maxAge: number) {
-  return { httpOnly: true, secure: true, sameSite: 'lax' as const, domain: COOKIE_DOMAIN, path: '/', maxAge }
-}
-function safeWidgetPage(request: NextRequest, data: Payload): string | null {
-  if (data.provider_mode !== 'widget' || typeof data.bot_username !== 'string' || typeof data.widget_auth_url !== 'string') return null
-  if (!/^[A-Za-z0-9_]{5,32}$/.test(data.bot_username)) return null
-  let callback: URL
-  try { callback = new URL(data.widget_auth_url) } catch { return null }
-  if (callback.protocol !== 'https:' || callback.hostname !== 'petersmartlink.com' || callback.pathname !== '/api/auth/telegram/widget/callback' || !callback.searchParams.get('state')) return null
-  const page = new URL('/telegram-login', request.url)
-  page.searchParams.set('bot', data.bot_username)
-  page.searchParams.set('auth', callback.toString())
-  return page.toString()
-}
-function withoutTokens(data: Payload) {
-  const safe = { ...data }
-  delete safe.access_token
-  delete safe.refresh_token
-  return safe
-}
-function safeAdminReturn(publicUrl: URL): string | null {
-  if (publicUrl.searchParams.get('mode') !== 'admin' || publicUrl.searchParams.get('return_to') !== 'sign-in') return null
-  const target = new URL('/sign-in', publicUrl)
-  target.searchParams.set('owner', 'verified')
-  const next = publicUrl.searchParams.get('next')?.trim() ?? ''
-  if ((next === '/admin' || next.startsWith('/admin/')) && !next.includes('\\') && !next.startsWith('//')) target.searchParams.set('next', next)
-  return `${target.pathname}${target.search}`
-}
-function setAdminReturn(response: NextResponse, path: string | null) {
-  if (path) response.cookies.set(ADMIN_RETURN_COOKIE, path, cookieOptions(ADMIN_RETURN_MAX_AGE))
-}
-function clearAdminReturn(response: NextResponse) {
-  response.cookies.set(ADMIN_RETURN_COOKIE, '', { ...cookieOptions(0), expires: new Date(0) })
-}
-function callbackAdminReturn(request: NextRequest): string {
-  const value = request.cookies.get(ADMIN_RETURN_COOKIE)?.value ?? ''
-  if (value.startsWith('/sign-in?owner=verified')) return value
-  return '/admin?telegram=verified'
-}
+async function forwardMiniApp(request: NextRequest): Promise<Response> {
+  const url = new URL(request.url)
+  if (!url.pathname.endsWith('/miniapp')) {
+    return NextResponse.json(RETIRED, { status: 410, headers: { 'Cache-Control': 'no-store' } })
+  }
+  if (request.method !== 'POST' && request.method !== 'OPTIONS') {
+    return NextResponse.json({ error: 'Method not allowed' }, { status: 405, headers: { 'Cache-Control': 'no-store' } })
+  }
+  const accessToken = request.cookies.get(ACCESS_COOKIE)?.value
+  if (!accessToken) {
+    return NextResponse.json({ error: 'Sign in to Otya with email or Google first.' }, { status: 401, headers: { 'Cache-Control': 'no-store' } })
+  }
 
-async function forward(request: NextRequest): Promise<Response> {
   try {
     const { env } = await getCloudflareContext({ async: true })
     const auth = (env as Record<string, unknown>).AUTH as AuthService | undefined
     if (!auth?.fetch) return NextResponse.json({ error: 'Authentication service unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
-
-    const publicUrl = new URL(request.url)
-    if (!publicUrl.pathname.startsWith(PUBLIC_PREFIX)) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
     const authUrl = new URL(request.url)
-    authUrl.pathname = `${AUTH_PREFIX}${publicUrl.pathname.slice(PUBLIC_PREFIX.length)}`
+    authUrl.pathname = '/auth/telegram/miniapp'
     const headers = new Headers(request.headers)
-    headers.delete('X-Otya-Turnstile')
-    headers.set('X-OTYA-Public-Auth-Route', publicUrl.pathname)
-    const accessToken = request.cookies.get(ACCESS_COOKIE)?.value
-    if (accessToken && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${accessToken}`)
-
+    headers.set('Authorization', `Bearer ${accessToken}`)
+    headers.set('X-OTYA-Public-Auth-Route', '/api/auth/telegram/miniapp')
     const upstream = await auth.fetch(new Request(authUrl, {
       method: request.method,
       headers,
-      body: request.method === 'GET' || request.method === 'HEAD' ? undefined : request.body,
+      body: request.method === 'OPTIONS' ? undefined : request.body,
       redirect: 'manual',
     }))
-
     const contentType = upstream.headers.get('content-type') || ''
-    const data = contentType.includes('application/json') ? await upstream.clone().json().catch(() => ({})) as Payload : null
-
-    if (publicUrl.pathname.endsWith('/miniapp') && data) {
-      // Mini App identity data may confirm that the request came from Telegram,
-      // but it must never mint browser Otya sessions or set login cookies.
-      return NextResponse.json(withoutTokens(data), {
-        status: upstream.status,
-        headers: { 'Cache-Control': 'no-store' },
-      })
-    }
-
-    if (publicUrl.pathname.endsWith('/start') && upstream.ok && data) {
-      const widgetPage = safeWidgetPage(request, data)
-      const response = NextResponse.json(widgetPage ? { ...data, authorization_url: widgetPage } : data, {
-        status: upstream.status,
-        headers: { 'Cache-Control': 'no-store' },
-      })
-      setAdminReturn(response, safeAdminReturn(publicUrl))
-      return response
-    }
-
-    if (publicUrl.pathname.endsWith('/callback') && upstream.ok && isOwnerTelegramCallback(data)) {
-      // Telegram may complete only the elevated owner-verification ceremony.
-      // It can never set the normal Otya account access or refresh cookies.
-      const response = NextResponse.redirect(new URL(callbackAdminReturn(request), SPACE_URL), 302)
-      clearAdminReturn(response)
-      response.headers.set('Cache-Control', 'no-store')
-      return response
-    }
-    return upstream
+    if (!contentType.includes('application/json')) return upstream
+    const data = await upstream.json().catch(() => ({})) as Record<string, unknown>
+    delete data.access_token
+    delete data.refresh_token
+    return NextResponse.json(data, { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
   } catch (error) {
-    console.error('[telegram-auth-proxy]', (error as Error)?.message)
-    return NextResponse.json({ error: 'Telegram security verification is temporarily unavailable', code: 'TELEGRAM_LOGIN_UNAVAILABLE' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
+    console.error('[telegram-miniapp-proxy]', (error as Error)?.message)
+    return NextResponse.json({ error: 'Telegram Mini App service is temporarily unavailable' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
   }
 }
 
-export const GET = forward
-export const POST = forward
-export const OPTIONS = forward
+export const POST = forwardMiniApp
+export const OPTIONS = forwardMiniApp
+export const GET = forwardMiniApp
