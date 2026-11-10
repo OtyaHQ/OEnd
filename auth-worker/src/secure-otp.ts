@@ -354,14 +354,22 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     let pending: { currentEmail?: unknown; newEmail?: unknown }
     try { pending = JSON.parse(pendingRaw) as typeof pending }
     catch {
-      await Promise.all([env.AUTH_KV.delete(pendingKey), env.AUTH_KV.delete(otpKey)])
+      await Promise.all([
+        env.AUTH_KV.delete(pendingKey),
+        env.AUTH_KV.delete(currentOtpKey),
+        env.AUTH_KV.delete(newOtpKey),
+      ])
       return json({ error: 'The email-change request expired. Please start again.' }, 400)
     }
 
     const currentEmail = typeof pending.currentEmail === 'string' ? pending.currentEmail : ''
     const newEmail = typeof pending.newEmail === 'string' ? pending.newEmail : ''
     if (!currentEmail || currentEmail !== user.email?.trim().toLowerCase() || !validEmail(newEmail)) {
-      await Promise.all([env.AUTH_KV.delete(pendingKey), env.AUTH_KV.delete(otpKey)])
+      await Promise.all([
+        env.AUTH_KV.delete(pendingKey),
+        env.AUTH_KV.delete(currentOtpKey),
+        env.AUTH_KV.delete(newOtpKey),
+      ])
       return json({ error: 'Your account changed after this request. Please start the email change again.' }, 409)
     }
 
@@ -376,13 +384,21 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
 
     const latest = await getUserById(env.AUTH_DB, user.id)
     if (!latest || latest.email?.trim().toLowerCase() !== currentEmail || Number(latest.is_verified) !== 1) {
-      await Promise.all([env.AUTH_KV.delete(pendingKey), env.AUTH_KV.delete(otpKey)])
+      await Promise.all([
+        env.AUTH_KV.delete(pendingKey),
+        env.AUTH_KV.delete(currentOtpKey),
+        env.AUTH_KV.delete(newOtpKey),
+      ])
       return json({ error: 'Your primary email changed or is no longer verified. Please sign in again.' }, 409)
     }
 
     const emailOwner = await getUserByEmail(env.AUTH_DB, newEmail)
     if (emailOwner && emailOwner.id !== user.id) {
-      await Promise.all([env.AUTH_KV.delete(pendingKey), env.AUTH_KV.delete(otpKey)])
+      await Promise.all([
+        env.AUTH_KV.delete(pendingKey),
+        env.AUTH_KV.delete(currentOtpKey),
+        env.AUTH_KV.delete(newOtpKey),
+      ])
       return json({ error: 'That email is already connected to another Otya account.', code: 'EMAIL_IN_USE' }, 409)
     }
 
