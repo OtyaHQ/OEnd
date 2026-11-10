@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   const db = getDB(envMap)
   try {
     const result = await db.prepare('INSERT INTO blog_posts (slug, title, content, excerpt, category, author_name, published) VALUES (?, ?, ?, ?, ?, ?, 1)')
-      .bind(slug, body.title.trim(), body.content.trim(), body.excerpt?.trim() ?? null, body.category?.trim() ?? 'Product', body.author_name?.trim() ?? 'PeterSmart Link').run()
+      .bind(slug, body.title.trim(), body.content.trim(), body.excerpt?.trim() ?? null, body.category?.trim() ?? 'Product', body.author_name?.trim() ?? 'Otya').run()
     const post = await db.prepare('SELECT * FROM blog_posts WHERE id = ?').bind(result.meta.last_row_id).first()
     return secureJson({ ok: true, post }, { status: 201 })
   } catch (err) {
