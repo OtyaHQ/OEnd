@@ -13,21 +13,20 @@ test('browser auth defaults to OTYA Space and only accepts safe same-site return
   assert.match(signIn, /window\.location\.replace\(afterAuthDestination\(\)\)/)
 })
 
-test('Telegram stays a first-class create-or-login provider in the auth UI', () => {
+test('Google and email remain account sign-in methods while Telegram is reserved for security-code delivery', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /\/api\/auth\/telegram\/start\?mode=login/)
-  assert.match(signIn, /disabled=\{busy\}[^\n]*Continue with Telegram/)
-  assert.doesNotMatch(signIn, /disabled=\{busy \|\| registration\}/)
-  assert.doesNotMatch(signIn, /account creation will be available after Telegram is linked/i)
+  assert.match(signIn, /CONTINUE WITH GOOGLE/)
+  assert.match(signIn, /Telegram is used only for security-code delivery/i)
+  assert.doesNotMatch(signIn, /\/api\/auth\/telegram\/start\?mode=login/)
+  assert.doesNotMatch(signIn, /Continue with Telegram/)
 })
 
-test('provider-created accounts receive clear mobile sign-in guidance', () => {
+test('Google-connected accounts receive clear password recovery guidance', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /Google or Telegram accounts may not have an Otya password yet\./)
-  assert.match(signIn, /If you created this account with Google or Telegram, use that same method below\./)
+  assert.match(signIn, /Google-connected accounts may not have an Otya password yet\./)
+  assert.match(signIn, /Forgot password/)
   assert.match(signIn, /type: 'standard'/)
   assert.match(signIn, /shape: 'pill'/)
-  assert.match(signIn, /<span>Continue with Telegram<\/span>/)
 })
 
 test('admin uses unified OTYA identity but keeps separate elevated MFA', () => {
