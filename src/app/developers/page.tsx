@@ -4,8 +4,8 @@ import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 
 export const metadata: Metadata = {
-  title: 'Developers | PeterSmart Link',
-  description: 'Developer resources, documentation, status and integration guidance for PeterSmart Link products.',
+  title: 'Developers | Otya',
+  description: 'Developer resources, documentation, status and integration guidance for Otya products.',
   alternates: { canonical: 'https://petersmartlink.com/developers' },
 }
 
@@ -13,7 +13,7 @@ const resources = [
   ['Documentation', 'Product behavior, account setup, troubleshooting and supported integration guidance.', 'https://docs.petersmartlink.com'],
   ['Service status', 'Current operational state and incident information for public services.', 'https://status.petersmartlink.com'],
   ['Security', 'Responsible security guidance and safe ways to report a security concern.', '/help#security'],
-  ['Contact', 'Reach PeterSmart Link for product, support or developer questions.', '/contact'],
+  ['Contact', 'Reach Otya for product, support or developer questions.', '/contact'],
 ] as const
 
 export default function DevelopersPage() {
@@ -24,14 +24,14 @@ export default function DevelopersPage() {
         <div className="max-w-[900px]">
           <div className="otya-kicker">Developers</div>
           <h1 className="mt-4 text-[clamp(44px,7vw,82px)] font-black tracking-[-.065em] leading-[.94]">Build against documented behavior, not hidden internals.</h1>
-          <p className="mt-6 max-w-[760px] text-base sm:text-xl leading-8 otya-muted">PeterSmart Link keeps public developer guidance separate from private production infrastructure. Use the documented product surfaces and supported interfaces; internal Worker names, secrets, database identifiers and operational credentials are not part of the public API.</p>
+          <p className="mt-6 max-w-[760px] text-base sm:text-xl leading-8 otya-muted">Otya keeps public developer guidance separate from private production infrastructure. Use the documented product surfaces and supported interfaces; internal Worker names, secrets, database identifiers and operational credentials are not part of the public API.</p>
         </div>
       </section>
 
       <section className="otya-shell pb-16 sm:pb-24">
         <div className="grid md:grid-cols-2 gap-4">
           {resources.map(([title, text, href]) => <Link key={title} href={href} className="group rounded-[26px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-6 sm:p-8 min-h-[210px] flex flex-col">
-            <div className="text-xs font-black otya-muted">PeterSmart Link</div>
+            <div className="text-xs font-black otya-muted">Otya</div>
             <h2 className="mt-2 text-2xl font-black tracking-[-.04em]">{title}</h2>
             <p className="mt-3 text-sm leading-7 otya-muted">{text}</p>
             <span className="mt-auto pt-6 text-sm font-black">Open →</span>
