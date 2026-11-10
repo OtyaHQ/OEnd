@@ -205,15 +205,15 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
   if (!user) return json({ error: 'Additional verification is required.' }, 403)
 
   if (url.pathname === '/auth/admin/start') {
-    if (!(await bump(env, \`admin_mfa_send:\${user.id}\`, OTP_MAX_SENDS, OTP_WINDOW_TTL))) {
+    if (!(await bump(env, `admin_mfa_send:${user.id}`, OTP_MAX_SENDS, OTP_WINDOW_TTL))) {
       return json({ error: 'Too many verification requests. Try again later.' }, 429)
     }
 
     if (!user.email || Number(user.is_verified) !== 1 || !env.RESEND_API_KEY) {
       await Promise.all([
-        env.AUTH_KV.delete(\`admin_mfa_otp:\${user.id}\`),
-        env.AUTH_KV.delete(\`admin_mfa_telegram_otp:\${user.id}\`),
-        env.AUTH_KV.delete(\`admin_mfa_email_verified:\${user.id}\`),
+        env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`),
+        env.AUTH_KV.delete(`admin_mfa_telegram_otp:${user.id}`),
+        env.AUTH_KV.delete(`admin_mfa_email_verified:${user.id}`),
       ])
       return json({ error: 'A verified Otya email and email delivery are required for owner verification.' }, 503)
     }
@@ -236,14 +236,14 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
     while (telegramOtp === emailOtp) telegramOtp = generateOtp()
 
     await Promise.all([
-      env.AUTH_KV.put(\`admin_mfa_otp:\${user.id}\`, await otpDigest(user.id, emailOtp), { expirationTtl: OTP_TTL }),
-      env.AUTH_KV.put(\`admin_mfa_telegram_otp:\${user.id}\`, await telegramOtpDigest(user.id, telegramOtp), { expirationTtl: OTP_TTL }),
+      env.AUTH_KV.put(`admin_mfa_otp:${user.id}`, await otpDigest(user.id, emailOtp), { expirationTtl: OTP_TTL }),
+      env.AUTH_KV.put(`admin_mfa_telegram_otp:${user.id}`, await telegramOtpDigest(user.id, telegramOtp), { expirationTtl: OTP_TTL }),
     ])
     await Promise.all([
-      env.AUTH_KV.delete(\`admin_mfa_email_verified:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_complete:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_attempt:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_telegram_attempt:\${user.id}\`),
+      env.AUTH_KV.delete(`admin_mfa_email_verified:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_complete:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_attempt:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_telegram_attempt:${user.id}`),
     ])
 
     try {
@@ -255,7 +255,7 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
           text: [
             'A request was made to unlock Otya owner controls.',
             '',
-            \`Email verification code: \${emailOtp}\`,
+            `Email verification code: ${emailOtp}`,
             '',
             'A separate Telegram code has been sent to your linked private OtyaPlayerBot chat.',
             'Enter the email code first, then the different code delivered by the bot.',
@@ -276,9 +276,9 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
       ])
     } catch (error) {
       await Promise.all([
-        env.AUTH_KV.delete(\`admin_mfa_otp:\${user.id}\`),
-        env.AUTH_KV.delete(\`admin_mfa_telegram_otp:\${user.id}\`),
-        env.AUTH_KV.delete(\`admin_mfa_email_verified:\${user.id}\`),
+        env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`),
+        env.AUTH_KV.delete(`admin_mfa_telegram_otp:${user.id}`),
+        env.AUTH_KV.delete(`admin_mfa_email_verified:${user.id}`),
       ])
       console.error('[admin/mfa] Two-channel OTP delivery failed:', (error as Error)?.message)
       return json({ error: 'Otya could not deliver both owner verification codes. No code remains valid; check email and Telegram delivery, then try again.' }, 503)
@@ -287,51 +287,51 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
   }
 
   if (url.pathname === '/auth/admin/verify-otp') {
-    if (!(await bump(env, \`admin_mfa_attempt:\${user.id}\`, OTP_MAX_ATTEMPTS, OTP_WINDOW_TTL))) {
+    if (!(await bump(env, `admin_mfa_attempt:${user.id}`, OTP_MAX_ATTEMPTS, OTP_WINDOW_TTL))) {
       return json({ error: 'Too many verification attempts. Request new codes later.' }, 429)
     }
     const body = await request.json().catch(() => ({})) as { otp?: string }
     const supplied = String(body.otp ?? '').trim().toUpperCase()
     if (!/^[A-Z][0-9]{4}$/.test(supplied)) return json({ error: 'Invalid or expired email verification code.' }, 401)
 
-    const storedDigest = await env.AUTH_KV.get(\`admin_mfa_otp:\${user.id}\`)
+    const storedDigest = await env.AUTH_KV.get(`admin_mfa_otp:${user.id}`)
     const suppliedDigest = await otpDigest(user.id, supplied)
     if (!storedDigest || !timingSafeEqual(suppliedDigest, storedDigest)) {
       return json({ error: 'Invalid or expired email verification code.' }, 401)
     }
 
     await Promise.all([
-      env.AUTH_KV.delete(\`admin_mfa_otp:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_attempt:\${user.id}\`),
-      env.AUTH_KV.put(\`admin_mfa_email_verified:\${user.id}\`, randomToken(), { expirationTtl: OTP_TTL }),
+      env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_attempt:${user.id}`),
+      env.AUTH_KV.put(`admin_mfa_email_verified:${user.id}`, randomToken(), { expirationTtl: OTP_TTL }),
     ])
     return json({ ok: true, next: 'telegram-otp', expires_in: OTP_TTL })
   }
 
   if (url.pathname === '/auth/admin/verify-telegram-otp') {
-    if (!(await env.AUTH_KV.get(\`admin_mfa_email_verified:\${user.id}\`))) {
+    if (!(await env.AUTH_KV.get(`admin_mfa_email_verified:${user.id}`))) {
       return json({ error: 'Verify the code sent to your Otya email first.' }, 403)
     }
-    if (!(await bump(env, \`admin_mfa_telegram_attempt:\${user.id}\`, OTP_MAX_ATTEMPTS, OTP_WINDOW_TTL))) {
+    if (!(await bump(env, `admin_mfa_telegram_attempt:${user.id}`, OTP_MAX_ATTEMPTS, OTP_WINDOW_TTL))) {
       return json({ error: 'Too many Telegram code attempts. Request new codes later.' }, 429)
     }
     const body = await request.json().catch(() => ({})) as { otp?: string }
     const supplied = String(body.otp ?? '').trim().toUpperCase()
     if (!/^[A-Z][0-9]{4}$/.test(supplied)) return json({ error: 'Invalid or expired Telegram verification code.' }, 401)
 
-    const storedDigest = await env.AUTH_KV.get(\`admin_mfa_telegram_otp:\${user.id}\`)
+    const storedDigest = await env.AUTH_KV.get(`admin_mfa_telegram_otp:${user.id}`)
     const suppliedDigest = await telegramOtpDigest(user.id, supplied)
     if (!storedDigest || !timingSafeEqual(suppliedDigest, storedDigest)) {
       return json({ error: 'Invalid or expired Telegram verification code.' }, 401)
     }
 
     await Promise.all([
-      env.AUTH_KV.delete(\`admin_mfa_otp:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_telegram_otp:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_email_verified:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_attempt:\${user.id}\`),
-      env.AUTH_KV.delete(\`admin_mfa_telegram_attempt:\${user.id}\`),
-      env.AUTH_KV.put(\`admin_mfa_complete:\${user.id}\`, randomToken(), { expirationTtl: COMPLETE_TTL }),
+      env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_telegram_otp:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_email_verified:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_attempt:${user.id}`),
+      env.AUTH_KV.delete(`admin_mfa_telegram_attempt:${user.id}`),
+      env.AUTH_KV.put(`admin_mfa_complete:${user.id}`, randomToken(), { expirationTtl: COMPLETE_TTL }),
     ])
     return json({ ok: true, next: 'complete' })
   }
