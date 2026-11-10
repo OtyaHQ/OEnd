@@ -2,6 +2,7 @@ import { generateOtp, hashPassword, verifyJwt } from './crypto'
 import { getUserByEmail, getUserById, updatePasswordHash, type D1Database } from './db'
 import { sendResendEmail } from './resend'
 import { commitVerifiedEmailChange } from './email-change-commit.mjs'
+import { LINK_PROOF_TTL } from './telegram-link-proof.mjs'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -278,6 +279,8 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     '/auth/telegram-otp/link/verify',
     '/auth/telegram-otp/link/confirm',
     '/auth/telegram-otp/link/revoke',
+    '/auth/telegram-identity/link/start',
+    '/auth/telegram-identity/link/verify',
   ].includes(path)) {
     return null
   }
@@ -483,6 +486,94 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       "DELETE FROM linked_identities WHERE user_id = ? AND provider = 'telegram_otp_bot'",
     ).bind(user.id).run()
     return json({ ok: true, telegram_otp_enabled: false })
+  }
+
+  if (path === '/auth/telegram-identity/link/start') {
+    if (!user.email || Number(user.is_verified) !== 1) {
+      return json({ error: 'Verify your Otya primary email before connecting an owner-verification identity.' }, 409)
+    }
+    if (!env.RESEND_API_KEY) return json({ error: 'Email verification is temporarily unavailable.' }, 503)
+
+    const ip = clientIp(request)
+    const [userAllowed, ipAllowed] = await Promise.all([
+      bump(env.AUTH_KV, `telegram_identity_link_send:${user.id}`, MAX_SENDS, SEND_WINDOW_TTL),
+      bump(env.AUTH_KV, `telegram_identity_link_ip:${ip}`, MAX_SENDS_PER_IP, SEND_WINDOW_TTL),
+    ])
+    if (!userAllowed || !ipAllowed) {
+      return json({ error: 'Too many Telegram identity connection requests. Try again later.' }, 429)
+    }
+
+    const email = user.email.trim().toLowerCase()
+    const code = generateOtp()
+    const codeKey = `telegram_identity_link_email:${user.id}`
+    const emailKey = `telegram_identity_link_email_address:${user.id}`
+    await Promise.all([
+      env.AUTH_KV.delete(`telegram_identity_link_verified:${user.id}`),
+      env.AUTH_KV.put(codeKey, await digestCode(env, 'telegram-identity-link', `${user.id}:${email}`, code), { expirationTtl: OTP_TTL }),
+      env.AUTH_KV.put(emailKey, email, { expirationTtl: OTP_TTL }),
+    ])
+    try {
+      await sendCode(
+        env,
+        email,
+        'Confirm your Otya owner-verification Telegram identity',
+        'Use this code to prove control of your current verified Otya email before connecting or replacing the Telegram identity used for owner-only security checks:',
+        code,
+      )
+    } catch (error) {
+      await Promise.all([env.AUTH_KV.delete(codeKey), env.AUTH_KV.delete(emailKey)])
+      console.error('[auth/telegram-identity] Email proof delivery failed:', (error as Error)?.message)
+      return json({ error: 'Otya could not send the email verification code. No Telegram identity was changed.' }, 503)
+    }
+    return json({
+      ok: true,
+      email_verification_required: true,
+      expires_in: OTP_TTL,
+      message: `A verification code was sent to ${email}. Confirm it before connecting or replacing your owner-verification Telegram identity.`,
+    })
+  }
+
+  if (path === '/auth/telegram-identity/link/verify') {
+    if (!user.email || Number(user.is_verified) !== 1) {
+      return json({ error: 'Verify your Otya primary email before connecting an owner-verification identity.' }, 409)
+    }
+    let body: { otp?: string }
+    try { body = await request.json() as { otp?: string } }
+    catch { return json({ error: 'Invalid JSON body' }, 400) }
+    const supplied = String(body.otp ?? '').trim().toUpperCase()
+    if (!CODE_RE.test(supplied)) return json({ error: 'Enter the valid code sent to your current verified email.' }, 400)
+    if (!(await bump(env.AUTH_KV, `telegram_identity_link_attempt:${user.id}`, MAX_ATTEMPTS, ATTEMPT_TTL))) {
+      return json({ error: 'Too many verification attempts. Request a new code later.' }, 429)
+    }
+
+    const codeKey = `telegram_identity_link_email:${user.id}`
+    const emailKey = `telegram_identity_link_email_address:${user.id}`
+    const [stored, pendingEmail] = await Promise.all([
+      env.AUTH_KV.get(codeKey),
+      env.AUTH_KV.get(emailKey),
+    ])
+    const currentEmail = user.email.trim().toLowerCase()
+    if (!stored || pendingEmail !== currentEmail
+      || !(await matchesStoredCode(env, stored, 'telegram-identity-link', `${user.id}:${currentEmail}`, supplied))) {
+      return json({ error: 'The email verification code is invalid or expired. No Telegram identity was changed.' }, 400)
+    }
+
+    await Promise.all([
+      env.AUTH_KV.delete(codeKey),
+      env.AUTH_KV.delete(emailKey),
+      env.AUTH_KV.delete(`telegram_identity_link_attempt:${user.id}`),
+    ])
+    await env.AUTH_KV.put(
+      `telegram_identity_link_verified:${user.id}`,
+      currentEmail,
+      { expirationTtl: LINK_PROOF_TTL },
+    )
+    return json({
+      ok: true,
+      identity_link_authorized: true,
+      expires_in: LINK_PROOF_TTL,
+      message: 'Current email verified. Start the Telegram owner-verification connection within five minutes. Telegram will not become a sign-in method.',
+    })
   }
 
   if (path === '/auth/email-change/request') {
