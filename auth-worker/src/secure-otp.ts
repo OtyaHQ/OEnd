@@ -19,6 +19,8 @@ export interface SecureOtpEnv {
   AUTH_KV: KVNamespaceLike
   AUTH_JWT_SECRET: string
   RESEND_API_KEY?: string
+  INTERNAL_SECRET?: string
+  CORE?: { fetch(request: Request): Promise<Response> }
 }
 
 const OTP_TTL = 10 * 60
@@ -154,6 +156,57 @@ function validEmail(value: string): boolean {
   return value.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(value)
 }
 
+function randomUrlSafe(bytes = 32): string {
+  const data = crypto.getRandomValues(new Uint8Array(bytes))
+  let binary = ''
+  for (const byte of data) binary += String.fromCharCode(byte)
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return toHex(new Uint8Array(digest))
+}
+
+async function telegramOtpChatId(env: SecureOtpEnv, userId: string): Promise<string | null> {
+  const row = await env.AUTH_DB.prepare(
+    "SELECT provider_subject FROM linked_identities WHERE user_id = ? AND provider = 'telegram_otp_bot' LIMIT 1",
+  ).bind(userId).first<{ provider_subject?: string }>()
+  const chatId = String(row?.provider_subject ?? '').trim()
+  return /^[1-9][0-9]{3,15}$/.test(chatId) ? chatId : null
+}
+
+/** Sends a security code through Otya Core's existing Telegram bot service binding. */
+async function sendTelegramCode(env: SecureOtpEnv, chatId: string, code: string, purpose: string): Promise<void> {
+  if (!env.CORE?.fetch || !env.INTERNAL_SECRET) {
+    throw new Error('Otya Telegram delivery service is unavailable')
+  }
+  const response = await env.CORE.fetch(new Request('https://otya-core/internal/telegram/otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-OTYA-Internal-Secret': env.INTERNAL_SECRET,
+      'X-OTYA-Service': 'otya-auth',
+    },
+    body: JSON.stringify({ chat_id: chatId, code, purpose }),
+    signal: AbortSignal.timeout(8000),
+  }))
+  if (!response.ok) throw new Error('Telegram security code delivery failed')
+}
+
+/** Returns false when the account has not explicitly linked a Telegram bot chat for OTP delivery. */
+export async function sendTelegramOtpToUser(
+  env: SecureOtpEnv,
+  userId: string,
+  code: string,
+  purpose: string,
+): Promise<boolean> {
+  const chatId = await telegramOtpChatId(env, userId)
+  if (!chatId) return false
+  await sendTelegramCode(env, chatId, code, purpose)
+  return true
+}
+
 async function notifyEmailChange(
   env: SecureOtpEnv,
   recipient: string | null,
@@ -193,7 +246,17 @@ export async function hardenRegistrationVerification(response: Response, env: Se
 export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv): Promise<Response | null> {
   const url = new URL(request.url)
   const path = url.pathname
-  if (!['/auth/forgot-password', '/auth/reset-password', '/auth/send-verification', '/auth/verify-email', '/auth/email-change/request', '/auth/email-change/confirm'].includes(path)) {
+  if (![
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/send-verification',
+    '/auth/verify-email',
+    '/auth/email-change/request',
+    '/auth/email-change/confirm',
+    '/auth/telegram-otp/link/start',
+    '/auth/telegram-otp/link/confirm',
+    '/auth/telegram-otp/link/revoke',
+  ].includes(path)) {
     return null
   }
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -216,7 +279,9 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     const resetKey = `otp:${email}`
     await env.AUTH_KV.put(resetKey, await digestCode(env, 'password-reset', email, code), { expirationTtl: OTP_TTL })
     try {
-      await sendCode(env, email, 'Your Otya password reset code', 'Use this code to reset your Otya password:', code)
+      await (await telegramOtpChatId(env, user.id)
+        ? sendTelegramOtpToUser(env, user.id, code, 'password-reset').then(() => undefined)
+        : sendCode(env, email, 'Your Otya password reset code', 'Use this code to reset your Otya password:', code))
     } catch (error) {
       await env.AUTH_KV.delete(resetKey)
       console.error('[auth/otp] Password-reset email failed:', (error as Error)?.message)
@@ -256,9 +321,88 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     return json({ ok: true, message: 'Password updated successfully. Please sign in again.' })
   }
 
+  if (path === '/auth/telegram-otp/link/confirm') {
+    const suppliedSecret = request.headers.get('X-OTYA-Internal-Secret')?.trim() ?? ''
+    if (!env.INTERNAL_SECRET || !timingSafeEqual(suppliedSecret, env.INTERNAL_SECRET)
+      || request.headers.get('X-OTYA-Service') !== 'otya-core') {
+      return json({ error: 'Unauthorized' }, 401)
+    }
+
+    let body: { challenge?: string; chat_id?: string | number; username?: string }
+    try { body = await request.json() as typeof body }
+    catch { return json({ error: 'Invalid JSON body' }, 400) }
+
+    const challenge = String(body.challenge ?? '').trim()
+    const chatId = String(body.chat_id ?? '').trim()
+    const username = String(body.username ?? '').replace(/[^A-Za-z0-9_]/g, '').slice(0, 80) || null
+    if (!/^[A-Za-z0-9_-]{32,80}$/.test(challenge) || !/^[1-9][0-9]{3,15}$/.test(chatId)) {
+      return json({ error: 'Invalid Telegram connection challenge.' }, 400)
+    }
+
+    const challengeKey = `telegram_otp_link:${await sha256Hex(challenge)}`
+    const userId = await env.AUTH_KV.get(challengeKey)
+    if (!userId) return json({ error: 'This Telegram connection link has expired. Start again in Otya Account settings.' }, 401)
+
+    const user = await getUserById(env.AUTH_DB, userId)
+    if (!user?.email || Number(user.is_verified) !== 1) {
+      await env.AUTH_KV.delete(challengeKey)
+      return json({ error: 'The Otya account is no longer eligible for Telegram OTP delivery.' }, 409)
+    }
+
+    const chatOwner = await env.AUTH_DB.prepare(
+      "SELECT user_id FROM linked_identities WHERE provider = 'telegram_otp_bot' AND provider_subject = ? LIMIT 1",
+    ).bind(chatId).first<{ user_id?: string }>()
+    if (chatOwner?.user_id && chatOwner.user_id !== userId) {
+      await env.AUTH_KV.delete(challengeKey)
+      return json({ error: 'This Telegram chat is already connected to another Otya account.' }, 409)
+    }
+
+    await env.AUTH_DB.prepare(`
+      INSERT INTO linked_identities (user_id, provider, provider_subject, provider_username)
+      VALUES (?, 'telegram_otp_bot', ?, ?)
+      ON CONFLICT(user_id, provider) DO UPDATE SET
+        provider_subject = excluded.provider_subject,
+        provider_username = excluded.provider_username,
+        last_used_at = datetime('now')
+    `).bind(userId, chatId, username).run()
+    await env.AUTH_KV.delete(challengeKey)
+    return json({ ok: true, telegram_otp_enabled: true })
+  }
+
   const user = await requireUser(request, env)
   if (!user) return json({ error: 'Sign in to Otya first.' }, 401)
 
+  if (path === '/auth/telegram-otp/link/start') {
+    if (!user.email || Number(user.is_verified) !== 1) {
+      return json({ error: 'Verify your Otya primary email before connecting Telegram OTP.' }, 409)
+    }
+    const ip = clientIp(request)
+    const [userAllowed, ipAllowed] = await Promise.all([
+      bump(env.AUTH_KV, `telegram_otp_link_send:${user.id}`, MAX_SENDS, SEND_WINDOW_TTL),
+      bump(env.AUTH_KV, `telegram_otp_link_ip:${ip}`, MAX_SENDS_PER_IP, SEND_WINDOW_TTL),
+    ])
+    if (!userAllowed || !ipAllowed) return json({ error: 'Too many Telegram connection requests. Try again later.' }, 429)
+
+    const challenge = randomUrlSafe(32)
+    await env.AUTH_KV.put(
+      `telegram_otp_link:${await sha256Hex(challenge)}`,
+      user.id,
+      { expirationTtl: OTP_TTL },
+    )
+    return json({
+      ok: true,
+      bot_url: `https://t.me/OtyaPlayerBot?start=otya_otp_${challenge}`,
+      expires_in: OTP_TTL,
+      message: 'Open OtyaPlayerBot and press Start to connect this private chat for security codes. Telegram will not become a sign-in method.',
+    })
+  }
+
+  if (path === '/auth/telegram-otp/link/revoke') {
+    await env.AUTH_DB.prepare(
+      "DELETE FROM linked_identities WHERE user_id = ? AND provider = 'telegram_otp_bot'",
+    ).bind(user.id).run()
+    return json({ ok: true, telegram_otp_enabled: false })
+  }
 
   if (path === '/auth/email-change/request') {
     let body: { email?: string }
@@ -290,6 +434,14 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       return json({ error: 'That email is already connected to another Otya account.', code: 'EMAIL_IN_USE' }, 409)
     }
 
+    const chatId = await telegramOtpChatId(env, user.id)
+    if (!chatId) {
+      return json({
+        error: 'Connect your private Telegram chat in Otya Account settings before changing your primary email.',
+        code: 'TELEGRAM_OTP_NOT_LINKED',
+      }, 409)
+    }
+
     const currentCode = generateOtp()
     const newCode = generateOtp()
     const pendingKey = `email_change_pending:${user.id}`
@@ -303,8 +455,8 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     ])
 
     try {
-      await sendCode(env, currentEmail, 'Confirm your Otya email change', `Use this code to confirm that you control your current Otya email address and requested a change to ${newEmail}:`, currentCode)
-      await sendCode(env, newEmail, 'Verify your new Otya email', 'Use this second code to verify the new primary email address for your Otya account:', newCode)
+      await sendTelegramCode(env, chatId, currentCode, 'email-change')
+      await sendCode(env, newEmail, 'Verify your new Otya email', 'Use this code to verify the new primary email address for your Otya account:', newCode)
     } catch (error) {
       await Promise.all([
         env.AUTH_KV.delete(pendingKey),
@@ -316,7 +468,7 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     }
 
     await notifyEmailChange(env, currentEmail, newEmail, 'requested')
-    return json({ ok: true, message: 'Two verification codes were sent: one to your current email and one to your new email. Your current email remains active until both codes are confirmed.' })
+    return json({ ok: true, message: 'One security code was sent to your linked Otya Telegram bot chat and a second code to your new email. Your current email remains active until both are confirmed.' })
   }
 
   if (path === '/auth/email-change/confirm') {
