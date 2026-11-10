@@ -90,6 +90,18 @@ CREATE TABLE IF NOT EXISTS linked_identities (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_linked_identities_user ON linked_identities(user_id, provider);
+
+-- One active, short-lived owner Telegram-link proof per account. Store only a
+-- digest of the current verified email; consumption is a single D1 DELETE.
+CREATE TABLE IF NOT EXISTS telegram_identity_link_proofs (
+  user_id TEXT PRIMARY KEY,
+  email_hash TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_telegram_identity_link_proofs_expiry
+  ON telegram_identity_link_proofs(expires_at);
 `.trim()
 
 const USER_COLUMN_DEFS: Record<string, string> = {
@@ -191,6 +203,8 @@ const REQUIRED_SCHEMA_READS = [
    FROM user_products LIMIT 0`,
   `SELECT user_id, provider, provider_subject, provider_username, provider_email, linked_at, last_used_at
    FROM linked_identities LIMIT 0`,
+  `SELECT user_id, email_hash, expires_at, created_at
+   FROM telegram_identity_link_proofs LIMIT 0`,
 ] as const
 
 /** Read-only runtime readiness; DDL belongs to deployment repair. */
