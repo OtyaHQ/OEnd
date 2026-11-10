@@ -76,52 +76,6 @@ export default function SignInPage() {
   const ownerMode = mode === 'owner' || mode === 'owner-otp' || mode === 'owner-telegram'
   const securityMode = mode === 'signin' || mode === 'register' || mode === 'forgot' || mode === 'reset' || mode === 'twofactor'
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const owner = params.get('owner')
-    if (owner === 'verified') {
-      void completeOwnerVerification()
-      return
-    }
-
-    void authFetch('session').then(async response => {
-      const data = await response.json().catch(() => ({})) as Json
-      if (response.ok && data.authenticated) await routeAuthenticatedSession()
-    }).catch(() => undefined)
-
-    if (params.get('telegram') === 'disabled') {
-      setNotice('Telegram is not an Otya sign-in method. Sign in with Google or email. Connect the private Telegram bot separately to receive security codes.')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (!providerMode) return
-    let cancelled = false
-    const setup = () => {
-      if (cancelled || !window.google || !googleButtonRef.current) return
-      googleButtonRef.current.replaceChildren()
-      window.google.accounts.id.initialize({ client_id: GOOGLE_WEB_CLIENT_ID, callback: response => void completeGoogle(response), auto_select: false })
-      const width = Math.max(240, Math.min(googleButtonRef.current.clientWidth || 320, 360))
-      window.google.accounts.id.renderButton(googleButtonRef.current, { type: 'standard', theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width })
-    }
-    const existing = document.querySelector<HTMLScriptElement>('script[data-otya-google]')
-    if (existing) {
-      if (window.google) setup()
-      else existing.addEventListener('load', setup, { once: true })
-    } else {
-      const script = document.createElement('script')
-      script.src = 'https://accounts.google.com/gsi/client'
-      script.async = true
-      script.defer = true
-      script.dataset.otyaGoogle = 'true'
-      script.addEventListener('load', setup, { once: true })
-      script.addEventListener('error', () => setError('Google Sign-In could not be loaded. You can still use email.'), { once: true })
-      document.head.appendChild(script)
-    }
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, terms, privacy, marketing])
 
   function resetSecurityChallenge() {
     setTurnstileToken('')
@@ -346,6 +300,58 @@ export default function SignInPage() {
     } catch (cause) { setError((cause as Error).message) }
     finally { if (protectedSubmit) resetSecurityChallenge(); setBusy(false) }
   }
+
+  useEffect(() => {
+    let active = true
+    const params = new URLSearchParams(window.location.search)
+    const owner = params.get('owner')
+    if (owner === 'verified') {
+      void completeOwnerVerification()
+      return () => { active = false }
+    }
+
+    void authFetch('session').then(async response => {
+      const data = await response.json().catch(() => ({})) as Json
+      if (response.ok && data.authenticated) await routeAuthenticatedSession()
+    }).catch(() => undefined)
+
+    if (params.get('telegram') === 'disabled') {
+      queueMicrotask(() => {
+        if (active) setNotice('Telegram is not an Otya sign-in method. Sign in with Google or email. Connect the private Telegram bot separately to receive security codes.')
+      })
+    }
+    return () => { active = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!providerMode) return
+    let cancelled = false
+    const setup = () => {
+      if (cancelled || !window.google || !googleButtonRef.current) return
+      googleButtonRef.current.replaceChildren()
+      window.google.accounts.id.initialize({ client_id: GOOGLE_WEB_CLIENT_ID, callback: response => void completeGoogle(response), auto_select: false })
+      const width = Math.max(240, Math.min(googleButtonRef.current.clientWidth || 320, 360))
+      window.google.accounts.id.renderButton(googleButtonRef.current, { type: 'standard', theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', width })
+    }
+    const existing = document.querySelector<HTMLScriptElement>('script[data-otya-google]')
+    if (existing) {
+      if (window.google) setup()
+      else existing.addEventListener('load', setup, { once: true })
+    } else {
+      const script = document.createElement('script')
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.dataset.otyaGoogle = 'true'
+      script.addEventListener('load', setup, { once: true })
+      script.addEventListener('error', () => setError('Google Sign-In could not be loaded. You can still use email.'), { once: true })
+      document.head.appendChild(script)
+    }
+    return () => { cancelled = true }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, terms, privacy, marketing])
+
 
   const title = mode === 'register' ? 'Create your Otya account' : mode === 'verify' ? 'Verify your email' : mode === 'twofactor' ? 'Confirm it’s you' : mode === 'forgot' ? 'Reset your password' : mode === 'reset' ? 'Choose a new password' : mode === 'owner-otp' ? 'Confirm owner access' : mode === 'owner-telegram' ? 'Confirm owner identity' : mode === 'owner' ? 'Owner access' : 'Sign in to Otya'
   const subtitle = mode === 'verify' ? `Enter the 5-character code sent to ${email || 'your email'}.` : mode === 'twofactor' ? 'Use your authenticator or a recovery code.' : mode === 'forgot' ? 'Enter your email to request a reset code.' : mode === 'reset' ? 'Enter the code from your email and choose a new password.' : mode === 'owner-otp' ? 'This is the same Otya account. Enter the fresh code sent to its verified owner email.' : mode === 'owner-telegram' ? 'Confirm the Telegram identity linked to this Otya account. This is an owner-security check, not account sign-in.' : mode === 'owner' ? 'Admin is a role inside this Otya account, not a second account.' : registration ? 'Create one account for Otya.' : 'One account opens your Otya Space.'
