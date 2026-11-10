@@ -153,6 +153,7 @@ export default function AccountPage() {
   }
 
   const publicId = user?.otya_id?.toUpperCase()
+  const signInMethodCount = [Boolean(user?.email), identities.some(identity => identity.provider === 'google')].filter(Boolean).length
   const base = publicId ? `/u/${publicId}` : ''
   const emailStatus = !user?.email ? 'No primary email' : user.is_verified ? 'Verified' : 'Verification required'
 
@@ -174,7 +175,7 @@ export default function AccountPage() {
       <section className="grid sm:grid-cols-3 gap-3 mb-6">
         <Summary label="Otya ID" value={publicId || 'Preparing…'} mono />
         <Summary label="Email" value={emailStatus} />
-        <Summary label="Sign-in methods" value={String(identities.length || (user?.email ? 1 : 0))} />
+        <Summary label="Sign-in methods" value={String(signInMethodCount)} />
       </section>
 
       <section className="rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
