@@ -150,7 +150,7 @@ async function sendCode(env: SecureOtpEnv, to: string, subject: string, intro: s
 
 
 function validEmail(value: string): boolean {
-  return value.length <= 254 && /^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/.test(value)
+  return value.length <= 254 && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(value)
 }
 
 async function notifyEmailChange(
