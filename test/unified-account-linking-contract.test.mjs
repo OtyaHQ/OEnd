@@ -24,7 +24,9 @@ test('Otya Space exposes one sign-in-method manager for email Google and Telegra
   assert.match(methods, /accountFetch\('account', \{ method: 'PATCH', body: JSON\.stringify\(\{ email \}\) \}\)/)
   assert.match(methods, /accountFetch\('send-verification'/)
   assert.match(methods, /accountFetch\('verify-email'/)
-  assert.match(methods, /accountFetch\('telegram\/start'/)
+  assert.match(methods, /accountFetch\('telegram-otp\\/link\\/start'/)
+  assert.match(methods, /accountFetch\('telegram-otp\\/link\\/revoke'/)
+  assert.match(methods, /provider === 'telegram_otp_bot'/)
   assert.doesNotMatch(methods, /accountFetch\('register'/)
 })
 
