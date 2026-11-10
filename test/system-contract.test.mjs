@@ -288,7 +288,7 @@ test('Legacy Telegram owner identity requires current-email proof and cannot sig
   assert.doesNotMatch(otp, /telegram_identity_link_verified:/)
   assert.match(otp, /LINK_PROOF_TTL/)
   assert.match(otp, /digestCode\(env, 'telegram-identity-link'/)
-  assert.match(otp, /matchesStoredCode\(env, stored, 'telegram-identity-link'/)
+  assert.match(otp, /otpDigest: await digestCode\(env, 'telegram-identity-link'/)
   assert.match(otp, /INSERT INTO telegram_identity_link_proofs/)
   assert.match(otp, /INSERT INTO telegram_identity_link_challenges/)
   assert.match(otp, /consumeTelegramIdentityEmailChallenge/)
