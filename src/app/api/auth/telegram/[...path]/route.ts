@@ -1,5 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextRequest, NextResponse } from 'next/server'
+import { isOwnerTelegramCallback } from '@/lib/telegram-admin-callback.mjs'
 
 
 export const dynamic = 'force-dynamic'
@@ -108,8 +109,7 @@ async function forward(request: NextRequest): Promise<Response> {
       return response
     }
 
-    if (publicUrl.pathname.endsWith('/callback') && upstream.ok && data
-      && data.admin_mfa === true && data.telegram_verified === true) {
+    if (publicUrl.pathname.endsWith('/callback') && upstream.ok && isOwnerTelegramCallback(data)) {
       // Telegram may complete only the elevated owner-verification ceremony.
       // It can never set the normal Otya account access or refresh cookies.
       const response = NextResponse.redirect(new URL(callbackAdminReturn(request), SPACE_URL), 302)
