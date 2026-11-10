@@ -89,12 +89,9 @@ export default function SignInPage() {
       if (response.ok && data.authenticated) await routeAuthenticatedSession()
     }).catch(() => undefined)
 
-    const telegram = params.get('telegram')
-    if (telegram === 'signed-in') void verifySessionAndOpen()
-    else if (telegram === 'not-linked') setNotice('That Telegram account is not linked yet. Sign in with your Otya account first, then connect Telegram from Space.')
-    else if (telegram === 'expired') setError('Telegram sign-in expired. Please try again.')
-    else if (telegram === 'error') setError('Telegram sign-in could not be completed.')
-    else if (telegram === 'cancelled') setNotice('Telegram sign-in was cancelled.')
+    if (params.get('telegram') === 'disabled') {
+      setNotice('Telegram is not an Otya sign-in method. Sign in with Google or email. Connect the private Telegram bot separately to receive security codes.')
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
