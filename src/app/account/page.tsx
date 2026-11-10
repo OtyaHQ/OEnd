@@ -19,7 +19,7 @@ type User = {
 }
 
 type Identity = { provider: string; provider_username?: string | null }
-type Payload = { user?: User; identities?: Identity[]; error?: string; message?: string; sign_in_again?: boolean }
+type Payload = { user?: User; identities?: Identity[]; error?: string; message?: string; sign_in_again?: boolean; session_revocation_complete?: boolean }
 
 async function accountFetch(path: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers)
@@ -41,6 +41,7 @@ export default function AccountPage() {
   const [emailChangePending, setEmailChangePending] = useState(false)
   const [emailChanging, setEmailChanging] = useState(false)
   const [mustSignIn, setMustSignIn] = useState(false)
+  const [sessionsRevoked, setSessionsRevoked] = useState<boolean | null>(null)
 
   useEffect(() => { void load() }, [])
 
@@ -131,6 +132,7 @@ export default function AccountPage() {
       setNewEmail('')
       setEmailChangeCode('')
       setMustSignIn(data.sign_in_again === true)
+      setSessionsRevoked(data.session_revocation_complete === true)
       setNotice(data.message || 'Your Otya primary email has been updated.')
     } catch (cause) {
       setError((cause as Error).message)
@@ -153,7 +155,7 @@ export default function AccountPage() {
     {error && <div className="mb-5 rounded-2xl border border-red-500/25 px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div>}
     {notice && <div className="mb-5 rounded-2xl border border-emerald-500/25 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">{notice}</div>}
     {mustSignIn && <div className="mb-5 rounded-2xl border p-4 text-sm" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
-      <p>Your Otya ID and linked sign-in methods were preserved. Your sessions were closed for security. Sign in again using the same Google or Telegram identity you previously linked.</p>
+      <p>Your Otya ID and linked sign-in methods were preserved. {sessionsRevoked ? 'All refresh sessions were revoked for security.' : 'Your browser session was closed, but we could not confirm that every other session was revoked; contact Otya Support.'} Sign in again using the same Google or Telegram identity you previously linked.</p>
       <Link href="/sign-in" className="mt-3 inline-flex font-black underline underline-offset-4">Continue to sign in</Link>
     </div>}
 
