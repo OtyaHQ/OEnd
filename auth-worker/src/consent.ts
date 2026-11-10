@@ -3,6 +3,7 @@ import { verifyJwt } from './crypto'
 interface D1Statement {
   bind(...values: unknown[]): D1Statement
   first<T = Record<string, unknown>>(): Promise<T | null>
+  all<T = Record<string, unknown>>(): Promise<{ results: T[] }>
   run(): Promise<{ meta: { changes: number } }>
 }
 
@@ -33,6 +34,19 @@ async function ensureConsentSchema(db: D1Database): Promise<void> {
       marketing_updated_at TEXT,
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS consent_events (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      policy_type TEXT NOT NULL CHECK (policy_type IN ('terms', 'privacy', 'marketing')),
+      policy_version TEXT,
+      action TEXT NOT NULL CHECK (action IN ('accepted', 'declined', 'withdrawn')),
+      source TEXT NOT NULL CHECK (source IN ('registration', 'account')),
+      occurred_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_consent_events_user_date
+      ON consent_events (user_id, occurred_at DESC);
   `)
 }
 
@@ -54,6 +68,31 @@ function json(data: unknown, status = 200): Response {
   })
 }
 
+async function recordConsentEvent(
+  db: D1Database,
+  userId: string,
+  policyType: 'terms' | 'privacy' | 'marketing',
+  policyVersion: string | null,
+  action: 'accepted' | 'declined' | 'withdrawn',
+  source: 'registration' | 'account',
+): Promise<void> {
+  await db.prepare(`
+    INSERT INTO consent_events (
+      id, user_id, policy_type, policy_version, action, source, occurred_at
+    ) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+  `).bind(crypto.randomUUID(), userId, policyType, policyVersion, action, source).run()
+}
+
+async function readConsentHistory(db: D1Database, userId: string): Promise<Record<string, unknown>[]> {
+  const result = await db.prepare(`
+    SELECT policy_type, policy_version, action, source, occurred_at
+    FROM consent_events
+    WHERE user_id = ?
+    ORDER BY occurred_at DESC, id DESC
+    LIMIT 100
+  `).bind(userId).all<Record<string, unknown>>()
+  return result.results
+}
 export async function recordRegistrationConsent(
   env: Env,
   userId: string,
@@ -77,6 +116,15 @@ export async function recordRegistrationConsent(
       marketing_updated_at = datetime('now'),
       updated_at = datetime('now')
   `).bind(userId, TERMS_VERSION, PRIVACY_VERSION, marketingConsent ? 1 : 0).run()
+
+  await Promise.all([
+    recordConsentEvent(env.AUTH_DB, userId, 'terms', TERMS_VERSION, 'accepted', 'registration'),
+    recordConsentEvent(env.AUTH_DB, userId, 'privacy', PRIVACY_VERSION, 'accepted', 'registration'),
+    recordConsentEvent(
+      env.AUTH_DB, userId, 'marketing', null,
+      marketingConsent ? 'accepted' : 'declined', 'registration',
+    ),
+  ])
 }
 
 export async function handleConsentRoute(request: Request, env: Env): Promise<Response | null> {
@@ -91,6 +139,7 @@ export async function handleConsentRoute(request: Request, env: Env): Promise<Re
     const row = await env.AUTH_DB.prepare(
       'SELECT * FROM user_consents WHERE user_id = ?'
     ).bind(userId).first<Record<string, unknown>>()
+    const history = await readConsentHistory(env.AUTH_DB, userId)
     return json({
       ok: true,
       terms_version: TERMS_VERSION,
@@ -101,6 +150,7 @@ export async function handleConsentRoute(request: Request, env: Env): Promise<Re
         privacy_accepted: 0,
         marketing_consent: 0,
       },
+      history,
     })
   }
 
@@ -131,6 +181,11 @@ export async function handleConsentRoute(request: Request, env: Env): Promise<Re
     if (hasPrivacy && body.privacy_version !== PRIVACY_VERSION) {
       return json({ error: 'Current Privacy Policy must be accepted', privacy_version: PRIVACY_VERSION }, 409)
     }
+
+    const priorConsent = await env.AUTH_DB.prepare(
+      'SELECT marketing_consent FROM user_consents WHERE user_id = ?'
+    ).bind(userId).first<{ marketing_consent?: number }>()
+    const previouslyEnabledMarketing = Number(priorConsent?.marketing_consent ?? 0) === 1
 
     await env.AUTH_DB.prepare(`
       INSERT INTO user_consents (user_id, updated_at)
@@ -170,15 +225,32 @@ export async function handleConsentRoute(request: Request, env: Env): Promise<Re
       `).bind(body.marketing_consent ? 1 : 0, userId).run()
     }
 
+    const events: Promise<void>[] = []
+    if (hasTerms) {
+      events.push(recordConsentEvent(env.AUTH_DB, userId, 'terms', TERMS_VERSION, 'accepted', 'account'))
+    }
+    if (hasPrivacy) {
+      events.push(recordConsentEvent(env.AUTH_DB, userId, 'privacy', PRIVACY_VERSION, 'accepted', 'account'))
+    }
+    if (hasMarketing && Boolean(body.marketing_consent) !== previouslyEnabledMarketing) {
+      events.push(recordConsentEvent(
+        env.AUTH_DB, userId, 'marketing', null,
+        body.marketing_consent ? 'accepted' : 'withdrawn', 'account',
+      ))
+    }
+    await Promise.all(events)
+
     const row = await env.AUTH_DB.prepare(
       'SELECT * FROM user_consents WHERE user_id = ?'
     ).bind(userId).first<Record<string, unknown>>()
+    const history = await readConsentHistory(env.AUTH_DB, userId)
 
     return json({
       ok: true,
       terms_version: TERMS_VERSION,
       privacy_version: PRIVACY_VERSION,
       consent: row,
+      history,
     })
   }
 
