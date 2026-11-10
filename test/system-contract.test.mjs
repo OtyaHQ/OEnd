@@ -301,6 +301,8 @@ test('Legacy Telegram owner identity requires current-email proof and cannot sig
   assert.match(helper, /email_hash/)
   assert.match(telegram, /consumeVerifiedTelegramIdentityLink/)
   assert.match(telegram, /db: env\.AUTH_DB/)
+  assert.match(telegram, /ownerLinkEmailHash/)
+  assert.match(telegram, /hashVerifiedTelegramEmail\(currentEmail\) !== stored\.ownerLinkEmailHash/)
   assert.match(telegram, /if \(mode === 'link'\)/)
   const authDb = read('auth-worker/src/db.ts')
   const repair = read('auth-worker/scripts/repair-remote-schema.sh')
