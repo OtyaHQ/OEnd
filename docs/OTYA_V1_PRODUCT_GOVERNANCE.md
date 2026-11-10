@@ -2,13 +2,13 @@
 
 Status: canonical v1 product rulebook
 
-This document prevents OTYA from growing as disconnected features. Product, web, Android, Next, support, documentation and infrastructure must follow the same information architecture and naming rules. The broader PeterSmart Link organization hierarchy is defined in `PETERSMART_LINK_PLATFORM.md`.
+This document prevents OTYA from growing as disconnected features. Product, web, Android, Next, support, documentation and infrastructure must follow the same information architecture and naming rules. The Otya company and product identity hierarchy is defined in `PETERSMART_LINK_PLATFORM.md`.
 
 ## Canonical product names
 
-- Developer / publisher: **PeterSmart Link**
+- Public umbrella brand: **Otya**
 - Product family: **OTYA**
-- Android product: **Otya Player**
+- Android product: **Otya Media**
 - AI assistant: **Next** / **Next by OTYA** where a fuller label is useful
 - User identity: **OTYA Account**
 - Signed-in environment: **OTYA Space**
@@ -62,7 +62,7 @@ The public product must stay simpler than the internal system.
 
 ### petersmartlink.com
 
-Primary **PeterSmart Link organization** surface. It must answer: who PeterSmart Link is, what products exist, where OTYA belongs, how to get support, where documentation/status live and how to enter the signed-in environment. Otya Player marketing belongs on its product route rather than making the company homepage look like a single-app landing page.
+Primary **Otya organization** surface. It must answer: who Otya is, what products exist, where OTYA belongs, how to get support, where documentation/status live and how to enter the signed-in environment. Otya Media marketing belongs on its product route rather than making the company homepage look like a single-app landing page.
 
 ### docs.petersmartlink.com
 
@@ -134,7 +134,7 @@ Release notes should use user outcomes under New / Improved / Fixed. Avoid inter
 - Public posts describe user outcomes, not Worker/D1/queue maintenance.
 - Do not publish empty News/Careers/Developer sections just to look large.
 - Do not advertise platforms or capabilities that are not production-ready.
-- PeterSmart Link is the developer/publisher brand; OTYA is a product family.
+- Otya is the developer/publisher brand; OTYA is a product family.
 
 ## Design and performance rules
 
