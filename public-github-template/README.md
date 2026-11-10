@@ -1,14 +1,16 @@
 # OTYA
 
-Official public GitHub home for **OTYA** — apps, AI, account services and public developer resources by PeterSmart Link.
+Official public GitHub home for the **Otya ecosystem** — digital products, account services and public developer resources built in Uganda.
+
+Otya Holdings Limited is the intended parent entity; its URSB registration is in progress. This repository does not claim that the company is already incorporated or the legal owner of existing individual provider accounts.
 
 ## Official links
 
 - Website: https://petersmartlink.com
 - Docs: https://petersmartlink.com/docs
-- OTYA AI: https://petersmartlink.com/ai
-- OTYA Player: https://petersmartlink.com/otya-player
-- Download OTYA Player: https://petersmartlink.com/download/otya-player
+- Next: https://petersmartlink.com/ai
+- Otya Media: https://petersmartlink.com/otya-player
+- Download Otya Media: https://petersmartlink.com/download/otya-player
 - Support: support@petersmartlink.com
 - Telegram: https://t.me/otyaplayer
 
@@ -25,18 +27,18 @@ This public repository is the community and developer-facing home for OTYA. It c
 
 ## What is not published here
 
-OTYA Player and OTYA backend production source code, private deployment configuration, signing material, secrets, customer data, internal infrastructure and privileged administration tools are not public.
+Otya Media and Otya backend production source code, private deployment configuration, signing material, secrets, customer data, internal infrastructure and privileged administration tools are not public.
 
 ## Products
 
-### OTYA Player
-An offline-first Android media player for local music and video, with background playback, private-media tools and optional connected OTYA services.
+### Otya Media
+An offline-first Android media app for local music and video, with background playback, private-media tools and optional connected Otya services.
 
-### OTYA AI
-A general-purpose assistant with separate customer and private-administrator capability boundaries.
+### Next
+Otya's assistant for support, connected help and private owner-intelligence, with separate customer and administrator capability boundaries.
 
-### OTYA Account
-One shared identity for OTYA products. Product-specific private data stays separately scoped.
+### Otya Account
+One shared identity for Otya products. Product-specific private data stays separately scoped.
 
 ## Security
 
@@ -44,4 +46,4 @@ Do not post vulnerabilities, credentials, tokens, private account data or securi
 
 ## License
 
-Public documentation and examples must state their own license. The existence of this public repository does not make OTYA production source code open source.
+Public documentation and examples must state their own license. The existence of this public repository does not make Otya production source code open source.
