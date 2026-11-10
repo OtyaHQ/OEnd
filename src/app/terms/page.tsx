@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 const SECTIONS = [
   ['Acceptance', 'By accessing or using Otya websites, accounts, applications or connected services, you agree to these Terms and applicable product-specific policies.'],
+  ['Operator and legal identity', 'Otya is the public brand for the connected product family. The current individual operator/account holder for services still contracted in an individual capacity is Peter Katabira. Otya Holdings Limited is the intended parent entity and its URSB registration is in progress; it is not yet represented as an incorporated company or current merchant-account holder. Any move of merchant, settlement or provider accounts to the company will occur only after incorporation and the provider’s formal approval.'],
   ['Otya account', 'One Otya account may be used across connected Otya services. Product-specific data and permissions remain separately scoped. Core local Otya playback does not require an account.'],
   ['Verification and sign-in', 'Otya may offer email, Google, Telegram, phone or other approved verification methods for sign-in, security and recovery. Third-party providers may apply their own terms to those integrations.'],
   ['Services', 'Otya includes local music and video playback, nearby Transfer, Private, tools, Next, downloads, support, account services and other official Otya features made available through approved channels. The retired built-in Online Music/Jamendo catalog is not part of the current service.'],
@@ -31,7 +32,7 @@ export default function TermsPage() {
       <header className="mb-7">
         <div className="otya-kicker mb-2">Otya · Terms</div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[-.04em]">Clear terms. Less scrolling.</h1>
-        <p className="mt-2 text-sm otya-muted">Last updated September 2, 2026. Expand only what you want to read.</p>
+        <p className="mt-2 text-sm otya-muted">Last updated November 10, 2026. Expand only what you want to read.</p>
       </header>
       <section className="overflow-hidden rounded-[24px] border backdrop-blur-xl" style={{ borderColor:'var(--cosmos-divider)', background:'color-mix(in srgb,var(--cosmos-card) 82%,transparent)' }}>
         {SECTIONS.map(([title, body]) => <details key={title} className="group border-b last:border-b-0" style={{ borderColor:'var(--cosmos-divider)' }}>
