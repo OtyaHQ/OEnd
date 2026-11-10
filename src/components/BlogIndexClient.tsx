@@ -7,7 +7,7 @@ type Post = { id: number; slug: string; title: string; excerpt: string | null; c
 
 function dateLabel(value: string) {
   const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? 'PeterSmart Link' : new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(date)
+  return Number.isNaN(date.getTime()) ? 'Otya' : new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' }).format(date)
 }
 
 export function BlogIndexClient() {
@@ -27,7 +27,7 @@ export function BlogIndexClient() {
 
   if (state === 'loading') return <div className="mt-10 flex items-center gap-3 text-sm otya-muted"><span className="h-2 w-2 animate-pulse rounded-full bg-[color:var(--cosmos-primary)]" aria-hidden="true"/>Loading articles</div>
   if (state === 'error') return <div className="mt-10 rounded-2xl border border-black/[.07] p-5 text-sm otya-muted dark:border-white/[.10]">Articles are temporarily unavailable. Please try again later.</div>
-  if (posts.length === 0) return <div className="mt-10 rounded-[26px] border border-black/[.07] bg-black/[.018] p-7 sm:p-10 dark:border-white/[.10] dark:bg-white/[.025]"><h2 className="text-2xl font-black tracking-[-.04em]">The first articles are on their way.</h2><p className="mt-3 max-w-xl text-sm leading-7 otya-muted">Product updates, practical guides and clear release information will be published here by PeterSmart Link.</p></div>
+  if (posts.length === 0) return <div className="mt-10 rounded-[26px] border border-black/[.07] bg-black/[.018] p-7 sm:p-10 dark:border-white/[.10] dark:bg-white/[.025]"><h2 className="text-2xl font-black tracking-[-.04em]">The first articles are on their way.</h2><p className="mt-3 max-w-xl text-sm leading-7 otya-muted">Product updates, practical guides and clear release information will be published here by Otya.</p></div>
 
   return <div className="mt-10 grid gap-4">
     {posts.map(post => <article key={post.id} className="rounded-[26px] border border-black/[.07] bg-[color:var(--cosmos-surface)] p-6 sm:p-8 dark:border-white/[.10]">
