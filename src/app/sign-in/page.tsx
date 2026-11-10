@@ -292,7 +292,7 @@ export default function SignInPage() {
         const data = await response.json().catch(() => ({})) as AdminState
         if (!response.ok) throw new Error(data.error || 'The owner verification code is invalid or expired.')
         setOtp('')
-        setNotice('Email verification passed. Continue with the Telegram identity linked to this same Otya account.')
+        setNotice('Email verification passed. Confirm with the Telegram identity linked to this same Otya account. This is an owner-security check, not account sign-in.')
         setBusy(false)
         await startOwnerTelegram()
         return
