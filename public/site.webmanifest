@@ -1,7 +1,7 @@
 {
   "name": "Otya",
   "short_name": "Otya",
-  "description": "Free offline-first music and video app for Android by PeterSmart Link.",
+  "description": "Digital products and real-world services from the Otya ecosystem.",
   "icons": [
     { "src": "/otya-app-icon.webp", "sizes": "512x512", "type": "image/webp", "purpose": "any maskable" }
   ],
