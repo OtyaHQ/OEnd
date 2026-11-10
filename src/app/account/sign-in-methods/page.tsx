@@ -213,6 +213,11 @@ export default function SignInMethodsPage() {
         throw new Error(data.error || 'The current-email proof could not be confirmed.')
       }
 
+      // The email challenge and its D1 proof are one-use. Clear the consumed
+      // code before starting Telegram so a transient provider failure can be
+      // retried as a fresh email-proof ceremony.
+      setTelegramIdentityPending(false)
+      setTelegramIdentityCode('')
       const start = await fetch('/api/auth/telegram/start?mode=link', {
         method: 'POST',
         credentials: 'same-origin',
@@ -220,10 +225,8 @@ export default function SignInMethodsPage() {
       })
       const startData = await start.json().catch(() => ({})) as Json
       if (!start.ok || !startData.authorization_url) {
-        throw new Error(startData.error || 'Email verified, but Telegram authorization could not start. Start again from this page.')
+        throw new Error(startData.error || 'Email verified, but Telegram authorization could not start. Request a new email proof code and try again.')
       }
-      setTelegramIdentityPending(false)
-      setTelegramIdentityCode('')
       window.location.assign(startData.authorization_url)
       return 'Email verified. Continue with Telegram to connect the owner-only security identity.'
     })
