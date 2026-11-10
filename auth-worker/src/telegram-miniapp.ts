@@ -118,8 +118,7 @@ export async function handleTelegramMiniApp(request: Request, env: TelegramMiniA
   try { body = await request.json() as { initData?: string } }
   catch { return json({ error: 'Invalid JSON body' }, 400) }
 
-  let verified: VerifiedMiniApp
-  try { verified = await verifyTelegramInitData(String(body.initData ?? ''), env) }
+  try { await verifyTelegramInitData(String(body.initData ?? ''), env) }
   catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Telegram Mini App verification failed', code: 'TELEGRAM_MINIAPP_INVALID' }, 401)
   }
