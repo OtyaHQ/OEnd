@@ -1,6 +1,7 @@
 import { generateOtp, hashPassword, verifyJwt } from './crypto'
 import { getUserByEmail, getUserById, updatePasswordHash, type D1Database } from './db'
 import { sendResendEmail } from './resend'
+import { commitVerifiedEmailChange } from './email-change-commit.mjs'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -273,12 +274,8 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     if (newEmail === currentEmail) return json({ error: 'That is already your primary email address.' }, 400)
     if (!env.RESEND_API_KEY) return json({ error: 'Email verification is temporarily unavailable.' }, 503)
 
-    const existing = await getUserByEmail(env.AUTH_DB, newEmail)
-    if (existing && existing.id !== user.id) {
-      return json({ error: 'That email is already connected to another Otya account.', code: 'EMAIL_IN_USE' }, 409)
-    }
-
     const ip = clientIp(request)
+    // Charge all address checks against the same limits to prevent account enumeration.
     const [userAllowed, targetAllowed, ipAllowed] = await Promise.all([
       bump(env.AUTH_KV, `secure_otp_send:email-change:${user.id}`, MAX_SENDS, SEND_WINDOW_TTL),
       bump(env.AUTH_KV, `secure_otp_send:email-change-target:${newEmail}`, MAX_SENDS, SEND_WINDOW_TTL),
@@ -288,34 +285,50 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       return json({ error: 'Too many email-change requests. Try again later.' }, 429)
     }
 
-    const code = generateOtp()
+    const existing = await getUserByEmail(env.AUTH_DB, newEmail)
+    if (existing && existing.id !== user.id) {
+      return json({ error: 'That email is already connected to another Otya account.', code: 'EMAIL_IN_USE' }, 409)
+    }
+
+    const currentCode = generateOtp()
+    const newCode = generateOtp()
     const pendingKey = `email_change_pending:${user.id}`
-    const otpKey = `email_change_otp:${user.id}`
+    const currentOtpKey = `email_change_current_otp:${user.id}`
+    const newOtpKey = `email_change_new_otp:${user.id}`
     const subject = `${user.id}:${currentEmail}:${newEmail}`
     await Promise.all([
       env.AUTH_KV.put(pendingKey, JSON.stringify({ currentEmail, newEmail }), { expirationTtl: OTP_TTL }),
-      env.AUTH_KV.put(otpKey, await digestCode(env, 'email-change', subject, code), { expirationTtl: OTP_TTL }),
+      env.AUTH_KV.put(currentOtpKey, await digestCode(env, 'email-change-current', subject, currentCode), { expirationTtl: OTP_TTL }),
+      env.AUTH_KV.put(newOtpKey, await digestCode(env, 'email-change-new', subject, newCode), { expirationTtl: OTP_TTL }),
     ])
 
     try {
-      await sendCode(env, newEmail, 'Confirm your new Otya email', 'Use this one-time code to verify your new Otya primary email address:', code)
+      await sendCode(env, currentEmail, 'Confirm your Otya email change', `Use this code to confirm that you control your current Otya email address and requested a change to ${newEmail}:`, currentCode)
+      await sendCode(env, newEmail, 'Verify your new Otya email', 'Use this second code to verify the new primary email address for your Otya account:', newCode)
     } catch (error) {
-      await Promise.all([env.AUTH_KV.delete(pendingKey), env.AUTH_KV.delete(otpKey)])
+      await Promise.all([
+        env.AUTH_KV.delete(pendingKey),
+        env.AUTH_KV.delete(currentOtpKey),
+        env.AUTH_KV.delete(newOtpKey),
+      ])
       console.error('[auth/email-change] Verification email failed:', (error as Error)?.message)
-      return json({ error: 'The verification email could not be sent. Your current email has not changed.' }, 503)
+      return json({ error: 'A verification email could not be sent. Your current email has not changed.' }, 503)
     }
 
     await notifyEmailChange(env, currentEmail, newEmail, 'requested')
-    return json({ ok: true, message: 'A verification code was sent to your new email. Your current email remains active until verification succeeds.' })
+    return json({ ok: true, message: 'Two verification codes were sent: one to your current email and one to your new email. Your current email remains active until both codes are confirmed.' })
   }
 
   if (path === '/auth/email-change/confirm') {
-    let body: { otp?: string }
-    try { body = await request.json() as { otp?: string } }
+    let body: { current_otp?: string; new_otp?: string }
+    try { body = await request.json() as { current_otp?: string; new_otp?: string } }
     catch { return json({ error: 'Invalid JSON body' }, 400) }
 
-    const code = String(body.otp ?? '').trim().toUpperCase()
-    if (!CODE_RE.test(code)) return json({ error: 'Invalid or expired verification code.' }, 401)
+    const currentCode = String(body.current_otp ?? '').trim().toUpperCase()
+    const newCode = String(body.new_otp ?? '').trim().toUpperCase()
+    if (!CODE_RE.test(currentCode) || !CODE_RE.test(newCode)) {
+      return json({ error: 'Enter both valid verification codes.' }, 401)
+    }
 
     const ip = clientIp(request)
     const [ipAllowed, userAllowed] = await Promise.all([
@@ -327,12 +340,16 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     }
 
     const pendingKey = `email_change_pending:${user.id}`
-    const otpKey = `email_change_otp:${user.id}`
-    const [pendingRaw, stored] = await Promise.all([
+    const currentOtpKey = `email_change_current_otp:${user.id}`
+    const newOtpKey = `email_change_new_otp:${user.id}`
+    const [pendingRaw, currentStored, newStored] = await Promise.all([
       env.AUTH_KV.get(pendingKey),
-      env.AUTH_KV.get(otpKey),
+      env.AUTH_KV.get(currentOtpKey),
+      env.AUTH_KV.get(newOtpKey),
     ])
-    if (!pendingRaw || !stored) return json({ error: 'No pending email change. Request a new verification code.' }, 400)
+    if (!pendingRaw || !currentStored || !newStored) {
+      return json({ error: 'No complete pending email change. Request two new verification codes.' }, 400)
+    }
 
     let pending: { currentEmail?: unknown; newEmail?: unknown }
     try { pending = JSON.parse(pendingRaw) as typeof pending }
@@ -349,8 +366,12 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     }
 
     const subject = `${user.id}:${currentEmail}:${newEmail}`
-    if (!(await matchesStoredCode(env, stored, 'email-change', subject, code))) {
-      return json({ error: 'Invalid or expired verification code.' }, 401)
+    const [currentMatches, newMatches] = await Promise.all([
+      matchesStoredCode(env, currentStored, 'email-change-current', subject, currentCode),
+      matchesStoredCode(env, newStored, 'email-change-new', subject, newCode),
+    ])
+    if (!currentMatches || !newMatches) {
+      return json({ error: 'One or both verification codes are invalid or expired. Your email has not changed.' }, 401)
     }
 
     const latest = await getUserById(env.AUTH_DB, user.id)
@@ -365,31 +386,59 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       return json({ error: 'That email is already connected to another Otya account.', code: 'EMAIL_IN_USE' }, 409)
     }
 
+    let commit
     try {
-      await revokeRefreshTokens(env, user.id)
+      commit = await commitVerifiedEmailChange({
+        revokeSessions: () => revokeRefreshTokens(env, user.id),
+        updatePrimaryEmail: async () => {
+          const update = await env.AUTH_DB.prepare(
+            "UPDATE users SET email = ?, is_verified = 1, updated_at = datetime('now') WHERE id = ? AND email = ?",
+          ).bind(newEmail, user.id, currentEmail).run()
+          return { updated: Number(update.meta.changes) === 1 }
+        },
+      })
     } catch (error) {
-      console.error('[auth/email-change] Session revocation failed before email update:', (error as Error)?.message)
-      return json({ error: 'Otya could not safely close existing sessions. Your primary email has not changed; try again.' }, 503)
+      console.error('[auth/email-change] Initial session revocation failed:', (error as Error)?.message)
+      return json({
+        error: 'Otya could not safely close existing sessions. Your primary email has not changed; try again.',
+        email_updated: false,
+        session_revocation_complete: false,
+      }, 503)
     }
 
-    try {
-      const update = await env.AUTH_DB.prepare(
-        "UPDATE users SET email = ?, is_verified = 1, updated_at = datetime('now') WHERE id = ? AND email = ?",
-      ).bind(newEmail, user.id, currentEmail).run()
-      if (Number(update.meta.changes) !== 1) {
-        return json({ error: 'Your account changed during this request. Please sign in again.' }, 409)
+    if (commit.updateError) {
+      const message = String(commit.updateError).toLowerCase()
+      if (message.includes('unique constraint') || message.includes('constraint failed') || message.includes('sqlite_constraint')) {
+        return json({
+          error: 'That email is already connected to another Otya account.',
+          code: 'EMAIL_IN_USE',
+          email_updated: false,
+          session_revocation_complete: commit.sessionsRevoked,
+          message: 'Your email was not changed. You may need to sign in again for security.',
+        }, 409)
       }
-    } catch (error) {
-      const message = String(error).toLowerCase()
-      if (message.includes('unique constraint') || message.includes('constraint failed')) {
-        return json({ error: 'That email is already connected to another Otya account.', code: 'EMAIL_IN_USE' }, 409)
-      }
-      throw error
+      console.error('[auth/email-change] Primary email update failed:', message)
+      return json({
+        error: 'Otya could not update your primary email. Your current address remains active.',
+        email_updated: false,
+        session_revocation_complete: commit.sessionsRevoked,
+        message: 'You may need to sign in again for security.',
+      }, 503)
+    }
+
+    if (!commit.updated) {
+      return json({
+        error: 'Your account changed during this request. Your primary email was not changed.',
+        email_updated: false,
+        session_revocation_complete: commit.sessionsRevoked,
+        message: 'You may need to sign in again for security.',
+      }, 409)
     }
 
     await Promise.all([
       env.AUTH_KV.delete(pendingKey),
-      env.AUTH_KV.delete(otpKey),
+      env.AUTH_KV.delete(currentOtpKey),
+      env.AUTH_KV.delete(newOtpKey),
       env.AUTH_KV.delete(`secure_otp_attempt:email-change:${user.id}:${ip}`),
       env.AUTH_KV.delete(`secure_otp_attempt_global:email-change:${user.id}`),
     ])
@@ -399,8 +448,10 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     return json({
       ok: true,
       sign_in_again: true,
-      session_revocation_complete: true,
-      message: 'Your primary email has been updated and all refresh sessions were revoked. Sign in again to continue.',
+      session_revocation_complete: commit.sessionsRevoked,
+      message: commit.sessionsRevoked
+        ? 'Your primary email has been updated, both verification steps succeeded, and all refresh sessions were revoked. Sign in again to continue.'
+        : 'Your primary email was updated, but Otya could not confirm that every refresh session was revoked. Sign in again and contact Otya Support.',
     })
   }
 
