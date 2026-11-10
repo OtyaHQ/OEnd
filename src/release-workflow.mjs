@@ -26,7 +26,7 @@ function normalizeWorkerUrl(value) {
     throw new Error('workerUrl must be a valid HTTPS URL')
   }
   if (url.protocol !== 'https:' || url.username || url.password || !OFFICIAL_RELEASE_HOSTS.has(url.hostname)) {
-    throw new Error('workerUrl must use an official PeterSmart Link HTTPS host')
+    throw new Error('workerUrl must use an official Otya HTTPS host')
   }
   if (url.pathname !== '/' || url.search || url.hash) {
     throw new Error('workerUrl must be an origin without a path, query, or fragment')
@@ -174,7 +174,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
             arm64: 'Otya-arm64.apk',
             arm32: 'Otya-arm32.apk',
           },
-          changelog: release.changelog || `OTYA Player ${release.version} is now available.`,
+          changelog: release.changelog || `Otya Media ${release.version} is now available.`,
           minSdk: release.minSdk,
           targetSdk: release.targetSdk,
           workerUrl: release.workerUrl,
