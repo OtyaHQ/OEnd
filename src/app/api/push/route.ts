@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   if (!projectId) return errorJson('FCM project_id is missing', 503)
 
   const link = url ? officialNotificationUrl(url) : OTYA_DOWNLOAD_URL
-  if (!link) return errorJson('url must use an official PeterSmart Link HTTPS host', 400)
+  if (!link) return errorJson('url must use an official Otya HTTPS host', 400)
   let accessToken: string
   try {
     accessToken = await getFcmAccessToken(serviceAccountJson)

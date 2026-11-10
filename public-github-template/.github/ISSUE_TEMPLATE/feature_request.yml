@@ -8,7 +8,7 @@ body:
     attributes:
       label: OTYA area
       options:
-        - OTYA Player
+        - Otya Media
         - OTYA AI
         - OTYA Account
         - Docs

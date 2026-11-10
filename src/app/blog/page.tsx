@@ -4,8 +4,8 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { SiteNav } from '@/components/SiteNav'
 
 export const metadata: Metadata = {
-  title: 'PeterSmart Journal — Product news and practical guides',
-  description: 'Updates, practical guides and release information from PeterSmart Link.',
+  title: 'Otya Journal — Product news and practical guides',
+  description: 'Updates, practical guides and release information from Otya.',
 }
 
 export default function BlogPage() {
@@ -13,9 +13,9 @@ export default function BlogPage() {
     <SiteNav />
     <main className="otya-shell flex-1 py-14 sm:py-20">
       <div className="max-w-3xl">
-        <div className="otya-kicker">PeterSmart Link</div>
-        <h1 className="mt-4 text-4xl sm:text-6xl font-black tracking-[-.06em] leading-[1.03]">The PeterSmart Journal.</h1>
-        <p className="mt-5 text-base sm:text-xl leading-8 otya-muted">Product updates, practical guides and clear release information for Otya Player.</p>
+        <div className="otya-kicker">Otya</div>
+        <h1 className="mt-4 text-4xl sm:text-6xl font-black tracking-[-.06em] leading-[1.03]">The Otya Journal.</h1>
+        <p className="mt-5 text-base sm:text-xl leading-8 otya-muted">Product updates, practical guides and clear release information for Otya Media.</p>
       </div>
       <BlogIndexClient />
     </main>

@@ -18,14 +18,14 @@ export default function DeleteAccountPage() {
       <header className="mb-7">
         <div className="otya-kicker mb-2">Otya · Account deletion</div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[-.04em]">Delete your Otya account</h1>
-        <p className="mt-3 text-sm sm:text-base leading-7 otya-muted">This is Otya Player&apos;s public account-deletion request page. You can request deletion even if you no longer have the Android app installed.</p>
+        <p className="mt-3 text-sm sm:text-base leading-7 otya-muted">This is Otya Media&apos;s public account-deletion request page. You can request deletion even if you no longer have the Android app installed.</p>
       </header>
 
       <section className="rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
         <h2 className="text-xl font-black tracking-[-.025em]">Request deletion</h2>
         <div className="mt-4 grid gap-4 text-sm leading-7 otya-muted">
-          <p><strong className="font-black" style={{ color: 'var(--cosmos-text-primary)' }}>From Otya Player:</strong> open <strong>Me → Otya Account → Delete account</strong> and follow the confirmation steps.</p>
-          <p><strong className="font-black" style={{ color: 'var(--cosmos-text-primary)' }}>Without the app:</strong> email PeterSmart Link support and ask for your Otya account to be deleted. When possible, send the request from an email address already linked to the account, or include your public Otya ID so ownership can be verified.</p>
+          <p><strong className="font-black" style={{ color: 'var(--cosmos-text-primary)' }}>From Otya Media:</strong> open <strong>Me → Otya Account → Delete account</strong> and follow the confirmation steps.</p>
+          <p><strong className="font-black" style={{ color: 'var(--cosmos-text-primary)' }}>Without the app:</strong> email Otya support and ask for your Otya account to be deleted. When possible, send the request from an email address already linked to the account, or include your public Otya ID so ownership can be verified.</p>
           <p>Never send a password, one-time code, access token, refresh token, API key or other secret in a deletion request.</p>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">

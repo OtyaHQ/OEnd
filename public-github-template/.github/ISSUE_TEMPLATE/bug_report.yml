@@ -12,7 +12,7 @@ body:
     attributes:
       label: OTYA product
       options:
-        - OTYA Player
+        - Otya Media
         - OTYA AI
         - OTYA Account / website
         - Docs
@@ -23,7 +23,7 @@ body:
     id: version
     attributes:
       label: Version / build
-      placeholder: e.g. OTYA Player 1.7.0 (11)
+      placeholder: e.g. Otya Media 1.7.0 (11)
   - type: textarea
     id: problem
     attributes:

@@ -11,12 +11,12 @@ const adminAi = read('src/app/admin/ai/ConsoleClient.tsx')
 
 const publicVisible = `${constants}\n${product}\n${help}`
 
-test('public brand uses Otya and Otya Player with Send language', () => {
+test('public brand uses Otya and Otya Media with Send language', () => {
   assert.match(constants, /name: 'Otya'/)
-  assert.match(constants, /player: 'Otya Player'/)
+  assert.match(constants, /player: 'Otya Media'/)
   assert.match(constants, /auth: 'Otya Account'/)
   assert.match(constants, /nearby Send/)
-  assert.match(product, /Otya Player/)
+  assert.match(product, /Otya Media/)
   assert.match(product, /\['Send'/)
   assert.match(product, />Help & support</)
   assert.match(help, /Send is not connecting/)

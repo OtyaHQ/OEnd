@@ -11,7 +11,7 @@ export function releaseAnnouncementText(release) {
     `Otya ${String(release.version).slice(0, 30)} · New update`,
     notes,
     'See the full release notes and get the Android download below.',
-    'PeterSmart Link · Made with care in Uganda',
+    'Otya · Made with care in Uganda',
   ].filter(Boolean).join('\n\n')
 }
 

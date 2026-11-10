@@ -111,4 +111,4 @@ Do not collect date of birth, gender, physical address, national ID/passport dat
 
 ## Branding
 
-The public product is **OTYA**. The account is a supporting part of OTYA, not a separate product. PeterSmart Link remains the legal/business/developer identity where needed.
+The public product is **OTYA**. The account is a supporting part of OTYA, not a separate product. Otya is the public product brand. For provider accounts still contracted in an individual's name, the verified account holder remains the legal account identity until incorporation and formal provider approval.

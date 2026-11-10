@@ -2,11 +2,11 @@
 
 Status: canonical public-information map
 
-The PeterSmart Link ecosystem must feel like one organized platform with clear product boundaries, not a collection of internal services or unrelated landing pages.
+The Otya ecosystem must feel like one organized platform with clear product boundaries, not a collection of internal services or unrelated landing pages.
 
 ## 1. Main site — petersmartlink.com
 
-Purpose: **PeterSmart Link organization + product discovery**.
+Purpose: **Otya brand + product discovery**.
 
 Primary navigation:
 - Products
@@ -28,13 +28,13 @@ Secondary/footer links:
 - Delete account
 
 The homepage must quickly explain:
-1. PeterSmart Link is the developer/publisher.
+1. Otya is the public umbrella brand.
 2. What products currently exist.
-3. Where Otya Player belongs in that portfolio.
+3. Where Otya Media belongs in that portfolio.
 4. How to reach Docs, Status and Space.
 5. A clear product discovery action.
 
-Otya Player has its own product page. Do not make the PeterSmart Link homepage look like the company and a single Android app are the same entity.
+Otya Media has its own product page. Do not make the Otya homepage look like the company and a single Android app are the same entity.
 
 Do not expose internal infrastructure or unfinished product claims.
 
@@ -45,7 +45,7 @@ Purpose: public product guidance and user documentation.
 Top-level structure:
 
 - Get started
-  - Otya Player overview
+  - Otya Media overview
   - Install safely
   - First launch
   - Media permissions
@@ -163,10 +163,10 @@ Do not show raw infrastructure, deployment secrets, logs or owner-only implement
 
 ## 5. Products — petersmartlink.com/apps
 
-Purpose: portfolio view of current PeterSmart Link products and connected surfaces.
+Purpose: portfolio view of current Otya products and connected surfaces.
 
 Current product presentation may include:
-- Otya Player
+- Otya Media
 - Next
 - Space
 
@@ -187,7 +187,7 @@ Do not expose private production topology as though it were a public developer A
 
 ## 7. Company — petersmartlink.com/company
 
-Purpose: explain PeterSmart Link as the developer/publisher organization, its product principles and its relationship to Otya.
+Purpose: explain the Otya ecosystem, intended parent company and product principles. Otya Holdings Limited is in the process of URSB registration; do not claim it is already incorporated.
 
 Keep this factual. Do not fabricate company size, customers, awards, offices, partnerships or metrics.
 

@@ -31,11 +31,11 @@ export function BlogPostClient({ slug }: { slug: string }) {
   if (state === 'error' || !post) return <div className="rounded-[26px] border border-black/[.07] p-7 text-sm otya-muted dark:border-white/[.10]">This article is temporarily unavailable.</div>
 
   return <article className="mx-auto max-w-3xl">
-    <Link href="/blog" className="text-sm font-black otya-muted hover:text-[color:var(--cosmos-primary)]">← PeterSmart Journal</Link>
+    <Link href="/blog" className="text-sm font-black otya-muted hover:text-[color:var(--cosmos-primary)]">← Otya Journal</Link>
     <div className="mt-10 text-xs font-black uppercase tracking-[.14em] otya-muted">{post.category || 'Product'}</div>
     <h1 className="mt-4 text-4xl sm:text-6xl font-black tracking-[-.06em] leading-[1.03]">{post.title}</h1>
     {post.excerpt && <p className="mt-6 text-lg sm:text-xl leading-8 otya-muted">{post.excerpt}</p>}
-    <div className="mt-6 text-sm otya-muted">{post.author_name || 'PeterSmart Link'}{post.created_at ? ' · ' + dateLabel(post.created_at) : ''}</div>
+    <div className="mt-6 text-sm otya-muted">{post.author_name || 'Otya'}{post.created_at ? ' · ' + dateLabel(post.created_at) : ''}</div>
     <div className="mt-10 border-t border-black/[.07] pt-8 text-base leading-8 dark:border-white/[.10]">{post.content.split(/\n{2,}/).map((paragraph, index) => <p key={index} className="mb-6 whitespace-pre-line">{paragraph}</p>)}</div>
   </article>
 }

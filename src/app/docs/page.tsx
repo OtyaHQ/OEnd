@@ -4,16 +4,16 @@ import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 
 export const metadata: Metadata = {
-  title: 'Documentation | PeterSmart Link',
-  description: 'Official documentation for Otya Player, Otya accounts, Space, security and supported PeterSmart Link services.',
+  title: 'Documentation | Otya',
+  description: 'Official documentation for Otya Media, Otya accounts, Space, security and supported Otya services.',
   alternates: { canonical: 'https://docs.petersmartlink.com' },
 }
 
 const sections = [
   {
     title: 'Get started',
-    description: 'Understand Otya Player, install safely and learn which features work without an account or internet connection.',
-    links: [['Otya Player overview', '/otya-player'], ['Download Otya Player', '/download/otya-player'], ['Help and troubleshooting', '/help']],
+    description: 'Understand Otya Media, install safely and learn which features work without an account or internet connection.',
+    links: [['Otya Media overview', '/otya-player'], ['Download Otya Media', '/download/otya-player'], ['Help and troubleshooting', '/help']],
   },
   {
     title: 'Account & Space',
@@ -23,7 +23,7 @@ const sections = [
   {
     title: 'Playback & local media',
     description: 'Learn the product boundaries for local music, video, background playback, nearby Transfer and Private media.',
-    links: [['Music', '/music'], ['Otya Player', '/otya-player'], ['Troubleshooting', '/help']],
+    links: [['Music', '/music'], ['Otya Media', '/otya-player'], ['Troubleshooting', '/help']],
   },
   {
     title: 'Trust & operations',

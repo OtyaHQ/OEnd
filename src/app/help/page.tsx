@@ -6,8 +6,8 @@ import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 import { SITE_CONFIG } from '@/lib/constants'
 
 export const metadata: Metadata = {
-  title: 'Help | Otya Player',
-  description: 'Quick help for Otya Player accounts, local music and video, Send, Private and Android playback.',
+  title: 'Help | Otya Media',
+  description: 'Quick help for Otya Media accounts, local music and video, Send, Private and Android playback.',
   alternates: { canonical: 'https://petersmartlink.com/help' },
 }
 
@@ -16,10 +16,10 @@ const quickHelp = [
   ['I did not receive a verification code', 'Registration sends one verification code automatically. Check spam or promotions first, then request a new code only if you still need one. When a newer code is issued, use that newest code.'],
   ['I did not receive a password-reset email', 'Request one fresh reset code and check spam or promotions. Avoid repeatedly requesting codes because only the newest valid reset request should be used.'],
   ['Music or videos are missing in the Android app', 'Allow the media permissions requested by Android, then refresh or rescan the local library. Local media scanning does not require an Otya account.'],
-  ['Playback stops in the background', 'Otya Player uses Android media-session controls for playback. If playback is interrupted, review Android battery or background restrictions for Otya Player. Ordinary product or marketing notification permission is separate from starting local playback.'],
+  ['Playback stops in the background', 'Otya Media uses Android media-session controls for playback. If playback is interrupted, review Android battery or background restrictions for Otya Media. Ordinary product or marketing notification permission is separate from starting local playback.'],
   ['Send is not connecting', 'Keep both devices on the same Wi-Fi or hotspot and start Send from Me. Nearby Send is local-network only and does not require mobile data or a cloud relay.'],
-  ['How does Private work?', 'Private keeps supported local media inside Otya Player app-private storage until you restore it. Keep a separate backup of important files before moving or changing device storage.'],
-  ['Security and safe downloads', 'Install Otya Player only from the official download page. Never share passwords, one-time codes, recovery codes, API keys, secret tokens or signing credentials.'],
+  ['How does Private work?', 'Private keeps supported local media inside Otya Media app-private storage until you restore it. Keep a separate backup of important files before moving or changing device storage.'],
+  ['Security and safe downloads', 'Install Otya Media only from the official download page. Never share passwords, one-time codes, recovery codes, API keys, secret tokens or signing credentials.'],
 ] as const
 
 export default function HelpPage() {
@@ -28,7 +28,7 @@ export default function HelpPage() {
     <main className="flex-1">
       <section className="otya-reading py-10 sm:py-14">
         <header className="mb-8">
-          <div className="text-[11px] font-black uppercase tracking-[.15em] otya-muted">Otya Player Help</div>
+          <div className="text-[11px] font-black uppercase tracking-[.15em] otya-muted">Otya Media Help</div>
           <h1 className="mt-2 text-3xl sm:text-5xl font-black tracking-[-.055em]">How can we help?</h1>
           <p className="mt-3 text-sm sm:text-base leading-6 otya-muted">Start with quick answers, your Otya account, or the official documentation.</p>
         </header>
@@ -53,7 +53,7 @@ export default function HelpPage() {
           <div className="mb-3">
             <div className="text-[11px] font-black uppercase tracking-[.15em] otya-muted">Official links</div>
             <h2 id="official-telegram-title" className="mt-1 text-xl font-black">Official Otya on Telegram</h2>
-            <p className="mt-2 text-sm leading-6 otya-muted">PeterSmart Link operates these official Otya Telegram properties. Use these exact links to avoid impersonation.</p>
+            <p className="mt-2 text-sm leading-6 otya-muted">Otya operates these official Otya Telegram properties. Use these exact links to avoid impersonation.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
             <a href={SITE_CONFIG.telegramChannel} target="_blank" rel="noopener noreferrer" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4 min-h-24 flex items-center gap-3">

@@ -7,8 +7,8 @@ import { TurnstileChallenge } from '@/components/TurnstileChallenge'
 
 const API = '/api/account-session'
 const GOOGLE_WEB_CLIENT_ID = '82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com'
-const TERMS_VERSION = '2026-09-02'
-const PRIVACY_VERSION = '2026-09-02'
+const TERMS_VERSION = '2026-11-10'
+const PRIVACY_VERSION = '2026-11-10'
 const DEFAULT_AFTER_AUTH = 'https://space.petersmartlink.com/'
 
 type Mode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset' | 'twofactor' | 'owner' | 'owner-otp' | 'owner-telegram'
@@ -374,7 +374,7 @@ export default function SignInPage() {
 
   return <main className="otya-auth-page min-h-screen text-[color:var(--cosmos-text-primary)] grid place-items-center px-4 py-8 sm:py-12">
     <section className="w-full max-w-[460px]">
-      <Link href="https://petersmartlink.com" aria-label="PeterSmart Link home" className="inline-flex items-center gap-2.5 mb-8"><span className="h-10 w-10 rounded-xl grid place-items-center border border-white/[.10] bg-[color:var(--cosmos-surface)] text-xs font-black">PS</span><span><span className="block font-black text-[15px] tracking-[-.03em]">PeterSmart Link</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
+      <Link href="https://petersmartlink.com" aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
       <div className="otya-auth-card rounded-[30px] border p-5 sm:p-7">
         <div className="mb-5"><OtyaBrandMark size={46}/></div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">{title}</h1>

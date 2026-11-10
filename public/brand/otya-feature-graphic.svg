@@ -1,6 +1,6 @@
 <svg width="1024" height="500" viewBox="0 0 1024 500" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">OTYA Player Feature Graphic</title>
-  <desc id="desc">Premium feature banner for OTYA Player.</desc>
+  <title id="title">Otya Media Feature Graphic</title>
+  <desc id="desc">Premium feature banner for Otya Media.</desc>
   <rect width="1024" height="500" rx="48" fill="#050816"/>
   <circle cx="844" cy="92" r="210" fill="#2563EB" opacity="0.28"/>
   <circle cx="180" cy="430" r="220" fill="#7C3AED" opacity="0.24"/>
@@ -8,7 +8,7 @@
   <rect x="78" y="72" width="868" height="356" rx="40" fill="#0B1024" stroke="#243B80" stroke-width="2"/>
   <circle cx="236" cy="250" r="96" fill="#111A3D" stroke="#38BDF8" stroke-width="6"/>
   <path d="M218 196L298 250L218 304V196Z" fill="#FFFFFF"/>
-  <text x="374" y="205" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="800">OTYA Player</text>
+  <text x="374" y="205" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="800">Otya Media</text>
   <text x="378" y="258" fill="#A5B4FC" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600">Music • Video • Vault • Smart playback</text>
   <text x="378" y="316" fill="#DCEAFE" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">Play your way. Faster. Cleaner. Safer.</text>
   <rect x="378" y="348" width="238" height="52" rx="26" fill="#2563EB"/>

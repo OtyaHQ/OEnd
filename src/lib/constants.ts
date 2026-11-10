@@ -1,6 +1,6 @@
 export const OTYA = {
   name: 'Otya',
-  player: 'Otya Player',
+  player: 'Otya Media',
   ai: 'Next',
   auth: 'Otya Account',
   console: 'Otya Command Center',

@@ -12,7 +12,7 @@ export function SiteFooter() {
     <div className="otya-shell py-7 sm:py-8">
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
         <div>
-          <Link href={OTYA.website} className="inline-block text-base font-black tracking-[-.035em]">PeterSmart Link</Link>
+          <Link href={OTYA.website} className="inline-block text-base font-black tracking-[-.035em]">Otya</Link>
           <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">A connected family of digital products and real-world services, built in Uganda.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 sm:gap-8">
@@ -25,7 +25,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="mt-6 flex flex-col gap-1 border-t border-black/[.05] pt-4 text-xs otya-muted sm:flex-row sm:items-center sm:justify-between dark:border-white/[.06]">
-        <span>© {new Date().getFullYear()} PeterSmart Link</span>
+        <span>© {new Date().getFullYear()} Otya</span>
         <span>Otya · Products & services</span>
       </div>
     </div>

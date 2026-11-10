@@ -11,20 +11,19 @@ const OTYA_MARK = '/otya-app-icon.webp'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Otya — Digital products and real-world services | PeterSmart Link',
+    default: 'Otya — Digital products and real-world services',
     template: '%s | Otya',
   },
   description:
     'Explore Otya digital products, account services, official support and OtyaPoint physical shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
-    'Otya Player',
+    'Otya Media',
     'Otya Android',
     'OtyaPoint',
     'Otya ecosystem',
     'Mbirizi physical shop',
     'Lwengo mobile money agency',
-    'PeterSmart Link',
     'offline music player',
     'offline video player',
     'local music player Android',
@@ -34,9 +33,9 @@ export const metadata: Metadata = {
     'private media Android',
     'Uganda technology',
   ],
-  authors: [{ name: 'PeterSmart Link', url: SITE_URL }],
-  creator: 'PeterSmart Link',
-  publisher: 'PeterSmart Link',
+  authors: [{ name: 'Otya', url: SITE_URL }],
+  creator: 'Otya',
+  publisher: 'Otya',
   applicationName: 'Otya',
   category: 'technology',
   robots: {
@@ -57,13 +56,13 @@ export const metadata: Metadata = {
     siteName: 'Otya',
     title: 'Otya — Offline Music & Video for Android',
     description:
-      'Official Otya by PeterSmart Link for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
+      'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
       {
         url: OTYA_MARK,
         width: 512,
         height: 512,
-        alt: 'Otya by PeterSmart Link',
+        alt: 'Otya',
         type: 'image/webp',
       },
     ],
@@ -71,7 +70,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Otya — Offline Music & Video for Android',
-    description: 'Official Otya by PeterSmart Link for local Android media, Otya Transfer and Watch Together.',
+    description: 'Official Otya for local Android media, Otya Transfer and Watch Together.',
     images: [OTYA_MARK],
   },
   icons: {
@@ -97,7 +96,8 @@ const schemaOrg = {
     {
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,
-      name: 'PeterSmart Link',
+      name: 'Otya',
+      description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
       logo: `${SITE_URL}${OTYA_MARK}`,
       email: 'support@petersmartlink.com',
@@ -106,7 +106,7 @@ const schemaOrg = {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#otya-player`,
       name: 'Otya',
-      alternateName: 'Otya Player',
+      alternateName: 'Otya Media',
       identifier: 'com.otyaplayer.app',
       operatingSystem: 'Android',
       applicationCategory: 'MultimediaApplication',
@@ -136,7 +136,7 @@ const schemaOrg = {
       '@id': `${SITE_URL}/#website`,
       url: SITE_URL,
       name: 'Otya',
-      alternateName: 'PeterSmart Link',
+      alternateName: 'Otya ecosystem',
       publisher: { '@id': `${SITE_URL}/#organization` },
     },
   ],

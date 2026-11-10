@@ -1,10 +1,10 @@
 <svg width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">OTYA Screenshot Frame</title>
-  <desc id="desc">Template frame for real OTYA Player screenshots.</desc>
+  <desc id="desc">Template frame for real Otya Media screenshots.</desc>
   <rect width="1080" height="1920" fill="#050816"/>
   <circle cx="900" cy="230" r="260" fill="#2563EB" opacity="0.22"/>
   <circle cx="88" cy="1690" r="320" fill="#7C3AED" opacity="0.24"/>
-  <text x="540" y="146" fill="#FFFFFF" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="900">OTYA Player</text>
+  <text x="540" y="146" fill="#FFFFFF" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="900">Otya Media</text>
   <text x="540" y="205" fill="#A5B4FC" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600">Add real app screenshot inside the phone frame</text>
   <rect x="182" y="282" width="716" height="1400" rx="90" fill="#111827" stroke="#38BDF8" stroke-width="8"/>
   <rect x="232" y="352" width="616" height="1260" rx="44" fill="#0B1024" stroke="#334155" stroke-width="2"/>

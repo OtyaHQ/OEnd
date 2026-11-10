@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 }
 
 const SECTIONS = [
-  ['About Otya', 'Otya is operated from Uganda. This policy covers Otya accounts and connected Otya services. Privacy questions can be sent to support@petersmartlink.com.'],
+  ['About Otya', 'Otya is a product and services ecosystem developed in Uganda. This policy covers Otya accounts and connected Otya services. Privacy questions can be sent to support@petersmartlink.com.'],
+  ['Current operator and legal identity', 'For services currently operated or contracted in an individual capacity, the current individual operator/account holder is Peter Katabira. Otya is the public brand. Otya Holdings Limited is the intended parent entity and its URSB registration is in progress; it is not yet represented as an incorporated data controller or merchant-account holder. Existing provider accounts remain in their verified holder’s name until incorporation and formal provider approval. This notice will be updated before any change to the responsible controller.'],
   ['Your Otya account', 'Your Otya account provides one identity across connected Otya services. Product-specific data and permissions remain separately scoped under the same account ID.'],
   ['Local media', 'Otya primarily works with media stored on your device. Local files are not uploaded simply because you play, browse, search or organize them. Local music search runs on the device and does not contact a music-provider catalog while you type. Core local playback is designed to work without a cloud account.'],
   ['Connected identities', 'Optional Google, Telegram, email or phone verification may be used for sign-in, security or recovery. Reusable provider credentials are kept server-side and are not intentionally exposed to public pages.'],
@@ -29,7 +30,7 @@ export default function PrivacyPage() {
       <header className="mb-7">
         <div className="otya-kicker mb-2">Otya · Privacy</div>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[-.04em]">Privacy without the wall of text.</h1>
-        <p className="mt-2 text-sm otya-muted">Last updated September 2, 2026. Open only the section you need.</p>
+        <p className="mt-2 text-sm otya-muted">Last updated November 10, 2026. Open only the section you need.</p>
       </header>
       <section className="overflow-hidden rounded-[24px] border backdrop-blur-xl" style={{ borderColor:'var(--cosmos-divider)', background:'color-mix(in srgb,var(--cosmos-card) 82%,transparent)' }}>
         {SECTIONS.map(([title, body]) => <details key={title} className="group border-b last:border-b-0" style={{ borderColor:'var(--cosmos-divider)' }}>

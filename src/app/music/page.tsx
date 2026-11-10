@@ -5,8 +5,8 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 export const metadata: Metadata = {
-  title: 'Otya Player Music — Local Android Music Player',
-  description: 'Play and organize music already on your Android device with Otya Player. Local songs, albums, artists, folders and playlists work without a streaming provider.',
+  title: 'Otya Media Music — Local Android Music Player',
+  description: 'Play and organize music already on your Android device with Otya Media. Local songs, albums, artists, folders and playlists work without a streaming provider.',
   alternates: { canonical: 'https://petersmartlink.com/music' },
 }
 
@@ -27,14 +27,14 @@ export default function MusicPage() {
         <div className="max-w-[780px]">
           <div className="inline-flex items-center gap-2 rounded-full border border-black/[.07] dark:border-white/[.10] px-3 py-1.5 text-xs font-black otya-muted">
             <OtyaBrandMark size={22} />
-            Otya Player · Local-first music
+            Otya Media · Local-first music
           </div>
           <h1 className="mt-6 text-4xl sm:text-6xl font-black tracking-[-.055em] leading-[.98]">Your music stays yours.</h1>
           <p className="mt-6 max-w-[680px] text-base sm:text-lg leading-8 otya-muted">
-            Otya Player is built for songs already on your Android device. It does not depend on an online music catalog, a streaming-provider account or a provider API to keep your library useful.
+            Otya Media is built for songs already on your Android device. It does not depend on an online music catalog, a streaming-provider account or a provider API to keep your library useful.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/download/otya-player" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 font-black">Download Otya Player</Link>
+            <Link href="/download/otya-player" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 font-black">Download Otya Media</Link>
             <Link href="/help" className="otya-quiet-button inline-flex min-h-12 items-center rounded-full px-6 font-black">Open Help</Link>
           </div>
         </div>
@@ -56,8 +56,8 @@ export default function MusicPage() {
             <h2 className="mt-3 text-2xl sm:text-3xl font-black tracking-[-.035em]">No built-in online music catalog</h2>
           </div>
           <div className="text-sm sm:text-base leading-7 otya-muted space-y-3">
-            <p>Otya Player does not currently offer a built-in online song catalog. The previous provider integration was removed because it did not provide the music coverage the product needs.</p>
-            <p>Local playback, playlists, background audio, search and media organization remain part of Otya Player and continue to work without that provider.</p>
+            <p>Otya Media does not currently offer a built-in online song catalog. The previous provider integration was removed because it did not provide the music coverage the product needs.</p>
+            <p>Local playback, playlists, background audio, search and media organization remain part of Otya Media and continue to work without that provider.</p>
           </div>
         </div>
       </section>

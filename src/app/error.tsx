@@ -12,7 +12,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   return (
     <main className="min-h-[100dvh] grid place-items-center px-6 py-12" style={{ background: 'var(--cosmos-scaffold)', color: 'var(--cosmos-text-primary)' }}>
       <section className="w-full max-w-lg rounded-[28px] border p-6 sm:p-8 text-center" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-surface)' }}>
-        <OtyaBrandMark size={52} label="Otya Player" />
+        <OtyaBrandMark size={52} label="Otya Media" />
         <h1 className="mt-5 text-2xl sm:text-3xl font-black tracking-[-.04em]">Something did not load.</h1>
         <p className="mt-3 text-sm leading-6 otya-muted">Please try loading this page again. If you were saving a change, check its status before submitting it again. Help is here if the problem continues.</p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">

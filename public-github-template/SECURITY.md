@@ -1,6 +1,6 @@
 # OTYA Security Policy
 
-Security reports should be handled privately.
+Security reports should be handled privately. Otya is the public umbrella brand; Otya Holdings Limited is the intended parent entity and its URSB registration is in progress.
 
 ## Report a vulnerability
 
@@ -25,6 +25,6 @@ Please include:
 
 ## Scope
 
-The official OTYA website, OTYA Player and connected OTYA services may be in scope when explicitly operated by PeterSmart Link. Third-party services are governed by their own security programs.
+The official Otya website, Otya Media and connected Otya services may be in scope when operated or controlled by Otya. Third-party services are governed by their own security programs.
 
-OTYA will acknowledge good-faith reports and prioritize issues based on demonstrated risk.
+Otya will acknowledge good-faith reports and prioritize issues based on demonstrated risk.

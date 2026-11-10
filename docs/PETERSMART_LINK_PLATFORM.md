@@ -1,70 +1,50 @@
-# PeterSmart Link platform
+# Otya ecosystem — company and product identity
 
-This document is the canonical public-product architecture for the PeterSmart Link web ecosystem.
+This document defines the current public brand hierarchy and the transition from the previous personal developer label.
+
+## Identity status
+
+- **Public umbrella brand:** Otya.
+- **Intended parent entity:** Otya Holdings Limited.
+- **Registration status:** URSB registration is in progress. Do not describe Otya Holdings Limited as already incorporated or as the current legal holder of any account until registration is complete.
+- **Current individual account holder:** Peter Katabira for merchant/provider accounts that are still contracted in an individual's name. Use this name only where legal KYC, account ownership, contractual or regulatory disclosures require it.
+- **Customer-facing product brands:** Otya, OtyaPoint, Otya Media, OtyaHub, Otya OS, Otya End and Next.
+
+Otya is the public brand. Otya Holdings Limited is the intended parent company, not an assertion that registration or account transfer is already complete. Following incorporation, update provider KYC, merchant and settlement ownership, billing, contracts, privacy/controller notices and relevant platform owner records through each provider's approved process.
 
 ## Brand hierarchy
 
-- **PeterSmart Link** is the developer, publisher and organization.
-- **Otya** is a PeterSmart Link product family.
-- **Otya Player** is the Android local music and video player.
-- **Next** is the assistant available through Otya surfaces.
-- **Space** is the signed-in environment for one Otya account.
-- **Admin** is a role inside Space, not a second account or a second identity system.
+- **Otya Holdings Limited** — intended parent company (registration in progress).
+- **Otya** — public umbrella brand and ecosystem identity.
+- **Otya OS** — unified platform experience.
+- **Otya End** — shared backend and integration services.
+- **OtyaPoint** — retail, inventory and mobile-money agency product.
+- **Otya Media** — local-first Android music and video application.
+- **OtyaHub** — public developer and partner information surface.
+- **Next / Otya Next** — assistant and private owner-intelligence experiences, separated by permission and audience.
+- **Space** — signed-in Otya account environment; not a separate product company or legal entity.
 
-Do not present `petersmartlink.com` as though PeterSmart Link and Otya Player are the same thing. The company site may feature Otya prominently, but product pages belong below the organization layer.
+## Public surfaces and compatibility
 
-## Public surfaces
+The existing public hostnames remain the operational domains until a separate domain migration is planned, verified and approved:
 
-### petersmartlink.com
+- https://petersmartlink.com — Otya website and product discovery.
+- https://docs.petersmartlink.com — public documentation.
+- https://status.petersmartlink.com — public service status.
+- https://space.petersmartlink.com — account and signed-in environment.
 
-PeterSmart Link organization and product website. It should explain who builds the products, what products exist, how to get support, where documentation lives and how to reach the signed-in environment.
+The legacy domain and technical repository owner are compatibility identifiers, not the customer-facing brand or a statement of corporate ownership. Keep existing domains, cookies, CORS origins, API paths, app IDs, Worker names, OAuth redirect URIs and email addresses unchanged until a coordinated migration has tested redirects, DNS, authentication, certificates, provider callbacks and rollback.
 
-Primary information architecture:
+## Legal and merchant identity
 
-- Products
-- Otya
-- Developers
-- Company
-- Support
-- Sign in / Space
+- Where a service account, merchant profile or settlement relationship is currently held by Peter Katabira as an individual, keep the legal name and KYC details accurate.
+- Use Otya or OtyaPoint as the merchant/storefront display brand only where the relevant provider permits trading names for an individual profile.
+- Do not submit Otya Holdings Limited as an incorporated merchant, data controller, billing owner or settlement beneficiary before URSB registration and provider verification.
+- After registration, prepare the certificate, TIN and other provider-requested documents; ask each provider to approve a legal-entity migration or new business profile. Do not assume credentials, limits, history, settlement or merchant IDs transfer.
+- Update legal notices and customer contracts when the responsible operator/controller changes. Preserve any records that must remain attributed to the original individual account holder.
 
-### space.petersmartlink.com
+## Naming and release rules
 
-One signed-in environment for one Otya identity. Account, security, connected providers, devices, settings, Next, Telegram and eligible Admin controls live here.
+Use Otya for general public identity, OtyaPoint for shop/agency functionality and Otya Media for the Android media product. Keep internal identifiers where changing them could break data or users. Make customer-facing labels consistent before altering low-level identifiers.
 
-A user does not create a separate Admin account. The authenticated Otya identity is assigned server-side roles and permissions.
-
-### docs.petersmartlink.com
-
-Public documentation. Documentation should be task-oriented and safe to publish. It must not expose secrets, internal service bindings, raw logs, private database identifiers, signing material, private infrastructure topology or security bypass details.
-
-### status.petersmartlink.com
-
-Operational status only: service state, incidents and incident history. Keep marketing and internal diagnostics out of the status surface.
-
-## Authentication and roles
-
-OTYA uses one account identity with multiple sign-in methods.
-
-1. A person authenticates using email, Google or another supported provider.
-2. The server resolves that provider to the same Otya account.
-3. The server resolves roles for that account.
-4. Normal users enter Space normally.
-5. An owner/admin account may complete required owner verification during the same sign-in journey.
-6. Once verified, Admin appears inside Space according to the server-authorized role.
-
-Google sign-in is already a primary authentication method. Do not ask the user to re-enter the normal Otya password merely because Google was used. Additional verification is a security factor, not a second login identity.
-
-## Admin security rule
-
-Admin UI visibility never grants authority by itself. Every privileged backend action remains server-authorized.
-
-High-impact actions may require fresh step-up verification even when the owner is already signed in. Examples include changing administrator access, destructive account/data operations, security configuration, secrets, production publishing and similarly consequential operations.
-
-## Developer identity
-
-Use **PeterSmart Link** as the public developer/publisher brand unless a store or legal process specifically requires the verified legal identity. Do not use Otya as the developer name because Otya is a product.
-
-## Product-quality rule
-
-Every public route must have a clear purpose. Do not keep placeholder routes that simply redirect unrelated sections together when a real destination is expected. Navigation, page titles, metadata, footer links, documentation and account surfaces must use the same hierarchy and terminology.
+No public page may claim a registered company, provider approval, settlement authority, released product, customer count, partnership or compliance status without evidence.

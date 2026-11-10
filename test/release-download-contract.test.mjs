@@ -19,7 +19,7 @@ test('generic release downloads never silently select ARM64', () => {
 
   assert.match(downloadPage, /return \{isAndroid:true,abi:'unknown'\}/)
   assert.match(downloadPage, /Choose your Android build/)
-  assert.match(downloadPage, /Otya Player will not guess/)
+  assert.match(downloadPage, /Otya Media will not guess/)
   assert.match(downloadPage, /download\('arm64'\)/)
   assert.match(downloadPage, /download\('arm32'\)/)
   assert.doesNotMatch(downloadPage, /\/android\/i\.test\(ua\) \? 'arm64' : 'unknown'/)

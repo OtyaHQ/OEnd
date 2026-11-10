@@ -69,7 +69,7 @@ async function runAi(env,messages,selection){
 async function publicOtyaContext(env){
   const base=(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')
   const facts=[
-    'Otya is an offline-first Android music and video player by PeterSmart Link.',
+    'Otya Media is an offline-first Android media app in the Otya ecosystem.',
     'Otya has three permanent top-level destinations: Video, Music and Me. Advanced utilities should appear contextually or under organized Tools/Settings rather than as duplicate top-level screens.',
     'Next is the friendly general assistant inside Otya. It can answer ordinary questions and has extra Otya product context when needed.',
     `Official website: ${base}.`,
@@ -132,7 +132,7 @@ function historyFrom(value){
 function handoffResult(answer){
   const text=clean(answer,9000)
   if(!text.startsWith('[HANDOFF]'))return{answer:text,handoff_available:false}
-  return{answer:clean(text.replace(/^\[HANDOFF\]\s*/,'').trim(),9000),handoff_available:true,handoff_label:'Talk to PeterSmart Link support'}
+  return{answer:clean(text.replace(/^\[HANDOFF\]\s*/,'').trim(),9000),handoff_available:true,handoff_label:'Talk to Otya support'}
 }
 
 async function persistentReply(env,{userId,message,channel,conversationId,selection,forceNew=false}){
@@ -244,7 +244,7 @@ export async function handlePublicChat(request,env){
   if(body.request_handoff===true){
     try{
       const ticket=await sendAdminHandoff(env,{message,email:body.contact_email,name:body.contact_name,source:body.surface||body.channel||'web',userId})
-      return json({ok:true,handoff_sent:true,ticket,message:'PeterSmart Link support has been notified.'})
+      return json({ok:true,handoff_sent:true,ticket,message:'Otya support has been notified.'})
     }catch(e){
       console.error('[support-handoff]',e?.message)
       return json({error:'Could not notify support right now. Please use support@petersmartlink.com.',code:'HANDOFF_FAILED'},503)

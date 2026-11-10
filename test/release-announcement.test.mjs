@@ -80,5 +80,5 @@ test('missing configuration does not send and long release notes fit Telegram', 
   assert.equal((await announceRelease({}, release, () => assert.fail('must not send'))).status, 'not-configured')
   const text = releaseAnnouncementText({ ...release, changelog: 'x'.repeat(8000) })
   assert.ok(text.length < 1024)
-  assert.match(text, /PeterSmart Link/)
+  assert.match(text, /Otya · Made with care in Uganda/)
 })
