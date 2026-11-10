@@ -4,12 +4,13 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('organization navigation identifies PeterSmart Link while Otya uses the synced approved mark', () => {
+test('Otya navigation uses the synced approved brand mark', () => {
   const nav = read('src/components/SiteNav.tsx')
   const mark = read('src/components/OtyaBrandMark.tsx')
   const sync = read('scripts/sync-brand-assets.mjs')
 
-  assert.match(nav, /PeterSmart Link/)
+  assert.match(nav, /Otya home — products and services/)
+  assert.doesNotMatch(nav, /PeterSmart Link/)
   assert.match(nav, /\['Otya', '\/otya-player'\]/)
   assert.match(mark, /otya-app-icon\.webp/)
   assert.doesNotMatch(mark, /otya-mark-current\.png|otya-icon\.svg|otya-icon-dark\.svg|otya-ai\.svg/)
