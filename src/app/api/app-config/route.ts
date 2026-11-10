@@ -81,7 +81,7 @@ const DEFAULT_CONFIG = {
     optionalForPlayer: true,
     scope: 'support-only',
     productContext: 'otya-player',
-    greeting: 'Otya Player keeps local media simple. For help with playback, Transfer, Private, updates or your account, visit PeterSmart Link support.',
+    greeting: 'Otya Media keeps local playback simple. For help with video, music, Send, Private, updates or your Otya account, visit Otya support.',
     suggestedPrompts: [],
   },
   push: {
