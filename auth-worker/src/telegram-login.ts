@@ -307,7 +307,7 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
       let emailProofVerified = false
       try {
         emailProofVerified = await consumeVerifiedTelegramIdentityLink({
-          kv: env.AUTH_KV,
+          db: env.AUTH_DB,
           userId,
           currentEmail: currentUser.email,
         })
