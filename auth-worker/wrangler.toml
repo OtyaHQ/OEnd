@@ -54,7 +54,7 @@ TELEGRAM_LOGIN_REDIRECT_URI = "https://petersmartlink.com/api/auth/telegram/call
 TELEGRAM_LOGIN_BOT_USERNAME = "OtyaPlayerBot"
 ADMIN_EMAILS = "petersmartlink@gmail.com"
 
-# Telegram browser sign-in stays OIDC + PKCE. Mini App signature verification
-# reads the same centralized Secrets Store entry through a purpose-specific
-# local binding so the legacy Login Widget path cannot mistake the binding
-# object for a raw token. No secret value is duplicated in GitHub.
+# Telegram account sign-in is disabled. The OIDC callback remains only for
+# an already authenticated user's linked-identity owner-verification step-up.
+# Mini App signature verification reads the centralized bot credential through
+# a purpose-specific Secrets Store binding. No secret value is stored in Git.
