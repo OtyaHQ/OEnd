@@ -113,3 +113,5 @@ class_name = "OtyaReleaseWorkflow"
 
 [triggers]
 crons = ["*/5 * * * *", "0 * * * *"]
+# Release note: Next.js 16.4.6 + OpenNext Cloudflare 1.20.16 were validated in PR #266.
+# This comment-only commit triggers the existing guarded [DEPLOY-ALL] release workflow; it does not alter runtime configuration.
