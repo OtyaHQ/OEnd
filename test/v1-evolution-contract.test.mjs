@@ -33,7 +33,10 @@ test('critical deployment stack is pinned instead of floating across deploys', (
   }
 
   for (const path of ['wrangler.toml', 'auth-worker/wrangler.toml', 'ai-worker/wrangler.toml']) {
-    assert.match(read(path), /compatibility_date = "2026-11-09"/)
+    const config = read(path)
+    assert.match(config, /compatibility_date = "2026-11-09"/)
+    assert.match(config, /\[observability\.issues\]\s*enabled = true/)
+    assert.match(config, /redact_query_string = true/)
   }
 })
 
