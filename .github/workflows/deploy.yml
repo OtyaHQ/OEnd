@@ -2,10 +2,10 @@ name: Deploy OTYA to Cloudflare
 on:
   push:
     branches: [main]
-    paths-ignore: ['**/*.md', 'docs/**', '.github/**']
+    paths-ignore: ['**/*.md', 'docs/**']
   pull_request:
     branches: [main]
-    paths-ignore: ['**/*.md', 'docs/**', '.github/**']
+    paths-ignore: ['**/*.md', 'docs/**']
   workflow_dispatch:
     inputs:
       component:
@@ -72,6 +72,7 @@ jobs:
           npm run test:auth-boundary
           npm run test:agency-list
           npm run test:legacy-products-bridge
+          npm run test:quickteller
           npm run dev:local:check
           npm run test:local-auth
           npm run test:local-runtime
@@ -332,6 +333,7 @@ jobs:
           npm run test:auth-boundary
           npm run test:agency-list
           npm run test:legacy-products-bridge
+          npm run test:quickteller
           npm run dev:local:check
           npm run test:local-auth
           npm run test:local-runtime
