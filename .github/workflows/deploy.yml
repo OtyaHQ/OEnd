@@ -462,8 +462,14 @@ jobs:
             head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
             exit 1
           }
-          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
-          check https://petersmartlink.com/webhooks/ '^405$'
+          # Probe the POST handler without sending a synthetic email event. Missing Svix headers
+          # must be rejected immediately. Do not follow redirects on this API health probe.
+          webhook_status="$(curl --silent --show-error --request POST --output /tmp/otya-webhook-probe.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 --max-redirs 0 https://petersmartlink.com/webhooks/ || true)"
+          test "$webhook_status" = "401" || {
+            echo "::error::Resend webhook route returned ${webhook_status:-network-error}; expected 401 without Svix signature headers."
+            head -c 1000 /tmp/otya-webhook-probe.json 2>/dev/null || true
+            exit 1
+          }
           check https://docs.petersmartlink.com/ '^(200|301|302|307|308)$'
           check https://status.petersmartlink.com/ '^(200|301|302|307|308)$'
           check https://space.petersmartlink.com/ '^(200|301|302|307|308)$'
