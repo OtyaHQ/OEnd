@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
 
 const PUBLIC_PREFIX = '/api/auth/telegram/'
+const ACCESS_COOKIE = '__Secure-otya_access'
 const AUTH_PREFIX = '/auth/telegram/'
 const ADMIN_RETURN_COOKIE = 'otya_admin_return'
 const COOKIE_DOMAIN = '.petersmartlink.com'
