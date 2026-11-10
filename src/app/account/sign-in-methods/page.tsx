@@ -14,7 +14,7 @@ type User = {
 }
 
 type Identity = { provider: string; provider_username?: string | null }
-type Json = { error?: string; user?: User; identities?: Identity[]; authorization_url?: string }
+type Json = { error?: string; user?: User; identities?: Identity[]; bot_url?: string }
 type GoogleCredentialResponse = { credential?: string }
 type GoogleApi = { accounts: { id: { initialize(input: { client_id: string; callback: (response: GoogleCredentialResponse) => void; auto_select?: boolean }): void; renderButton(element: HTMLElement, options: Record<string, unknown>): void } } }
 declare global { interface Window { google?: GoogleApi } }
@@ -36,7 +36,8 @@ export default function SignInMethodsPage() {
   const [notice, setNotice] = useState('')
 
   const google = identities.find(identity => identity.provider === 'google')
-  const telegram = identities.find(identity => identity.provider === 'telegram')
+  const telegramOtp = identities.find(identity => identity.provider === 'telegram_otp_bot')
+  const legacyTelegram = identities.find(identity => identity.provider === 'telegram')
 
   useEffect(() => { void loadAccount() }, [])
 
@@ -152,13 +153,23 @@ export default function SignInMethodsPage() {
     })
   }
 
-  async function connectTelegram() {
+  async function connectTelegramOtp() {
     await action(async () => {
-      const response = await accountFetch('telegram/start', { method: 'POST' })
+      const response = await accountFetch('telegram-otp/link/start', { method: 'POST' })
       const data = await response.json().catch(() => ({})) as Json
-      if (!response.ok || !data.authorization_url) throw new Error(data.error || 'Telegram linking is unavailable.')
-      window.location.assign(data.authorization_url)
-      return ''
+      if (!response.ok || !data.bot_url) throw new Error(data.error || 'Telegram OTP connection is unavailable.')
+      window.location.assign(data.bot_url)
+      return 'Open OtyaPlayerBot and press Start. Return here after the bot confirms the connection.'
+    })
+  }
+
+  async function disconnectTelegramOtp() {
+    await action(async () => {
+      const response = await accountFetch('telegram-otp/link/revoke', { method: 'POST' })
+      const data = await response.json().catch(() => ({})) as Json
+      if (!response.ok) throw new Error(data.error || 'Could not disconnect Telegram OTP delivery.')
+      await loadAccount()
+      return 'Telegram OTP delivery has been disconnected.'
     })
   }
 
@@ -168,7 +179,7 @@ export default function SignInMethodsPage() {
     <div className="mb-7">
       <div className="text-[11px] font-black uppercase tracking-[.16em] otya-muted">Otya Space</div>
       <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Sign-in methods</h1>
-      <p className="mt-2 text-sm sm:text-base otya-muted">Telegram, Google and email can all belong to one OTYA ID. Connecting another method does not create another account.</p>
+      <p className="mt-2 text-sm sm:text-base otya-muted">Google and email are Otya sign-in methods. Telegram can be connected separately for one-time security codes; it does not sign you in.</p>
       <div className="mt-3 text-xs font-mono otya-muted">OTYA ID: {user.otya_id || 'Being assigned'}</div>
     </div>
 
@@ -194,12 +205,18 @@ export default function SignInMethodsPage() {
         {google ? <p className="mt-3 text-sm otya-muted">You can use this Google account to access the same OTYA identity.</p> : <div className="mt-4"><div ref={googleButtonRef} className={busy ? 'pointer-events-none opacity-55' : ''} /></div>}
       </MethodRow>
 
-      <MethodRow title="Telegram" status={telegram ? `Connected${telegram.provider_username ? ` · ${telegram.provider_username}` : ''}` : 'Not connected'}>
-        {telegram ? <p className="mt-3 text-sm otya-muted">Telegram is already attached to this OTYA identity.</p> : <button onClick={() => void connectTelegram()} disabled={busy} className="mt-4 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram</button>}
+      <MethodRow title="Telegram OTP delivery" status={telegramOtp ? 'Connected' : 'Not connected'}>
+        {telegramOtp ? <div className="mt-3 space-y-3">
+          <p className="text-sm otya-muted">Your private OtyaPlayerBot chat can receive one-time security codes. Telegram is not a sign-in method.</p>
+          <button onClick={() => void disconnectTelegramOtp()} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Disconnect OTP delivery</button>
+        </div> : <div className="mt-3 space-y-3">
+          <p className="text-sm otya-muted">{legacyTelegram ? 'Your earlier Telegram identity remains attached, but bot OTP delivery must be connected separately.' : 'Connect your private Telegram bot chat to receive Otya security codes. This does not create a Telegram sign-in option.'}</p>
+          <button onClick={() => void connectTelegramOtp()} disabled={busy} className="mt-1 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram for OTPs</button>
+        </div>}
       </MethodRow>
     </section>
 
-    <p className="mt-5 text-sm otya-muted">For security, OTYA will not automatically merge two existing accounts just because they appear to belong to the same person. Sign in to the account you want to keep, then connect the other method here.</p>
+    <p className="mt-5 text-sm otya-muted">Google or email remains your way to sign in. Telegram bot linking only enables OTP delivery and never merges accounts or grants a sign-in session.</p>
     <Link href="/account#connected" className="inline-block mt-5 text-sm font-black">Back to account overview</Link>
 
     <style jsx global>{`.method-input{min-height:44px;border:1px solid var(--cosmos-divider);background:var(--cosmos-card);color:var(--cosmos-text-primary);border-radius:12px;padding:10px 12px;outline:none}.method-input:focus{border-color:var(--cosmos-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--cosmos-primary) 12%,transparent)}`}</style>
