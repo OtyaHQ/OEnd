@@ -19,7 +19,7 @@ type User = {
 }
 
 type Identity = { provider: string; provider_username?: string | null }
-type Payload = { user?: User; identities?: Identity[]; error?: string; message?: string; sign_in_again?: boolean; session_revocation_complete?: boolean }
+type Payload = { user?: User; identities?: Identity[]; error?: string; message?: string; email_updated?: boolean; sign_in_again?: boolean; session_revocation_complete?: boolean }
 
 async function accountFetch(path: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers)
@@ -37,6 +37,7 @@ export default function AccountPage() {
   const [name, setName] = useState('')
   const [recoveryEmail, setRecoveryEmail] = useState('')
   const [newEmail, setNewEmail] = useState('')
+  const [currentEmailProofCode, setCurrentEmailProofCode] = useState('')
   const [currentEmailChangeCode, setCurrentEmailChangeCode] = useState('')
   const [newEmailChangeCode, setNewEmailChangeCode] = useState('')
   const [emailChangePending, setEmailChangePending] = useState(false)
@@ -103,9 +104,10 @@ export default function AccountPage() {
       const data = await response.json().catch(() => ({})) as Payload
       if (!response.ok) throw new Error(data.error || 'Could not request an email change.')
       setEmailChangePending(true)
+      setCurrentEmailProofCode('')
       setCurrentEmailChangeCode('')
       setNewEmailChangeCode('')
-      setNotice(data.message || 'A security code was sent to your linked Telegram bot chat and another to your new email.')
+      setNotice(data.message || 'Three verification codes were sent: current email, Telegram bot and new email.')
     } catch (cause) {
       setError((cause as Error).message)
     } finally {
@@ -116,8 +118,8 @@ export default function AccountPage() {
   async function confirmEmailChange(event: FormEvent) {
     event.preventDefault()
     if (emailChanging) return
-    if (!currentEmailChangeCode.trim() || !newEmailChangeCode.trim()) {
-      setError('Enter both verification codes: one from your linked OtyaPlayerBot private chat and one from your new email.')
+    if (!currentEmailProofCode.trim() || !currentEmailChangeCode.trim() || !newEmailChangeCode.trim()) {
+      setError('Enter all three verification codes: your current email, your linked OtyaPlayerBot private chat and your new email.')
       return
     }
     setEmailChanging(true); setError(''); setNotice('')
@@ -125,14 +127,15 @@ export default function AccountPage() {
       const response = await accountFetch('email-change/confirm', {
         method: 'POST',
         body: JSON.stringify({
-          current_otp: currentEmailChangeCode.trim().toUpperCase(),
+          current_email_otp: currentEmailProofCode.trim().toUpperCase(),
+          telegram_otp: currentEmailChangeCode.trim().toUpperCase(),
           new_otp: newEmailChangeCode.trim().toUpperCase(),
         }),
       })
       const data = await response.json().catch(() => ({})) as Payload
       if (!response.ok) {
         setSessionsRevoked(data.session_revocation_complete === true)
-        setMustSignIn(typeof data.session_revocation_complete === 'boolean')
+        setMustSignIn(data.sign_in_again === true)
         if (data.message) setNotice(data.message)
         throw new Error(data.error || 'Could not verify the new email address.')
       }
@@ -140,6 +143,7 @@ export default function AccountPage() {
       setUser(current => current ? { ...current, email: verifiedEmail, is_verified: 1 } : current)
       setEmailChangePending(false)
       setNewEmail('')
+      setCurrentEmailProofCode('')
       setCurrentEmailChangeCode('')
       setNewEmailChangeCode('')
       setMustSignIn(data.sign_in_again === true)
@@ -194,7 +198,7 @@ export default function AccountPage() {
       {user?.email && Number(user.is_verified) === 1 && <section className="mt-6 rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
         <div className="mb-4">
           <h2 className="text-xl font-black">Change primary email</h2>
-          <p className="mt-1 text-sm otya-muted">To protect your existing account, Otya sends one code to your linked private OtyaPlayerBot chat to prove control of the current account, and another code to your new email. Both must be confirmed. Your Otya ID, profile and Google sign-in stay attached to the same account; Telegram remains a separate security and OTP channel.</p>
+          <p className="mt-1 text-sm otya-muted">To protect the existing account, Otya requires three independent checks: a code sent to your current verified email, a separate code sent to your linked private OtyaPlayerBot chat, and a code sent to your new email. All three must be confirmed. Your Otya ID, profile and Google sign-in stay attached to the same account; Telegram remains a security-code channel, never a sign-in method.</p>
         </div>
         <form onSubmit={requestEmailChange} className="grid gap-3">
           <Field label="New primary email" value={newEmail} onChange={setNewEmail} type="email" autoComplete="email" placeholder="otyaug@gmail.com" disabled={emailChanging || emailChangePending || mustSignIn} />
@@ -203,12 +207,13 @@ export default function AccountPage() {
           </button>
         </form>
         {emailChangePending && <form onSubmit={confirmEmailChange} className="mt-4 grid gap-3 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}>
-          <p className="text-sm otya-muted">Enter both 5-character codes: one from your OtyaPlayerBot private chat and one from your new email. Each expires after 10 minutes.</p>
-          <Field label="Code sent to your linked Otya Telegram bot chat" value={currentEmailChangeCode} onChange={value => setCurrentEmailChangeCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
-          <Field label={`Code sent to your new email (${newEmail.trim()})`} value={newEmailChangeCode} onChange={value => setNewEmailChangeCode(value.toUpperCase())} placeholder="B5678" autoComplete="one-time-code" />
+          <p className="text-sm otya-muted">Enter all three 5-character codes. Each expires after 10 minutes.</p>
+          <Field label={`Code sent to your current email (${user.email})`} value={currentEmailProofCode} onChange={value => setCurrentEmailProofCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
+          <Field label="Code sent to your linked OtyaPlayerBot private chat" value={currentEmailChangeCode} onChange={value => setCurrentEmailChangeCode(value.toUpperCase())} placeholder="B5678" autoComplete="one-time-code" />
+          <Field label={`Code sent to your new email (${newEmail.trim()})`} value={newEmailChangeCode} onChange={value => setNewEmailChangeCode(value.toUpperCase())} placeholder="C9012" autoComplete="one-time-code" />
           <div className="flex flex-wrap gap-2">
             <button disabled={emailChanging} className="cosmos-button min-h-11 rounded-xl px-5 text-sm font-black disabled:opacity-60">{emailChanging ? 'Verifying…' : 'Verify and update email'}</button>
-            <button type="button" disabled={emailChanging} onClick={() => { setEmailChangePending(false); setCurrentEmailChangeCode(''); setNewEmailChangeCode('') }} className="otya-quiet-button min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-60">Cancel</button>
+            <button type="button" disabled={emailChanging} onClick={() => { setEmailChangePending(false); setCurrentEmailProofCode(''); setCurrentEmailChangeCode(''); setNewEmailChangeCode('') }} className="otya-quiet-button min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-60">Cancel</button>
           </div>
         </form>}
       </section>}
