@@ -1,7 +1,7 @@
 import { verifyJwt } from './crypto'
 import { assertSchemaReady, getUserById, type D1Database } from './db'
 import { adminTelegramPending, markAdminTelegramComplete } from './admin-mfa'
-import { consumeVerifiedTelegramIdentityLink } from './telegram-link-proof.mjs'
+import { consumeVerifiedTelegramIdentityLink, hashVerifiedTelegramEmail } from './telegram-link-proof.mjs'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -45,6 +45,7 @@ type StoredTelegramState = {
   userId?: string
   verifier?: string
   nonce?: string
+  ownerLinkEmailHash?: string
 }
 
 type TelegramWidgetPayload = {
@@ -231,6 +232,14 @@ async function completeTelegramIdentity(
 
   const userId = stored.userId
   if (!userId) throw new Error('Telegram state is missing the OTYA account')
+  if (stored.mode === 'link') {
+    const currentUser = await getUserById(env.AUTH_DB, userId)
+    const currentEmail = currentUser?.email?.trim().toLowerCase() ?? ''
+    if (!currentUser || Number(currentUser.is_verified) !== 1 || !currentEmail || !stored.ownerLinkEmailHash
+      || await hashVerifiedTelegramEmail(currentEmail) !== stored.ownerLinkEmailHash) {
+      return Response.redirect('https://petersmartlink.com/sign-in?telegram=expired', 302)
+    }
+  }
   if (existingIdentity && existingIdentity.user_id !== userId) throw new Error('This Telegram account is already linked to another OTYA account')
 
   if (stored.mode === 'admin') {
@@ -299,26 +308,28 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
     const mode: Exclude<TelegramMode, 'login'> = requested === 'admin' ? 'admin' : 'link'
     const userId = await requireUser(request, env)
     if (!userId) return json({ error: 'Sign in to OTYA first' }, 401)
+    let ownerLinkEmailHash: string | undefined
     if (mode === 'link') {
       const currentUser = await getUserById(env.AUTH_DB, userId)
       if (!currentUser?.email || Number(currentUser.is_verified) !== 1) {
         return json({ error: 'Verify your current Otya email before connecting a Telegram owner-verification identity.' }, 409)
       }
-      let emailProofVerified = false
       try {
-        emailProofVerified = await consumeVerifiedTelegramIdentityLink({
+        ownerLinkEmailHash = await hashVerifiedTelegramEmail(currentUser.email)
+        const emailProofVerified = await consumeVerifiedTelegramIdentityLink({
           db: env.AUTH_DB,
           userId,
           currentEmail: currentUser.email,
         })
+        if (!emailProofVerified) {
+          return json({ error: 'Verify the code sent to your current Otya email before connecting or replacing this Telegram identity.' }, 403)
+        }
       } catch (error) {
         console.error('[telegram/link] Email proof lookup failed:', (error as Error)?.message)
         return json({ error: 'Otya could not verify the email proof. Try again.' }, 503)
       }
-      if (!emailProofVerified) {
-        return json({ error: 'Verify the code sent to your current Otya email before connecting or replacing this Telegram identity.' }, 403)
-      }
     }
+
     if (mode === 'admin' && userId && !(await adminTelegramPending(env, userId))) {
       return json({ error: 'Verify your admin email code first.' }, 401)
     }
@@ -329,7 +340,7 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
       const verifier = randomUrlSafe(48)
       const nonce = randomUrlSafe(24)
       const challenge = await sha256Base64Url(verifier)
-      const stored: StoredTelegramState = { mode, verifier, nonce, ...(userId ? { userId } : {}) }
+      const stored: StoredTelegramState = { mode, verifier, nonce, ...(userId ? { userId } : {}), ...(ownerLinkEmailHash ? { ownerLinkEmailHash } : {}) }
       await env.AUTH_KV.put(`telegram_oidc:${state}`, JSON.stringify(stored), { expirationTtl: STATE_TTL })
 
       const authUrl = new URL(OIDC_AUTH)
@@ -345,7 +356,7 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
     }
 
     const state = randomUrlSafe(24)
-    const stored: StoredTelegramState = { mode, ...(userId ? { userId } : {}) }
+    const stored: StoredTelegramState = { mode, ...(userId ? { userId } : {}), ...(ownerLinkEmailHash ? { ownerLinkEmailHash } : {}) }
     await env.AUTH_KV.put(`telegram_widget:${state}`, JSON.stringify(stored), { expirationTtl: STATE_TTL })
     const widgetAuthUrl = new URL(DEFAULT_WIDGET_REDIRECT)
     widgetAuthUrl.searchParams.set('state', state)
