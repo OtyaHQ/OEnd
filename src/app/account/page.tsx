@@ -132,7 +132,7 @@ export default function AccountPage() {
       const data = await response.json().catch(() => ({})) as Payload
       if (!response.ok) {
         setSessionsRevoked(data.session_revocation_complete === true)
-        setMustSignIn(data.session_revocation_complete === true)
+        setMustSignIn(typeof data.session_revocation_complete === 'boolean')
         if (data.message) setNotice(data.message)
         throw new Error(data.error || 'Could not verify the new email address.')
       }
