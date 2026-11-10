@@ -68,7 +68,6 @@ test('future explicit core deploys provision the existing Resend API key without
   assert.match(deploy, /github\.ref == 'refs\/heads\/main'/)
   assert.match(deploy, /CONFIRM.*DEPLOY|test "\$CONFIRM" = 'DEPLOY'/s)
 })
-/)
   assert.match(deploy, /github\.event_name == 'workflow_dispatch'/)
   assert.match(deploy, /github\.ref == 'refs\/heads\/main'/)
   assert.match(deploy, /CONFIRM.*DEPLOY|test "\$CONFIRM" = 'DEPLOY'/s)
