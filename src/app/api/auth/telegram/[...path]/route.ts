@@ -109,15 +109,12 @@ async function forward(request: NextRequest): Promise<Response> {
     const data = contentType.includes('application/json') ? await upstream.clone().json().catch(() => ({})) as Payload : null
 
     if (publicUrl.pathname.endsWith('/miniapp') && data) {
-      if (!upstream.ok) return NextResponse.json(data, { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
-      if (data.authenticated === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.json(withoutTokens(data), { status: upstream.status })
-        response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
-        response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
-      return NextResponse.json(withoutTokens(data), { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
+      // Mini App identity data may confirm that the request came from Telegram,
+      // but it must never mint browser Otya sessions or set login cookies.
+      return NextResponse.json(withoutTokens(data), {
+        status: upstream.status,
+        headers: { 'Cache-Control': 'no-store' },
+      })
     }
 
     if (publicUrl.pathname.endsWith('/start') && upstream.ok && data) {
