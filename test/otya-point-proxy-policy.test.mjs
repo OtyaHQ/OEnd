@@ -55,4 +55,5 @@ test('constructs fixed API paths and rejects traversal or empty segments', () =>
   assert.equal(otyaPointUpstreamPath([]), null)
   assert.equal(otyaPointUpstreamPath(['..']), null)
   assert.equal(otyaPointUpstreamPath(['products/../../auth']), null)
+  assert.equal(otyaPointUpstreamPath(['evil\\\\auth']), null)
 })
