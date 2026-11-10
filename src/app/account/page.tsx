@@ -37,7 +37,8 @@ export default function AccountPage() {
   const [name, setName] = useState('')
   const [recoveryEmail, setRecoveryEmail] = useState('')
   const [newEmail, setNewEmail] = useState('')
-  const [emailChangeCode, setEmailChangeCode] = useState('')
+  const [currentEmailChangeCode, setCurrentEmailChangeCode] = useState('')
+  const [newEmailChangeCode, setNewEmailChangeCode] = useState('')
   const [emailChangePending, setEmailChangePending] = useState(false)
   const [emailChanging, setEmailChanging] = useState(false)
   const [mustSignIn, setMustSignIn] = useState(false)
@@ -102,8 +103,9 @@ export default function AccountPage() {
       const data = await response.json().catch(() => ({})) as Payload
       if (!response.ok) throw new Error(data.error || 'Could not request an email change.')
       setEmailChangePending(true)
-      setEmailChangeCode('')
-      setNotice(data.message || 'A verification code was sent to your new email address.')
+      setCurrentEmailChangeCode('')
+      setNewEmailChangeCode('')
+      setNotice(data.message || 'Two verification codes were sent to your current and new email addresses.')
     } catch (cause) {
       setError((cause as Error).message)
     } finally {
@@ -114,23 +116,31 @@ export default function AccountPage() {
   async function confirmEmailChange(event: FormEvent) {
     event.preventDefault()
     if (emailChanging) return
-    if (!emailChangeCode.trim()) {
-      setError('Enter the verification code sent to your new email address.')
+    if (!currentEmailChangeCode.trim() || !newEmailChangeCode.trim()) {
+      setError('Enter both verification codes: one from your current email and one from your new email.')
       return
     }
     setEmailChanging(true); setError(''); setNotice('')
     try {
       const response = await accountFetch('email-change/confirm', {
         method: 'POST',
-        body: JSON.stringify({ otp: emailChangeCode.trim().toUpperCase() }),
+        body: JSON.stringify({
+          current_otp: currentEmailChangeCode.trim().toUpperCase(),
+          new_otp: newEmailChangeCode.trim().toUpperCase(),
+        }),
       })
       const data = await response.json().catch(() => ({})) as Payload
-      if (!response.ok) throw new Error(data.error || 'Could not verify the new email address.')
+      if (!response.ok) {
+        setSessionsRevoked(data.session_revocation_complete === true)
+        if (data.message) setNotice(data.message)
+        throw new Error(data.error || 'Could not verify the new email address.')
+      }
       const verifiedEmail = newEmail.trim().toLowerCase()
       setUser(current => current ? { ...current, email: verifiedEmail, is_verified: 1 } : current)
       setEmailChangePending(false)
       setNewEmail('')
-      setEmailChangeCode('')
+      setCurrentEmailChangeCode('')
+      setNewEmailChangeCode('')
       setMustSignIn(data.sign_in_again === true)
       setSessionsRevoked(data.session_revocation_complete === true)
       setNotice(data.message || 'Your Otya primary email has been updated.')
@@ -182,7 +192,7 @@ export default function AccountPage() {
       {user?.email && Number(user.is_verified) === 1 && <section className="mt-6 rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
         <div className="mb-4">
           <h2 className="text-xl font-black">Change primary email</h2>
-          <p className="mt-1 text-sm otya-muted">Your current email stays active until you verify the new address. Your Otya ID, profile, and linked Google or Telegram sign-in methods remain attached to the same account.</p>
+          <p className="mt-1 text-sm otya-muted">To protect your existing account, Otya sends separate one-time codes to your current verified email and your new email. Both must be confirmed. Your Otya ID, profile, and linked Google or Telegram sign-in methods stay attached to the same account.</p>
         </div>
         <form onSubmit={requestEmailChange} className="grid gap-3">
           <Field label="New primary email" value={newEmail} onChange={setNewEmail} type="email" autoComplete="email" placeholder="otyaug@gmail.com" disabled={emailChanging || emailChangePending || mustSignIn} />
@@ -191,11 +201,12 @@ export default function AccountPage() {
           </button>
         </form>
         {emailChangePending && <form onSubmit={confirmEmailChange} className="mt-4 grid gap-3 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}>
-          <p className="text-sm otya-muted">Enter the 5-character code sent to <strong>{newEmail.trim()}</strong>. Only the newest code works, and it expires after 10 minutes.</p>
-          <Field label="Email verification code" value={emailChangeCode} onChange={value => setEmailChangeCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
+          <p className="text-sm otya-muted">Enter both 5-character codes. Each expires after 10 minutes, and only the newest request is valid.</p>
+          <Field label={`Code sent to your current email (${user.email})`} value={currentEmailChangeCode} onChange={value => setCurrentEmailChangeCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
+          <Field label={`Code sent to your new email (${newEmail.trim()})`} value={newEmailChangeCode} onChange={value => setNewEmailChangeCode(value.toUpperCase())} placeholder="B5678" autoComplete="one-time-code" />
           <div className="flex flex-wrap gap-2">
             <button disabled={emailChanging} className="cosmos-button min-h-11 rounded-xl px-5 text-sm font-black disabled:opacity-60">{emailChanging ? 'Verifying…' : 'Verify and update email'}</button>
-            <button type="button" disabled={emailChanging} onClick={() => { setEmailChangePending(false); setEmailChangeCode('') }} className="otya-quiet-button min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-60">Cancel</button>
+            <button type="button" disabled={emailChanging} onClick={() => { setEmailChangePending(false); setCurrentEmailChangeCode(''); setNewEmailChangeCode('') }} className="otya-quiet-button min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-60">Cancel</button>
           </div>
         </form>}
       </section>}
