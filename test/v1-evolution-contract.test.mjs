@@ -14,16 +14,18 @@ test('public server version remains Otya 1.0.0 during first-release evolution', 
 
 test('critical deployment stack is pinned instead of floating across deploys', () => {
   assert.equal(pkg.engines.node, '>=22 <23')
-  assert.equal(pkg.dependencies.next, '15.5.28')
-  assert.equal(pkg.dependencies.react, '19.2.8')
-  assert.equal(pkg.dependencies['react-dom'], '19.2.8')
-  assert.equal(pkg.devDependencies['@opennextjs/cloudflare'], '1.20.6')
+  assert.equal(pkg.dependencies.next, '16.4.6')
+  assert.equal(pkg.dependencies.react, '19.3.1')
+  assert.equal(pkg.dependencies['react-dom'], '19.3.1')
+  assert.equal(pkg.devDependencies['@opennextjs/cloudflare'], '1.20.16')
+  assert.equal(pkg.devDependencies['eslint-config-next'], '16.4.5')
+  assert.equal(pkg.devDependencies.eslint, '10.14.0')
   assert.equal(pkg.devDependencies.wrangler, '4.159.0')
   assert.equal(pkg.devDependencies.typescript, '5.9.3')
   assert.equal(pkg.devDependencies.postcss, '8.5.25')
   assert.equal(pkg.overrides.postcss, '8.5.25')
   assert.equal(pkg.overrides.sharp, '0.35.5')
-  assert.doesNotMatch(pkg.dependencies.next, /^16\./)
+  assert.match(pkg.dependencies.next, /^16\./)
 
   for (const path of ['package-lock.json', 'auth-worker/package-lock.json', 'ai-worker/package-lock.json']) {
     const lock = JSON.parse(read(path))
