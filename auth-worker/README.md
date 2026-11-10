@@ -28,12 +28,13 @@ wrangler secret put RESEND_API_KEY
 
 Google identity uses the configured `GOOGLE_CLIENT_ID` variable. Sensitive values must remain server-side.
 
-### Optional Telegram account verification
+### Telegram security verification and OTP delivery
 
-OTYA supports two Telegram verification paths:
+Telegram is **not** a normal Otya account sign-in method. Email/password and Google remain the account access methods. Two separate Telegram security capabilities are supported:
 
-1. **Telegram Login / OIDC** — a signed-in user can link a Telegram identity.
-2. **Telegram Gateway** — an optional code fallback for phone verification.
+1. **Linked Telegram identity** — an already signed-in user can link a Telegram identity. It is used only for owner-only step-up verification; it cannot create or resume an Otya account session.
+2. **Private OtyaPlayerBot chat** — an already signed-in user can link a private bot chat separately to receive one-time security codes. This is stored as the independent `telegram_otp_bot` identity and never grants sign-in access.
+3. **Telegram Gateway** — optional phone verification transport; it is not an account sign-in provider.
 
 Configure the callback:
 
@@ -41,13 +42,15 @@ Configure the callback:
 https://petersmartlink.com/auth/telegram/callback
 ```
 
-Optional secrets:
+Optional owner-verification and phone-verification secrets:
 
 ```sh
 wrangler secret put TELEGRAM_LOGIN_CLIENT_ID
 wrangler secret put TELEGRAM_LOGIN_CLIENT_SECRET
 wrangler secret put TELEGRAM_GATEWAY_TOKEN
 ```
+
+Telegram bot OTP delivery uses the existing Otya Core bot and a private Auth → Core service binding. Link the bot chat from Account → Sign-in methods after signing in with Google or email. Do not expose the bot token or internal service secret to the browser.
 
 Never put Telegram client secrets or Gateway tokens in Flutter or browser code.
 
