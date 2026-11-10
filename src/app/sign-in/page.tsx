@@ -305,9 +305,26 @@ export default function SignInPage() {
     let active = true
     const params = new URLSearchParams(window.location.search)
     const owner = params.get('owner')
+    const telegram = params.get('telegram')
     if (owner === 'verified') {
       void completeOwnerVerification()
       return () => { active = false }
+    }
+
+    if (telegram) {
+      const telegramNotices: Record<string, string> = {
+        disabled: 'Telegram is not an Otya sign-in method. Sign in with Google or email. Connect the private Telegram bot separately to receive security codes.',
+        error: 'Telegram could not complete the security check or account link. Sign in with Google or email, then retry from Sign-in methods.',
+        expired: 'The Telegram security link expired. Sign in with Google or email and start the account-linking step again.',
+        cancelled: 'Telegram linking was cancelled. Your existing Otya sign-in methods remain unchanged.',
+        'not-linked': 'This Telegram identity is not linked to the current Otya account. Sign in with the connected Google or email account.',
+        'account-missing': 'The Otya account for this Telegram security check could not be found. Sign in with Google or email and contact Otya Support.',
+      }
+      const message = telegramNotices[telegram]
+      if (message) {
+        setNotice(message)
+        return () => { active = false }
+      }
     }
 
     void authFetch('session').then(async response => {
@@ -315,11 +332,6 @@ export default function SignInPage() {
       if (response.ok && data.authenticated) await routeAuthenticatedSession()
     }).catch(() => undefined)
 
-    if (params.get('telegram') === 'disabled') {
-      queueMicrotask(() => {
-        if (active) setNotice('Telegram is not an Otya sign-in method. Sign in with Google or email. Connect the private Telegram bot separately to receive security codes.')
-      })
-    }
     return () => { active = false }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
