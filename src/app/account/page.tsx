@@ -105,7 +105,7 @@ export default function AccountPage() {
       setEmailChangePending(true)
       setCurrentEmailChangeCode('')
       setNewEmailChangeCode('')
-      setNotice(data.message || 'Two verification codes were sent to your current and new email addresses.')
+      setNotice(data.message || 'A security code was sent to your linked Telegram bot chat and another to your new email.')
     } catch (cause) {
       setError((cause as Error).message)
     } finally {
@@ -202,8 +202,8 @@ export default function AccountPage() {
           </button>
         </form>
         {emailChangePending && <form onSubmit={confirmEmailChange} className="mt-4 grid gap-3 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}>
-          <p className="text-sm otya-muted">Enter both 5-character codes. Each expires after 10 minutes, and only the newest request is valid.</p>
-          <Field label={`Code sent to your current email (${user.email})`} value={currentEmailChangeCode} onChange={value => setCurrentEmailChangeCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
+          <p className="text-sm otya-muted">Enter both 5-character codes: one from your OtyaPlayerBot private chat and one from your new email. Each expires after 10 minutes.</p>
+          <Field label="Code sent to your linked Otya Telegram bot chat" value={currentEmailChangeCode} onChange={value => setCurrentEmailChangeCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
           <Field label={`Code sent to your new email (${newEmail.trim()})`} value={newEmailChangeCode} onChange={value => setNewEmailChangeCode(value.toUpperCase())} placeholder="B5678" autoComplete="one-time-code" />
           <div className="flex flex-wrap gap-2">
             <button disabled={emailChanging} className="cosmos-button min-h-11 rounded-xl px-5 text-sm font-black disabled:opacity-60">{emailChanging ? 'Verifying…' : 'Verify and update email'}</button>
