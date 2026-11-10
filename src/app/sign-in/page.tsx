@@ -329,7 +329,7 @@ export default function SignInPage() {
 
     void authFetch('session').then(async response => {
       const data = await response.json().catch(() => ({})) as Json
-      if (response.ok && data.authenticated) await routeAuthenticatedSession()
+      if (active && response.ok && data.authenticated) await routeAuthenticatedSession()
     }).catch(() => undefined)
 
     return () => { active = false }
