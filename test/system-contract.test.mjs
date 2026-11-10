@@ -223,6 +223,10 @@ test('Primary email change verifies the new address and preserves the existing O
   assert.match(otp, /UPDATE users SET email = \?, is_verified = 1/)
   assert.match(otp, /WHERE id = \? AND email = \?/)
   assert.match(otp, /revokeRefreshTokens\(env, user\.id\)/)
+  const confirmStart = otp.indexOf("if (path === '/auth/email-change/confirm')")
+  const revokeAt = otp.indexOf('await revokeRefreshTokens(env, user.id)', confirmStart)
+  const updateAt = otp.indexOf('UPDATE users SET email =', confirmStart)
+  assert.ok(revokeAt > confirmStart && updateAt > revokeAt, 'refresh sessions must be revoked before primary email commit')
   assert.match(otp, /sign_in_again: true/)
   assert.match(otp, /notifyEmailChange\(env, currentEmail, newEmail, 'completed'\)/)
 
