@@ -52,8 +52,8 @@ test('Telegram OTP delivery is separate from account sign-in and uses an indepen
 test('Google origin and security policy remain enforced', () => {
   assert.match(config, /https:\/\/accounts\.google\.com/)
   assert.match(router, /CANONICAL_CSP/)
-  assert.match(router, /script-src[^\\n]*accounts\.google\.com/)
-  assert.match(router, /connect-src[^\\n]*accounts\.google\.com/)
+  assert.match(router, /script-src[^\n]*accounts\.google\.com/)
+  assert.match(router, /connect-src[^\n]*accounts\.google\.com/)
   assert.match(router, /headers\.set\('Content-Security-Policy', CANONICAL_CSP\)/)
   assert.doesNotMatch(router, /unsafe-eval/)
 })
