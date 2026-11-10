@@ -232,6 +232,9 @@ async function completeTelegramIdentity(
   providerUsername?: string,
   claims?: TelegramClaims,
 ): Promise<Response> {
+  if (stored.mode === 'login') {
+    return Response.redirect('https://petersmartlink.com/sign-in?telegram=disabled', 302)
+  }
   const existingIdentity = await env.AUTH_DB.prepare(
     'SELECT user_id FROM linked_identities WHERE provider = ? AND provider_subject = ? LIMIT 1',
   ).bind('telegram', providerSubject).first<{ user_id: string }>()
