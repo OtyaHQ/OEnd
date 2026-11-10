@@ -78,7 +78,8 @@ Top-level structure:
 - Account & Space
   - Create/sign in
   - Google sign-in
-  - Multiple sign-in methods / one Otya identity
+  - Email/password sign-in
+  - Telegram private-bot OTP delivery and owner-only step-up verification (not sign-in)
   - Recovery
   - Delete account
   - Backups/sync only when live
@@ -132,7 +133,7 @@ Signed out:
 - Sign in
 - Create Otya Account
 - Google sign-in
-- Telegram sign-in where supported
+- Telegram private-bot OTP delivery (separate from account sign-in)
 - Recover account
 - Concise explanation of Space
 
@@ -147,7 +148,7 @@ Signed in:
 - data/recovery
 - notifications
 - Next
-- Telegram
+- Telegram Mini App (requires an existing signed-in Otya account)
 - role-authorized Admin entry point
 - sign out
 
