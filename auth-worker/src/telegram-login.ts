@@ -327,7 +327,13 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
   if (isStart) {
     if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
     const requested = url.searchParams.get('mode')
-    const mode: TelegramMode = requested === 'login' ? 'login' : requested === 'admin' ? 'admin' : 'link'
+    if (requested === 'login') {
+      return json({
+        error: 'Telegram is an Otya security-code channel, not a sign-in method. Use Google or email to sign in.',
+        code: 'TELEGRAM_SIGN_IN_DISABLED',
+      }, 403)
+    }
+    const mode: TelegramMode = requested === 'admin' ? 'admin' : 'link'
     const userId = mode === 'login' ? null : await requireUser(request, env)
     if (mode !== 'login' && !userId) return json({ error: 'Sign in to OTYA first' }, 401)
     if (mode === 'admin' && userId && !(await adminTelegramPending(env, userId))) {
