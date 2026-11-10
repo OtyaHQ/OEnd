@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
-import { Otya } from '@/lib/constants'
+import { OTYA } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Official Otya links',
@@ -21,9 +21,9 @@ const organizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Otya',
-  url: Otya.website,
-  email: Otya.supportEmail,
-  sameAs: [Otya.telegramChannel, Otya.telegramSupport],
+  url: OTYA.website,
+  email: OTYA.supportEmail,
+  sameAs: [OTYA.telegramChannel, OTYA.telegramSupport],
   brand: {
     '@type': 'Brand',
     name: 'Otya',
@@ -43,12 +43,12 @@ export default function OfficialLinksPage() {
         </header>
 
         <section className="grid gap-3" aria-label="Official Otya links">
-          <a href={Otya.telegramChannel} target="_blank" rel="noopener noreferrer" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
+          <a href={OTYA.telegramChannel} target="_blank" rel="noopener noreferrer" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
             <span className="w-12 h-12 shrink-0 rounded-full grid place-items-center bg-[#229ED9]/10 text-[#229ED9] text-xl font-black">➤</span>
             <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official Telegram channel</span><strong className="block mt-1 text-xl">@otyaplayer</strong><span className="block mt-1 text-sm otya-muted">Otya announcements, releases and community updates</span></span>
           </a>
 
-          <a href={Otya.telegramSupport} target="_blank" rel="noopener noreferrer" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
+          <a href={OTYA.telegramSupport} target="_blank" rel="noopener noreferrer" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
             <span className="w-12 h-12 shrink-0 rounded-full grid place-items-center bg-[#229ED9]/10 text-[#229ED9] text-xl font-black">✦</span>
             <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official Telegram bot</span><strong className="block mt-1 text-xl">@OtyaPlayerBot</strong><span className="block mt-1 text-sm otya-muted">Official Otya assistance and supported bot services</span></span>
           </a>
@@ -62,7 +62,7 @@ export default function OfficialLinksPage() {
         <section className="mt-8 rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-black/[.02] dark:bg-white/[.02] p-5 sm:p-6">
           <h2 className="text-xl font-black">Ownership and authenticity</h2>
           <p className="mt-3 text-sm leading-7 otya-muted">The Telegram properties listed above are operated as official Otya properties by Otya. Links not listed on this page should not be assumed to represent Otya or Otya.</p>
-          <p className="mt-3 text-sm leading-7 otya-muted">For verification, media or authenticity questions, contact <a className="font-black text-[color:var(--cosmos-text-primary)]" href={`mailto:${Otya.supportEmail}`}>{Otya.supportEmail}</a>.</p>
+          <p className="mt-3 text-sm leading-7 otya-muted">For verification, media or authenticity questions, contact <a className="font-black text-[color:var(--cosmos-text-primary)]" href={`mailto:${OTYA.supportEmail}`}>{OTYA.supportEmail}</a>.</p>
         </section>
 
         <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold">
