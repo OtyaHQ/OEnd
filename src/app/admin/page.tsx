@@ -142,7 +142,7 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
             if (!res.ok || !data.authorization_url) throw new Error(data.error ?? 'Telegram verification could not start.')
             window.location.assign(data.authorization_url)
           } catch (e) { setError((e as Error).message); setLoading(false) }
-        }} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Opening Telegram…' : 'Continue with Telegram'}</button>
+        }} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Opening Telegram…' : 'Verify Telegram identity'}</button>
       </div>}
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
     </div>
