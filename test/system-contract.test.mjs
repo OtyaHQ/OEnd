@@ -201,3 +201,34 @@ test('Telegram no longer invokes a remote music provider', () => {
   assert.match(telegram, /Music playback and library search are local to the Android app/)
   assert.match(telegram, /built-in Online Music catalog has been retired/)
 })
+
+
+test('Primary email change verifies the new address and preserves the existing Otya identity', () => {
+  const otp = read('auth-worker/src/secure-otp.ts')
+  const profile = read('auth-worker/src/account-profile.ts')
+  const account = read('src/app/account/page.tsx')
+  const browserSession = read('src/app/api/account-session/[...path]/route.ts')
+
+  const authenticatedUser = otp.indexOf('const user = await requireUser(request, env)')
+  const requestFlow = otp.indexOf("if (path === '/auth/email-change/request')")
+  const confirmFlow = otp.indexOf("if (path === '/auth/email-change/confirm')")
+
+  assert.ok(authenticatedUser >= 0 && requestFlow > authenticatedUser, 'email change request must require an Otya session')
+  assert.ok(confirmFlow > authenticatedUser, 'email change confirmation must require an Otya session')
+  assert.match(otp, /email_change_pending:/)
+  assert.match(otp, /digestCode\(env, 'email-change'/)
+  assert.match(otp, /matchesStoredCode\(env, stored, 'email-change'/)
+  assert.match(otp, /Number\(user\.is_verified\) !== 1/)
+  assert.match(otp, /getUserByEmail\(env\.AUTH_DB, newEmail\)/)
+  assert.match(otp, /UPDATE users SET email = \?, is_verified = 1/)
+  assert.match(otp, /WHERE id = \? AND email = \?/)
+  assert.match(otp, /revokeRefreshTokens\(env, user\.id\)/)
+  assert.match(otp, /sign_in_again: true/)
+  assert.match(otp, /notifyEmailChange\(env, currentEmail, newEmail, 'completed'\)/)
+
+  assert.match(profile, /Changing an existing primary email requires the dedicated verified email-change flow/)
+  assert.match(account, /accountFetch\('email-change\/request'/)
+  assert.match(account, /accountFetch\('email-change\/confirm'/)
+  assert.match(account, /Your Otya ID, profile, and linked Google or Telegram sign-in methods remain attached/)
+  assert.match(browserSession, /data\.sign_in_again === true/)
+})
