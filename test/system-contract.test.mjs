@@ -221,6 +221,7 @@ test('Primary email change requires proof of current and new email control', () 
   assert.match(otp, /digestCode\(env, 'email-change-new'/)
   assert.match(otp, /matchesStoredCode\(env, currentStored, 'email-change-current'/)
   assert.match(otp, /matchesStoredCode\(env, newStored, 'email-change-new'/)
+  assert.doesNotMatch(otp.slice(confirmStart, otp.indexOf("if (path === '/auth/send-verification')", confirmStart)), /delete\\(otpKey\\)/)
 
   const confirmEnd = otp.indexOf("if (path === '/auth/send-verification')", confirmStart)
   const confirmFlow = otp.slice(confirmStart, confirmEnd)
