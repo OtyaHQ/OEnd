@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     'Explore Otya digital products, account services, official support and OtyaPoint physical shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
-    'Otya Player',
+    'Otya Media',
     'Otya Android',
     'OtyaPoint',
     'Otya ecosystem',
@@ -106,7 +106,7 @@ const schemaOrg = {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#otya-player`,
       name: 'Otya',
-      alternateName: 'Otya Player',
+      alternateName: 'Otya Media',
       identifier: 'com.otyaplayer.app',
       operatingSystem: 'Android',
       applicationCategory: 'MultimediaApplication',
