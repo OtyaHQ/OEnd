@@ -61,7 +61,7 @@ export default function TelegramLoginPage() {
         <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Confirm Telegram security</h1>
         <p className="mt-3 text-sm leading-6 otya-muted">This screen is used only for a separate owner-security confirmation after you have already signed in to Otya. Telegram cannot create or open an Otya account session.</p>
 
-        {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[.07] px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div> : <div ref={widgetRef} className="mt-7 min-h-12 flex items-center justify-center" aria-label="Telegram Sign-In" />}
+        {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[.07] px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div> : <div ref={widgetRef} className="mt-7 min-h-12 flex items-center justify-center" aria-label="Telegram security confirmation" />}
 
         <div className="mt-7 border-t border-black/[.06] dark:border-white/[.08] pt-5 text-xs leading-5 otya-muted">
           Telegram account confirmation is not an Otya sign-in method. Use Google or email to sign in to Otya. For one-time security codes, connect the private OtyaPlayerBot chat from Account → Sign-in methods.
