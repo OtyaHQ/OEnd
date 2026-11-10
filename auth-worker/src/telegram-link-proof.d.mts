@@ -5,6 +5,7 @@ export type TelegramIdentityLinkProofDB = {
     }
   }
 }
+export function hashVerifiedTelegramEmail(value: string): Promise<string>
 export function consumeVerifiedTelegramIdentityLink(input: {
   db: TelegramIdentityLinkProofDB
   userId: string
