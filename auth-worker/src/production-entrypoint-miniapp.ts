@@ -29,7 +29,7 @@ export default {
       if (response) return response
     }
 
-    // Legacy browser Telegram sign-in requests fail closed. Telegram may be
+    // Browser Telegram account sign-in is disabled. Telegram may be
     // used for separate, already-authenticated owner verification, but never
     // creates an Otya account session.
     const primaryLogin = await handleTelegramPrimaryLogin(request, authEnv)
