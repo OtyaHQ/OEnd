@@ -29,9 +29,9 @@ export default {
       if (response) return response
     }
 
-    // Browser Telegram account sign-in is disabled. Telegram may be
-    // used for separate, already-authenticated owner verification, but never
-    // creates an Otya account session.
+    // Telegram account identity sign-in and OIDC linking are retired. Only
+    // the private bot OTP delivery channel remains; Mini App is handled above
+    // under an existing authenticated Otya account session.
     const primaryLogin = await handleTelegramPrimaryLogin(request, authEnv)
     if (primaryLogin) return primaryLogin
 
