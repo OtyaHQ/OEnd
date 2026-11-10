@@ -1,5 +1,5 @@
-const SAFE_METHODS = new Set(['GET', 'HEAD'])
-const WRITE_METHODS = new Set(['POST', 'PATCH', 'DELETE'])
+const SAFE_METHODS = new Set(['GET'])
+const WRITE_METHODS = new Set(['POST', 'PATCH'])
 const ALLOWED_METHODS = new Set([...SAFE_METHODS, ...WRITE_METHODS])
 
 /**
