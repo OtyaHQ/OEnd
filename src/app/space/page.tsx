@@ -71,8 +71,9 @@ export default function SpaceHomePage() {
   }, [])
 
   const google = identities.find(identity => identity.provider === 'google')
-  const telegram = identities.find(identity => identity.provider === 'telegram')
-  const connectedCount = [Boolean(user?.email), Boolean(google), Boolean(telegram)].filter(Boolean).length
+  const telegramSecurity = identities.find(identity => identity.provider === 'telegram')
+  const telegramOtp = identities.find(identity => identity.provider === 'telegram_otp_bot')
+  const connectedCount = [Boolean(user?.email), Boolean(google)].filter(Boolean).length
   const displayName = user?.name?.trim() || user?.email?.split('@')[0] || user?.otya_id || 'Otya user'
   const lastActivity = useMemo(() => sessions[0]?.last_used_at ? formatDate(sessions[0].last_used_at) : 'No recent session activity', [sessions])
 
@@ -115,7 +116,7 @@ export default function SpaceHomePage() {
           <div className="text-4xl font-black">{connectedCount}</div>
           <p className="mt-1 text-sm otya-muted">connected way{connectedCount === 1 ? '' : 's'} to access this same account</p>
           <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
-            <Badge on={Boolean(user?.email)}>Email</Badge><Badge on={Boolean(google)}>Google</Badge><Badge on={Boolean(telegram)}>Telegram</Badge>
+            <Badge on={Boolean(user?.email)}>Email</Badge><Badge on={Boolean(google)}>Google</Badge>
           </div>
         </>}
       </SpaceCard>
@@ -139,8 +140,11 @@ export default function SpaceHomePage() {
 
 
       <SpaceCard title="Telegram" eyebrow="Connected service" action={<Link href={telegramHref} className="text-xs font-black otya-muted">Open</Link>}>
-        <div className="text-lg font-black">{telegram ? 'Connected to your Otya ID' : 'Available to connect'}</div>
-        <p className="mt-2 text-sm leading-6 otya-muted">Telegram is a first-class Otya identity and Mini App surface, not a separate user database.</p>
+        <div className="space-y-2">
+          <StatusRow label="Private bot OTP delivery" value={telegramOtp ? 'Connected' : 'Not connected'} />
+          <StatusRow label="Owner security verification" value={telegramSecurity ? 'Linked' : 'Not linked'} />
+        </div>
+        <p className="mt-3 text-sm leading-6 otya-muted">Telegram is not an account sign-in method. The private bot can deliver one-time security codes; a separately linked Telegram identity may confirm owner-only actions.</p>
       </SpaceCard>
 
       <SpaceCard title="Otya products" eyebrow="Account history">
