@@ -55,5 +55,24 @@ test('constructs fixed API paths and rejects traversal or empty segments', () =>
   assert.equal(otyaPointUpstreamPath([]), null)
   assert.equal(otyaPointUpstreamPath(['..']), null)
   assert.equal(otyaPointUpstreamPath(['products/../../auth']), null)
-  assert.equal(otyaPointUpstreamPath(['evil\\\\auth']), null)
+  assert.equal(otyaPointUpstreamPath(['evil\\auth']), null)
+})
+
+test('allows only methods implemented by the private OtyaPoint API', () => {
+  for (const method of ['GET', 'POST', 'PATCH']) {
+    assert.equal(isAllowedOtyaPointProxyRequest({
+      method,
+      origin: method === 'GET' ? null : origin,
+      requestOrigin: origin,
+      secFetchSite: 'same-origin',
+    }), true)
+  }
+  for (const method of ['HEAD', 'DELETE', 'PUT', 'OPTIONS']) {
+    assert.equal(isAllowedOtyaPointProxyRequest({
+      method,
+      origin,
+      requestOrigin: origin,
+      secFetchSite: 'same-origin',
+    }), false)
+  }
 })
