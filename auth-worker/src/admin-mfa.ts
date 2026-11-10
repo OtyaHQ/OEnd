@@ -1,5 +1,6 @@
 import { generateOtp, verifyJwt } from './crypto'
 import { sendResendEmail } from './resend'
+import { sendTelegramOtpToUser } from './secure-otp'
 import { assertSchemaReady, getUserById, type D1Database } from './db'
 
 interface KVNamespaceLike {
@@ -15,6 +16,7 @@ export interface AdminMfaEnv {
   RESEND_API_KEY?: string
   ADMIN_EMAILS?: string
   INTERNAL_SECRET?: string
+  CORE?: { fetch(request: Request): Promise<Response> }
 }
 
 const OTP_TTL = 10 * 60
@@ -264,30 +266,43 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
   if (!user) return json({ error: 'Additional verification is required.' }, 403)
 
   if (url.pathname === '/auth/admin/start') {
-    if (!env.RESEND_API_KEY) return json({ error: 'Admin verification email is unavailable.' }, 503)
     if (!(await bump(env, `admin_mfa_send:${user.id}`, OTP_MAX_SENDS, OTP_WINDOW_TTL))) {
       return json({ error: 'Too many verification requests. Try again later.' }, 429)
     }
 
     const otp = generateOtp()
     await env.AUTH_KV.put(`admin_mfa_otp:${user.id}`, await otpDigest(user.id, otp), { expirationTtl: OTP_TTL })
-    await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'OTYA <noreply@petersmartlink.com>',
-      to: [user.email!],
-      subject: 'Trust this phone for Next',
-      text: [
-        'A request was made to enroll a trusted owner phone for Next.',
-        '',
-        `Verification code: ${otp}`,
-        '',
-        'This code expires in 10 minutes. Telegram confirmation is also required for first-time device enrollment.',
-        '',
-        'After enrollment, Next stays signed in on this phone until you sign out, revoke it, replace the trusted phone, or a security event requires re-verification.',
-        '',
-        'If you did not request this, do not share the code and review your OTYA account security.',
-      ].join('\n'),
-    })
-    return json({ ok: true, next: 'otp' })
+    let delivery: 'telegram' | 'email' = 'email'
+    try {
+      if (await sendTelegramOtpToUser(env, user.id, otp, 'owner-verification')) {
+        delivery = 'telegram'
+      } else {
+        if (!env.RESEND_API_KEY) {
+          await env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`)
+          return json({ error: 'Connect Telegram OTP or configure email verification before owner enrollment.' }, 503)
+        }
+        await sendResendEmail(env.RESEND_API_KEY, {
+          from: 'OTYA <noreply@petersmartlink.com>',
+          to: [user.email!],
+          subject: 'Trust this phone for Next',
+          text: [
+            'A request was made to enroll a trusted owner phone for Next.',
+            '',
+            `Verification code: ${otp}`,
+            '',
+            'This code expires in 10 minutes. Telegram confirmation is also required for first-time device enrollment.',
+            '',
+            'After enrollment, Next stays signed in on this phone until you sign out, revoke it, replace the trusted phone, or a security event requires re-verification.',
+            '',
+            'If you did not request this, do not share the code and review your Otya account security.',
+          ].join('\\n'),
+        })
+      }
+    } catch {
+      await env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`)
+      return json({ error: 'Otya could not deliver the owner verification code. Check your Telegram bot connection and try again.' }, 503)
+    }
+    return json({ ok: true, next: 'otp', delivery })
   }
 
   if (url.pathname === '/auth/admin/verify-otp') {
