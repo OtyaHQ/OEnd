@@ -19,7 +19,7 @@ type User = {
 }
 
 type Identity = { provider: string; provider_username?: string | null }
-type Payload = { user?: User; identities?: Identity[]; error?: string }
+type Payload = { user?: User; identities?: Identity[]; error?: string; message?: string; sign_in_again?: boolean }
 
 async function accountFetch(path: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers)
@@ -36,6 +36,11 @@ export default function AccountPage() {
   const [error, setError] = useState('')
   const [name, setName] = useState('')
   const [recoveryEmail, setRecoveryEmail] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [emailChangeCode, setEmailChangeCode] = useState('')
+  const [emailChangePending, setEmailChangePending] = useState(false)
+  const [emailChanging, setEmailChanging] = useState(false)
+  const [mustSignIn, setMustSignIn] = useState(false)
 
   useEffect(() => { void load() }, [])
 
@@ -80,6 +85,60 @@ export default function AccountPage() {
     }
   }
 
+  async function requestEmailChange(event: FormEvent) {
+    event.preventDefault()
+    if (emailChanging) return
+    if (!newEmail.trim()) {
+      setError('Enter the new primary email address.')
+      return
+    }
+    setEmailChanging(true); setError(''); setNotice('')
+    try {
+      const response = await accountFetch('email-change/request', {
+        method: 'POST',
+        body: JSON.stringify({ email: newEmail.trim() }),
+      })
+      const data = await response.json().catch(() => ({})) as Payload
+      if (!response.ok) throw new Error(data.error || 'Could not request an email change.')
+      setEmailChangePending(true)
+      setEmailChangeCode('')
+      setNotice(data.message || 'A verification code was sent to your new email address.')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally {
+      setEmailChanging(false)
+    }
+  }
+
+  async function confirmEmailChange(event: FormEvent) {
+    event.preventDefault()
+    if (emailChanging) return
+    if (!emailChangeCode.trim()) {
+      setError('Enter the verification code sent to your new email address.')
+      return
+    }
+    setEmailChanging(true); setError(''); setNotice('')
+    try {
+      const response = await accountFetch('email-change/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ otp: emailChangeCode.trim().toUpperCase() }),
+      })
+      const data = await response.json().catch(() => ({})) as Payload
+      if (!response.ok) throw new Error(data.error || 'Could not verify the new email address.')
+      const verifiedEmail = newEmail.trim().toLowerCase()
+      setUser(current => current ? { ...current, email: verifiedEmail, is_verified: 1 } : current)
+      setEmailChangePending(false)
+      setNewEmail('')
+      setEmailChangeCode('')
+      setMustSignIn(data.sign_in_again === true)
+      setNotice(data.message || 'Your Otya primary email has been updated.')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally {
+      setEmailChanging(false)
+    }
+  }
+
   const publicId = user?.otya_id?.toUpperCase()
   const base = publicId ? `/u/${publicId}` : ''
   const emailStatus = !user?.email ? 'No primary email' : user.is_verified ? 'Verified' : 'Verification required'
@@ -93,6 +152,10 @@ export default function AccountPage() {
 
     {error && <div className="mb-5 rounded-2xl border border-red-500/25 px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div>}
     {notice && <div className="mb-5 rounded-2xl border border-emerald-500/25 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-200">{notice}</div>}
+    {mustSignIn && <div className="mb-5 rounded-2xl border p-4 text-sm" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
+      <p>Your Otya ID and linked sign-in methods were preserved. Your sessions were closed for security. Sign in again using the same Google or Telegram identity you previously linked.</p>
+      <Link href="/sign-in" className="mt-3 inline-flex font-black underline underline-offset-4">Continue to sign in</Link>
+    </div>}
 
     {loading && !user ? <AccountSkeleton /> : <>
       <section className="grid sm:grid-cols-3 gap-3 mb-6">
@@ -113,6 +176,27 @@ export default function AccountPage() {
           </div>
         </form>
       </section>
+
+      {user?.email && Number(user.is_verified) === 1 && <section className="mt-6 rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
+        <div className="mb-4">
+          <h2 className="text-xl font-black">Change primary email</h2>
+          <p className="mt-1 text-sm otya-muted">Your current email stays active until you verify the new address. Your Otya ID, profile, and linked Google or Telegram sign-in methods remain attached to the same account.</p>
+        </div>
+        <form onSubmit={requestEmailChange} className="grid gap-3">
+          <Field label="New primary email" value={newEmail} onChange={setNewEmail} type="email" autoComplete="email" placeholder="otyaug@gmail.com" disabled={emailChanging || emailChangePending || mustSignIn} />
+          <button disabled={emailChanging || emailChangePending || mustSignIn} className="cosmos-button min-h-11 justify-center rounded-xl px-5 text-sm font-black disabled:opacity-60">
+            {emailChanging ? 'Sending code…' : 'Send verification code'}
+          </button>
+        </form>
+        {emailChangePending && <form onSubmit={confirmEmailChange} className="mt-4 grid gap-3 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}>
+          <p className="text-sm otya-muted">Enter the 5-character code sent to <strong>{newEmail.trim()}</strong>. Only the newest code works, and it expires after 10 minutes.</p>
+          <Field label="Email verification code" value={emailChangeCode} onChange={value => setEmailChangeCode(value.toUpperCase())} placeholder="A1234" autoComplete="one-time-code" />
+          <div className="flex flex-wrap gap-2">
+            <button disabled={emailChanging} className="cosmos-button min-h-11 rounded-xl px-5 text-sm font-black disabled:opacity-60">{emailChanging ? 'Verifying…' : 'Verify and update email'}</button>
+            <button type="button" disabled={emailChanging} onClick={() => { setEmailChangePending(false); setEmailChangeCode('') }} className="otya-quiet-button min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-60">Cancel</button>
+          </div>
+        </form>}
+      </section>}
 
       <section className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SectionLink href={`${base}/security`} title="Security" text="Email verification, two-step verification and recovery." />
