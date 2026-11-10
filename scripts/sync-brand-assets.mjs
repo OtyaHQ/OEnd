@@ -63,7 +63,7 @@ async function sync() {
     <rect width="1200" height="630" fill="#07111f"/>
     <rect x="72" y="70" width="64" height="5" rx="2" fill="#27e8ff"/>
     <g fill="#f5f8ff" font-family="sans-serif">
-      <text x="72" y="140" font-size="24" letter-spacing="3">PETERSMART LINK</text>
+      <text x="72" y="140" font-size="24" letter-spacing="3">OTYA</text>
       <text x="72" y="288" font-size="94" font-weight="700">Otya</text>
       <text x="76" y="357" font-size="34">Your next update is here.</text>
       <text x="76" y="523" font-size="23" fill="#b9cadd">Music. Video. Your way.</text>

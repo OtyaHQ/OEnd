@@ -5,7 +5,7 @@
 
 ## Canonical product and account architecture
 
-- Legal parent: **Otya Hold Ltd**.
+- Intended parent entity: **Otya Holdings Limited** — URSB registration is in progress; do not represent it as incorporated or as the holder of existing individual merchant/provider accounts until the certificate is issued and providers approve any transfer.
 - Unified ecosystem/platform: **Otya OS**.
 - Shared backend/control plane and integration layer: **Otya End** (repository: `PeterSmartLink/OtyaEnd`).
 - **Otya Account**: the shared user-facing account/profile/security experience—registration, sign-in, recovery, verified identities, sessions, profile, connected apps, and account security. It is a product capability and shared entry point, not a second identity database or a second backend.

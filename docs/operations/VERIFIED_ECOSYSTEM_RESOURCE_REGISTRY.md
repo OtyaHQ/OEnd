@@ -1,12 +1,12 @@
 # Otya Ecosystem — Verified Resource Registry
 
-**Inventory date:** 2026-10-29  
+**Inventory date:** 2026-10-29 (historical snapshot; see 2026-11-10 identity addendum)  
 **Method:** Read-only GitHub repository inspection and Cloudflare account API inventory.  
 **Status:** Partial inventory; not a production-readiness certification.
 
 ## Canonical service map
 
-- **Otya Hold Ltd:** parent company.
+- **Otya Holdings Limited:** intended parent entity; URSB registration is in progress. This is not a statement that incorporation or merchant/provider-account transfer is complete.
 - **Otya OS:** unified platform and ecosystem management.
 - **Otya End:** the official name of the shared backend, integration layer, identity coordination, and operational controls. “Otya Server” is not the product name.
 - **OtyaPoint:** own-shop retail and financial-agency application (legacy repository slug: `OmniPoint`).
@@ -16,6 +16,8 @@
 Keep existing repository slugs and deployed resource names until a separately reviewed compatibility migration is approved. Names alone do not establish resource ownership.
 
 ## GitHub repositories observed
+
+The following table is a historical observation from the inventory date (2026-10-29). Repository names have since been aligned to OtyaPoint, OtyaMedia and OtyaEnd; historical slugs below are retained as evidence, not as the current public brand or company name.
 
 The authenticated GitHub connection listed these repositories under `PeterSmartLink`:
 
@@ -151,3 +153,15 @@ Both snapshots were restored into isolated EU verification databases `otyapoint-
 - Keep `otya-auth-db`, `otya-store-db`, `otyapoint-db`, and `omnipoint-dev` distinct until schema ownership and migration history are reviewed.
 - Keep R2 release assets and both OtyaPoint recovery snapshots. Do not clean up legacy resources solely because a newer canonical name exists.
 - No production deployment, DNS/secrets change, remote migration, resource deletion, or payment activation is authorized by this registry update.
+
+
+## Identity reconciliation addendum — 2026-11-10
+
+- **Public umbrella brand:** Otya.
+- **Intended parent entity:** Otya Holdings Limited; URSB registration is in progress. Do not present it as incorporated until the Certificate of Incorporation has been issued.
+- **Current individually-held merchant/provider account holder:** Peter Katabira, where the provider or contract currently identifies an individual account holder.
+- **Product identities:** OtyaPoint (shop and agency operations), Otya Media (Android media app), OtyaHub (developer and partner community), Otya OS (unified platform), Otya End (shared backend), and Next (assistant).
+- **Repository status:** current repositories include `OtyaEnd`, `OtyaPoint`, `OtyaMedia`, and `OtyaHub`. The earlier names in the table above are historical repository slugs, not public product labels.
+- **Provider transition:** no merchant legal-name, KYC, settlement, or credential transfer is implied by this branding update. Follow the OtyaPoint merchant-identity migration runbook and obtain provider approval after incorporation.
+
+No Cloudflare resource, GitHub repository name, DNS record, account, customer row, financial record or provider credential is changed by this addendum.

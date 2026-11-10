@@ -12,7 +12,7 @@ const routeSource = readFileSync(
 )
 
 test('production remote config publishes Together, Nearby and Anywhere as enabled', () => {
-  assert.equal(production.revision, 12)
+  assert.equal(production.revision, 13)
   assert.equal(production.features.together, true)
   assert.equal(production.features.togetherNearby, true)
   assert.equal(production.features.togetherAnywhere, true)
