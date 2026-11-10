@@ -366,6 +366,13 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     }
 
     try {
+      await revokeRefreshTokens(env, user.id)
+    } catch (error) {
+      console.error('[auth/email-change] Session revocation failed before email update:', (error as Error)?.message)
+      return json({ error: 'Otya could not safely close existing sessions. Your primary email has not changed; try again.' }, 503)
+    }
+
+    try {
       const update = await env.AUTH_DB.prepare(
         "UPDATE users SET email = ?, is_verified = 1, updated_at = datetime('now') WHERE id = ? AND email = ?",
       ).bind(newEmail, user.id, currentEmail).run()
@@ -387,22 +394,13 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
       env.AUTH_KV.delete(`secure_otp_attempt_global:email-change:${user.id}`),
     ])
 
-    let sessionsRevoked = true
-    try {
-      await revokeRefreshTokens(env, user.id)
-    } catch (error) {
-      sessionsRevoked = false
-      console.error('[auth/email-change] Session revocation failed after email update:', (error as Error)?.message)
-    }
     await notifyEmailChange(env, currentEmail, newEmail, 'completed')
 
     return json({
       ok: true,
       sign_in_again: true,
-      session_revocation_complete: sessionsRevoked,
-      message: sessionsRevoked
-        ? 'Your primary email has been updated and all refresh sessions were revoked. Sign in again to continue.'
-        : 'Your primary email has been updated. Your browser session will be closed, but support must review other session revocation.',
+      session_revocation_complete: true,
+      message: 'Your primary email has been updated and all refresh sessions were revoked. Sign in again to continue.',
     })
   }
 
