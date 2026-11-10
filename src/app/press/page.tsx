@@ -30,7 +30,7 @@ const productPoints = [
   'Local music and video playback on Android.',
   'Background playback with Android media-session controls.',
   'Nearby Send for supported local-network device-to-device workflows.',
-  'Private media storage inside the Otya Player application environment.',
+  'Private media storage inside the Otya Media application environment.',
   'An Otya account for supported connected services without making core local playback depend on the cloud.',
 ] as const
 
@@ -66,7 +66,7 @@ export default function PressPage() {
           <p className="mt-3 text-sm leading-7 otya-muted">Use these links when checking identity, product information or official statements.</p>
           <div className="mt-4 grid sm:grid-cols-2 gap-3">
             <Link href="/official" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Official identity page</strong><span className="mt-1 block text-xs otya-muted">Website, Telegram and authenticity links</span></Link>
-            <Link href="/otya-player" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Otya Player</strong><span className="mt-1 block text-xs otya-muted">Official product page</span></Link>
+            <Link href="/otya-player" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Otya Media</strong><span className="mt-1 block text-xs otya-muted">Official product page</span></Link>
             <a href={OTYA.telegramChannel} target="_blank" rel="noopener noreferrer" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Telegram channel · @otyaplayer</strong><span className="mt-1 block text-xs otya-muted">Official announcements and community updates</span></a>
             <a href={OTYA.telegramSupport} target="_blank" rel="noopener noreferrer" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Telegram bot · @OtyaPlayerBot</strong><span className="mt-1 block text-xs otya-muted">Official OTYA bot</span></a>
           </div>
