@@ -14,7 +14,7 @@ type User = {
 }
 
 type Identity = { provider: string; provider_username?: string | null }
-type Json = { error?: string; user?: User; identities?: Identity[]; bot_url?: string }
+type Json = { error?: string; user?: User; identities?: Identity[]; bot_url?: string; email_verification_required?: boolean; message?: string }
 type GoogleCredentialResponse = { credential?: string }
 type GoogleApi = { accounts: { id: { initialize(input: { client_id: string; callback: (response: GoogleCredentialResponse) => void; auto_select?: boolean }): void; renderButton(element: HTMLElement, options: Record<string, unknown>): void } } }
 declare global { interface Window { google?: GoogleApi } }
@@ -31,6 +31,8 @@ export default function SignInMethodsPage() {
   const [identities, setIdentities] = useState<Identity[]>([])
   const [primaryEmail, setPrimaryEmail] = useState('')
   const [emailCode, setEmailCode] = useState('')
+  const [telegramLinkCode, setTelegramLinkCode] = useState('')
+  const [telegramLinkPending, setTelegramLinkPending] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -157,9 +159,35 @@ export default function SignInMethodsPage() {
     await action(async () => {
       const response = await accountFetch('telegram-otp/link/start', { method: 'POST' })
       const data = await response.json().catch(() => ({})) as Json
-      if (!response.ok || !data.bot_url) throw new Error(data.error || 'Telegram OTP connection is unavailable.')
+      if (!response.ok || data.email_verification_required !== true) {
+        throw new Error(data.error || 'Could not start the secure Telegram connection.')
+      }
+      setTelegramLinkCode('')
+      setTelegramLinkPending(true)
+      return data.message || `A verification code was sent to ${user?.email || 'your current email'}. Confirm it before opening OtyaPlayerBot.`
+    })
+  }
+
+  async function verifyTelegramOtpEmail() {
+    if (!telegramLinkCode.trim()) return setError('Enter the code sent to your current verified Otya email.')
+    await action(async () => {
+      const response = await accountFetch('telegram-otp/link/verify', {
+        method: 'POST',
+        body: JSON.stringify({ otp: telegramLinkCode.trim().toUpperCase() }),
+      })
+      const data = await response.json().catch(() => ({})) as Json
+      if (!response.ok || !data.bot_url) throw new Error(data.error || 'The email proof could not be confirmed.')
+      setTelegramLinkPending(false)
+      setTelegramLinkCode('')
       window.location.assign(data.bot_url)
-      return 'Open OtyaPlayerBot and press Start. Return here after the bot confirms the connection.'
+      return 'Email ownership verified. Open OtyaPlayerBot and press Start to finish linking.'
+    })
+  }
+
+  async function refreshTelegramOtpStatus() {
+    await action(async () => {
+      await loadAccount()
+      return 'Telegram connection status refreshed.'
     })
   }
 
@@ -210,8 +238,15 @@ export default function SignInMethodsPage() {
           <p className="text-sm otya-muted">Your private OtyaPlayerBot chat can receive one-time security codes. Telegram is not a sign-in method.</p>
           <button onClick={() => void disconnectTelegramOtp()} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Disconnect OTP delivery</button>
         </div> : <div className="mt-3 space-y-3">
-          <p className="text-sm otya-muted">{legacyTelegram ? 'Your earlier Telegram identity remains linked only for account-security verification, not sign-in. Connect the private OtyaPlayerBot chat separately to receive OTPs.' : 'Connect your private Telegram bot chat to receive Otya security codes. This does not create a Telegram sign-in option.'}</p>
-          <button onClick={() => void connectTelegramOtp()} disabled={busy} className="mt-1 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram for OTPs</button>
+          <p className="text-sm otya-muted">{legacyTelegram ? 'Your earlier Telegram identity remains linked only for account-security verification, not sign-in. Connect the private OtyaPlayerBot chat separately to receive OTPs.' : 'Connect your private Telegram bot chat to receive Otya security codes. This does not create a Telegram sign-in option.'} Before a bot link is created or replaced, Otya sends a one-time proof code to your current verified email.</p>
+          {telegramLinkPending ? <div className="grid gap-2">
+            <label className="grid gap-1.5 text-xs font-bold otya-muted">Current email verification code ({user.email})
+              <input value={telegramLinkCode} onChange={event => setTelegramLinkCode(event.target.value.toUpperCase().slice(0, 5))} placeholder="A1234" autoComplete="one-time-code" className="method-input" />
+            </label>
+            <button onClick={() => void verifyTelegramOtpEmail()} disabled={busy} className="cosmos-button rounded-xl px-4 min-h-11 text-sm font-black">Verify email and open Telegram</button>
+            <button onClick={() => { setTelegramLinkPending(false); setTelegramLinkCode('') }} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Cancel</button>
+          </div> : <button onClick={() => void connectTelegramOtp()} disabled={busy || !user.email || Number(user.is_verified) !== 1} className="mt-1 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram for OTPs</button>}
+          <button onClick={() => void refreshTelegramOtpStatus()} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Refresh connection status</button>
         </div>}
       </MethodRow>
     </section>
