@@ -210,7 +210,7 @@ export default function SignInMethodsPage() {
           <p className="text-sm otya-muted">Your private OtyaPlayerBot chat can receive one-time security codes. Telegram is not a sign-in method.</p>
           <button onClick={() => void disconnectTelegramOtp()} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Disconnect OTP delivery</button>
         </div> : <div className="mt-3 space-y-3">
-          <p className="text-sm otya-muted">{legacyTelegram ? 'Your earlier Telegram identity remains attached, but bot OTP delivery must be connected separately.' : 'Connect your private Telegram bot chat to receive Otya security codes. This does not create a Telegram sign-in option.'}</p>
+          <p className="text-sm otya-muted">{legacyTelegram ? 'Your earlier Telegram identity remains linked only for account-security verification, not sign-in. Connect the private OtyaPlayerBot chat separately to receive OTPs.' : 'Connect your private Telegram bot chat to receive Otya security codes. This does not create a Telegram sign-in option.'}</p>
           <button onClick={() => void connectTelegramOtp()} disabled={busy} className="mt-1 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram for OTPs</button>
         </div>}
       </MethodRow>
