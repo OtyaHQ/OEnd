@@ -68,3 +68,36 @@ test('missing email and expired proof are rejected', async () => {
     db, userId: 'user-4', currentEmail: 'owner@example.com',
   }), false)
 })
+
+test('email challenge is consumed atomically by its HMAC digest', async () => {
+  const emailHash = await sha256Hex('owner@example.com')
+  const row = { user_id: 'user-5', email_hash: emailHash, otp_digest: 'hmac-sha256:one-use', expired: false }
+  const rows = new Map([['user-5', row]])
+  const db = {
+    prepare(sql) {
+      assert.match(sql, /DELETE FROM telegram_identity_link_challenges/)
+      assert.match(sql, /otp_digest = \?/)
+      assert.match(sql, /RETURNING user_id/)
+      return {
+        bind(userId, hash, digest) {
+          return {
+            async first() {
+              const current = rows.get(userId)
+              if (!current || current.email_hash !== hash || current.otp_digest !== digest || current.expired) return null
+              rows.delete(userId)
+              return { user_id: userId }
+            },
+          }
+        },
+      }
+    },
+  }
+  const { consumeTelegramIdentityEmailChallenge } = await import('../auth-worker/src/telegram-link-proof.mjs')
+  const input = { db, userId: 'user-5', currentEmail: 'owner@example.com', otpDigest: 'hmac-sha256:one-use' }
+  const results = await Promise.all([
+    consumeTelegramIdentityEmailChallenge(input),
+    consumeTelegramIdentityEmailChallenge(input),
+  ])
+  assert.equal(results.filter(Boolean).length, 1)
+  assert.equal(await consumeTelegramIdentityEmailChallenge(input), false)
+})
