@@ -17,7 +17,7 @@ export function isAllowedOtyaPointProxyRequest({ method, origin, requestOrigin, 
 /** Convert a Next catch-all route into a fixed /api path without traversal. */
 export function otyaPointUpstreamPath(parts) {
   if (!Array.isArray(parts) || parts.length === 0) return null
-  if (parts.some(part => typeof part !== 'string' || !part || part === '.' || part === '..' || part.includes('/') || part.includes('\\\\'))) {
+  if (parts.some(part => typeof part !== 'string' || !part || part === '.' || part === '..' || part.includes('/') || part.includes(String.fromCharCode(92)))) {
     return null
   }
   return '/api/' + parts.map(part => encodeURIComponent(part)).join('/')
