@@ -9,17 +9,17 @@ import { getKV } from '@/lib/d1'
 export const metadata: Metadata = {
   title: 'Otya — Offline Music & Video for Android',
   description:
-    'Otya by PeterSmart Link is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
+    'Otya by Otya is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
   keywords: [
     'Otya',
-    'Otya Player',
+    'Otya Media',
     'Otya Android',
     'offline music player Android',
     'offline video player Android',
     'local music player Android',
     'local video player Android',
     'Android media player Uganda',
-    'PeterSmart Link Otya',
+    'Otya Otya',
   ],
   alternates: { canonical: 'https://petersmartlink.com/otya-player' },
   openGraph: {
@@ -27,13 +27,13 @@ export const metadata: Metadata = {
     url: 'https://petersmartlink.com/otya-player',
     title: 'Otya — Offline Music & Video for Android',
     description:
-      'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Otya by PeterSmart Link.',
+      'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Otya by Otya.',
     images: [
       {
         url: '/otya-app-icon.webp',
         width: 512,
         height: 512,
-        alt: 'Otya by PeterSmart Link',
+        alt: 'Otya by Otya',
         type: 'image/webp',
       },
     ],
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Otya — Offline Music & Video for Android',
-    description: 'Official Otya by PeterSmart Link for local Android music and video.',
+    description: 'Official Otya by Otya for local Android music and video.',
     images: ['/otya-app-icon.webp'],
   },
 }
@@ -68,7 +68,7 @@ export default async function OtyaPlayerPage() {
     <main className="flex-1 pb-24 md:pb-0">
       <section className="otya-shell py-11 sm:py-18 grid lg:grid-cols-[.9fr_1.1fr] gap-9 lg:gap-14 items-center">
         <div>
-          <div className="otya-kicker mb-4">Official Otya · Android · v{appVersion} · PeterSmart Link</div>
+          <div className="otya-kicker mb-4">Official Otya · Android · v{appVersion} · Otya</div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Otya.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
           <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Otya is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
