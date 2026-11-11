@@ -6,12 +6,13 @@ Otya Holdings Limited is the intended parent entity; its URSB registration is in
 
 ## Official links
 
-- Website: https://petersmartlink.com
-- Docs: https://petersmartlink.com/docs
-- Next: https://petersmartlink.com/ai
-- Otya Media: https://petersmartlink.com/otya-player
-- Download Otya Media: https://petersmartlink.com/download/otya-player
-- Support: support@petersmartlink.com
+- Website: https://otya.site
+- API: https://api.otya.site
+- Docs: https://docs.otya.site
+- Next: https://space.otya.site/ask
+- Otya Media: https://otya.site/otya-player
+- Download Otya Media: https://otya.site/download/otya-player
+- Support: support@otya.site
 - Telegram: https://t.me/otyaplayer
 
 ## What this repository is for
