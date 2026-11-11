@@ -5,12 +5,25 @@ export { OtyaReleaseWorkflow } from './release-workflow.mjs'
 const HEALTH_CHECK_CRON = '*/5 * * * *'
 const HEALTH_INCIDENT_KEY = 'monitor:health:incident:v2'
 const HEALTH_PATHS = ['/', '/download/otya-player', '/api/version', '/latest']
-const OTYA_NOREPLY_EMAIL = 'noreply@petersmartlink.com'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
 const UPSTREAM_TIMEOUT_MS = 8000
 const SERVICE_HEALTH_TIMEOUT_MS = 5000
 
+function safeOrigin(value, fallback) {
+  try {
+    const url = new URL(typeof value === 'string' ? value : fallback)
+    if (url.protocol === 'https:' && !url.username && !url.password) return url.origin
+  } catch {}
+  return fallback
+}
+function publicOrigin(env) {
+  return safeOrigin(env.OTYA_PUBLIC_URL || env.WEBSITE_URL, 'https://otya.site')
+}
+function noReplyEmail(env) {
+  const value = String(env.OTYA_NO_REPLY_EMAIL || 'noreply@otya.site').trim()
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'noreply@otya.site'
+}
 function json(data,status=200){return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})}
 function cookieValue(request,name){const cookie=request.headers.get('cookie')||'';return cookie.split(';').map(v=>v.trim()).find(v=>v.startsWith(`${name}=`))?.slice(name.length+1)||''}
 function timingSafeEqual(a,b){if(a.length!==b.length)return false;let diff=0;for(let i=0;i<a.length;i++)diff|=a.charCodeAt(i)^b.charCodeAt(i);return diff===0}
@@ -62,14 +75,14 @@ async function hasElevatedAdminSession(request,env){
   }catch{return false}
 }
 
-function createResendEmailAdapter(env){return{async send(message){if(!env.RESEND_API_KEY)throw new Error('RESEND_API_KEY is not configured');const to=Array.isArray(message?.to)?message.to.map(r=>r.email).filter(Boolean):[];if(!to.length)throw new Error('Invalid email envelope');const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({from:`OTYA <${OTYA_NOREPLY_EMAIL}>`,to,subject:message.subject,text:message.text}),signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)});const data=await response.json().catch(()=>({}));if(!response.ok||!data.id)throw new Error(`Resend email failed: ${data.message??data.name??`HTTP ${response.status}`}`)}}}
+function createResendEmailAdapter(env){return{async send(message){if(!env.RESEND_API_KEY)throw new Error('RESEND_API_KEY is not configured');const to=Array.isArray(message?.to)?message.to.map(r=>r.email).filter(Boolean):[];if(!to.length)throw new Error('Invalid email envelope');const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({from:`OTYA <${noReplyEmail(env)}>`,to,subject:message.subject,text:message.text}),signal:AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)});const data=await response.json().catch(()=>({}));if(!response.ok||!data.id)throw new Error(`Resend email failed: ${data.message??data.name??`HTTP ${response.status}`}`)}}}
 function withProductionAdapters(env){return{...env,EMAIL:createResendEmailAdapter(env)}}
 function analyticsPath(pathname){if(pathname.startsWith('/auth/'))return'/auth/*';if(pathname.startsWith('/apk/'))return'/apk/*';if(pathname.startsWith('/api/admin/'))return'/api/admin/*';if(pathname.startsWith('/api/telegram/'))return'/api/telegram/*';if(pathname.startsWith('/api/ai/'))return'/api/ai/*';if(pathname.startsWith('/api/'))return'/api/*';return pathname==='/'?'/':'/other'}
 function writeRequestAnalytics(env,request,response,startedAt){if(!env.OTYA_ANALYTICS?.writeDataPoint)return;try{const url=new URL(request.url);env.OTYA_ANALYTICS.writeDataPoint({blobs:['request',request.method,analyticsPath(url.pathname),request.cf?.colo??'unknown'],doubles:[response.status,Date.now()-startedAt],indexes:[analyticsPath(url.pathname)]})}catch{}}
 async function readHealthIncident(env){try{return await env.KV?.get?.(HEALTH_INCIDENT_KEY)??null}catch{return null}}
 async function writeHealthIncident(env,value){try{await env.KV?.put?.(HEALTH_INCIDENT_KEY,value,{expirationTtl:86400})}catch{}}
 async function clearHealthIncident(env){try{await env.KV?.delete?.(HEALTH_INCIDENT_KEY)}catch{}}
-async function sendHealthEmail(env,subject,text){try{await env.EMAIL.send({from:{email:OTYA_NOREPLY_EMAIL,name:'OTYA Backend'},to:[{email:env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'}],subject,text})}catch(error){console.error('[health] Could not send Resend health notification:',error?.message??error)}}
+async function sendHealthEmail(env,subject,text){try{await env.EMAIL.send({from:{email:noReplyEmail(env),name:'OTYA Backend'},to:[{email:env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'}],subject,text})}catch(error){console.error('[health] Could not send Resend health notification:',error?.message??error)}}
 
 async function checkPrivateService(name,binding,request,healthyStatuses){
   const startedAt=Date.now()
@@ -85,7 +98,7 @@ async function checkPrivateService(name,binding,request,healthyStatuses){
 }
 
 async function runProductionHealthCheck(env,ctx){
-  const baseUrl=env.WEBSITE_URL||'https://petersmartlink.com'
+  const baseUrl=publicOrigin(env)
   const results=[]
   for(const path of HEALTH_PATHS){
     const startedAt=Date.now()
