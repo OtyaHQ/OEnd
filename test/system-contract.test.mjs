@@ -58,7 +58,7 @@ test('Telegram cannot create or elevate Otya sessions', () => {
   const worker = read('auth-worker/src/telegram-login.ts')
   const callback = read('src/app/api/auth/telegram/[...path]/route.ts')
 
-  assert.match(worker, /stored\\.mode !== 'link' \\|\\| !stored\\.userId/)
+  assert.ok(worker.includes("stored.mode !== 'link' || !stored.userId"))
   assert.match(worker, /TELEGRAM_LOGIN_DISABLED/)
   assert.match(worker, /Sign in to your Otya Account first/)
   assert.match(callback, /withoutSessionMaterial/)
