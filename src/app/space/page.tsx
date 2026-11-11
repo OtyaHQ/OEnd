@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 'use client'
 
 import Link from 'next/link'
@@ -150,9 +151,9 @@ export default function SpaceHomePage() {
 
       <SpaceCard title="Privacy & help" eyebrow="Control">
         <div className="flex flex-col gap-2 text-sm font-black">
-          <a href="https://petersmartlink.com/privacy">Privacy Policy</a>
-          <a href="https://petersmartlink.com/terms">Terms of Service</a>
-          <a href="https://docs.petersmartlink.com">Otya Help & Docs</a>
+          <a href={`${PUBLIC_URLS.primary}/privacy`}>Privacy Policy</a>
+          <a href={`${PUBLIC_URLS.primary}/terms`}>Terms of Service</a>
+          <a href={PUBLIC_URLS.docs}>Otya Help & Docs</a>
           <Link href={settingsHref}>Account preferences</Link>
         </div>
       </SpaceCard>
