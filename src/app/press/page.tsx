@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteNav } from '@/components/SiteNav'
@@ -8,10 +9,10 @@ import { OTYA } from '@/lib/constants'
 export const metadata: Metadata = {
   title: 'Press & Media | Otya',
   description: 'Factual background, official links and media contact information for the Otya ecosystem.',
-  alternates: { canonical: 'https://petersmartlink.com/press' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/press` },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com/press',
+    url: `${PUBLIC_URLS.primary}/press`,
     title: 'Press & Media | Otya',
     description: 'Official media background and source links for the Otya ecosystem.',
   },
