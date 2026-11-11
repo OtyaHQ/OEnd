@@ -26,13 +26,13 @@ test('Account and Google deep smoke is manual and independent of Telegram creden
   assert.match(deploy, /Smoke-test OTYA public surfaces/)
 })
 
-test('Telegram provider deep verification is manual and keeps the production security boundary', () => {
+test('Telegram account-linking deep verification is manual and keeps the production security boundary', () => {
   const smoke = read('.github/workflows/telegram-provider-smoke.yml')
   const deploy = read('.github/workflows/deploy.yml')
 
   assertManualDeepSmoke(smoke)
   assert.doesNotMatch(smoke, /Sync Telegram Auth Credential/)
-  assert.match(smoke, /Require Telegram Sign-In human security gate/)
+  assert.match(smoke, /Verify public retired Telegram sign-in remains blocked/)
   assert.match(smoke, /TURNSTILE_REQUIRED/)
   assert.match(smoke, /test "\$status" = "400"/)
   assert.match(smoke, /Check Telegram handoff page/)
