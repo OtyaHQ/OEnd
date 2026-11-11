@@ -78,7 +78,7 @@ export default function HelpPage() {
 
         <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold">
           <Link href={PUBLIC_URLS.status}>Status</Link>
-          <Link href="https://docs.petersmartlink.com">Documentation</Link>
+          <Link href={PUBLIC_URLS.docs}>Documentation</Link>
           <Link href="/privacy">Privacy</Link>
         </div>
       </section>
