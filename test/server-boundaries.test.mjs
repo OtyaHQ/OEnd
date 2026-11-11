@@ -192,7 +192,7 @@ test('admin notification URLs reject embedded credentials and nonstandard ports'
   const helper = [
     "const PUBLIC_URLS = { primary: 'https://otya.site', docs: 'https://docs.otya.site', status: 'https://status.otya.site', space: 'https://space.otya.site' };",
     source.slice(source.indexOf('function approvedPublicOrigins'), source.indexOf('function corsHeaders')),
-  ].join('\\n')
+  ].join(String.fromCharCode(10))
   const { outputText } = ts.transpileModule(helper + '\nexport { officialNotificationUrl }', { compilerOptions: { module: ts.ModuleKind.ESNext } })
   const { officialNotificationUrl } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
   for (const url of ['https://user:password@otya.site/', 'https://otya.site:8443/', 'https://otya.site.evil.example/']) {
