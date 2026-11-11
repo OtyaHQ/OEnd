@@ -5,6 +5,7 @@ import { verifyTurnstileToken } from '@/lib/turnstile'
 
 export const dynamic = 'force-dynamic'
 
+const ACCESS_COOKIE = '__Secure-otya_access'
 const PUBLIC_PREFIX = '/api/auth/telegram/'
 const AUTH_PREFIX = '/auth/telegram/'
 const ADMIN_RETURN_COOKIE = 'otya_admin_return'
