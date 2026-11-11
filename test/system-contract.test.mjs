@@ -54,22 +54,17 @@ test('Admin MFA OTPs are format-checked, single-use, and hashed at rest', () => 
   assert.doesNotMatch(source, /put\(`admin_mfa_otp:\$\{user\.id\}`, otp,/)
 })
 
-test('Admin Telegram step-up preserves the existing normal browser session', () => {
+test('Telegram cannot create or elevate Otya sessions', () => {
   const worker = read('auth-worker/src/telegram-login.ts')
   const callback = read('src/app/api/auth/telegram/[...path]/route.ts')
-  const helper = worker.match(/async function completeTelegramIdentity\([\s\S]*?\n}\n\nexport async function handleTelegramLogin/)?.[0] ?? ''
-  const adminStart = helper.indexOf("if (stored.mode === 'admin')")
-  const adminEnd = helper.indexOf("await env.AUTH_DB.prepare(`\n    INSERT INTO linked_identities", adminStart)
-  const adminBlock = adminStart >= 0 && adminEnd > adminStart ? helper.slice(adminStart, adminEnd) : ''
 
-  assert.match(adminBlock, /existingIdentity\.user_id !== userId/)
-  assert.match(adminBlock, /markAdminTelegramComplete/)
-  assert.match(adminBlock, /admin_mfa:\s*true/)
-  assert.doesNotMatch(adminBlock, /issueBrowserTokens/)
-  assert.doesNotMatch(adminBlock, /refresh_token/)
-  assert.match(callback, /data\.admin_mfa === true/)
-  assert.match(callback, /\/admin\?telegram=verified/)
+  assert.match(worker, /stored\\.mode !== 'link' \\|\\| !stored\\.userId/)
+  assert.match(worker, /TELEGRAM_LOGIN_DISABLED/)
+  assert.match(worker, /Sign in to your Otya Account first/)
+  assert.match(callback, /withoutSessionMaterial/)
+  assert.doesNotMatch(callback, /response\\.cookies\\.set|cookies\\.set\\(/)
 })
+
 
 test('Production account OTPs are purpose-bound, protected at rest, and single-use', () => {
   const source = read('auth-worker/src/secure-otp.ts')
