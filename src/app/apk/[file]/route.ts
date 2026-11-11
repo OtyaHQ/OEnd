@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import { getDB } from '@/lib/d1'
 
 const LATEST_MAP: Record<string, string> = {
@@ -145,7 +146,7 @@ export async function GET(
       // Human-facing "latest" links may still recover through the download
       // chooser if the mutable alias has not been published yet.
       return NextResponse.redirect(
-        'https://petersmartlink.com/download/otya-player',
+        `${PUBLIC_URLS.primary}/download/otya-player`,
         { status: 302 }
       )
     }
