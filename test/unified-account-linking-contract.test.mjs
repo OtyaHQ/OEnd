@@ -18,8 +18,8 @@ test('Telegram-first Otya identities can add a unique primary email without repl
   assert.match(profile, /getUserByEmail/)
 })
 
-test('Otya Space exposes one sign-in-method manager for email Google and Telegram', () => {
-  assert.match(methods, /Telegram, Google and email can all belong to one OTYA ID/)
+test('Otya Space separates sign-in methods from linked Telegram verification', () => {
+  assert.match(methods, /Email and Google are sign-in methods; Telegram is a linked verification channel/)
   assert.match(methods, /accountFetch\('google\/link'/)
   assert.match(methods, /accountFetch\('account', \{ method: 'PATCH', body: JSON\.stringify\(\{ email \}\) \}\)/)
   assert.match(methods, /accountFetch\('send-verification'/)
