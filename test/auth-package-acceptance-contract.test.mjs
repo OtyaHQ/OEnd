@@ -6,7 +6,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 
 test('browser auth defaults to OTYA Space and only accepts safe same-site return paths', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /DEFAULT_AFTER_AUTH = 'https:\/\/space\.petersmartlink\.com\/'/)
+  assert.match(signIn, /DEFAULT_AFTER_AUTH = '\/space\/'/)
   assert.match(signIn, /requested\.startsWith\('\/'\)/)
   assert.match(signIn, /!requested\.startsWith\('\/\/'\)/)
   assert.match(signIn, /!requested\.includes\('\\\\'\)/)
@@ -23,8 +23,8 @@ test('Telegram is not an Otya sign-in or account-creation provider', () => {
 
 test('provider-created accounts receive clear mobile sign-in guidance', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /Google or Telegram accounts may not have an Otya password yet\./)
-  assert.match(signIn, /If you created this account with Google or Telegram, use that same method below\./)
+  assert.doesNotMatch(signIn, /Google or Telegram accounts may not have an Otya password yet/)
+  assert.match(signIn, /Use Google if that is the method linked to your Otya Account/)
   assert.match(signIn, /type: 'standard'/)
   assert.match(signIn, /shape: 'pill'/)
   assert.match(signIn, /<span>Continue with Telegram<\/span>/)
