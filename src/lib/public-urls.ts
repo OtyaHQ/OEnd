@@ -21,6 +21,7 @@ export const PUBLIC_URLS = Object.freeze({
     process.env.NEXT_PUBLIC_OTYA_PUBLIC_URL || process.env.OTYA_PUBLIC_URL || process.env.WEBSITE_URL,
     'https://otya.site',
   ),
+  api: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_API_URL || process.env.OTYA_API_URL, 'https://api.otya.site'),
   docs: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_DOCS_URL, 'https://docs.otya.site'),
   status: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_STATUS_URL, 'https://status.otya.site'),
   space: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_SPACE_URL, 'https://space.otya.site'),
