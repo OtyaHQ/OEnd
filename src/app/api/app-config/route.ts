@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { mergeFirebaseOwnedClientConfig } from '@/lib/client_config'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import {
   extractOtyaClientConfig,
   getFirebaseRemoteConfigTemplate,
@@ -28,7 +29,7 @@ const DEFAULT_CONFIG = {
     forceUpdate: false,
     minimumMessage: 'This version of Otya can no longer use online services. Please update to continue.',
     recommendedMessage: 'A newer Otya version is available with improvements and fixes.',
-    downloadUrl: 'https://petersmartlink.com/download/otya-player',
+    downloadUrl: `${PUBLIC_URLS.primary}/download/otya-player`,
   },
   features: {
     transfer: true,
@@ -66,14 +67,14 @@ const DEFAULT_CONFIG = {
   },
   announcement: null,
   links: {
-    website: 'https://petersmartlink.com/otya-player',
-    download: 'https://petersmartlink.com/download/otya-player',
-    support: 'https://petersmartlink.com/apps/otya-player/support',
-    privacy: 'https://petersmartlink.com/privacy',
-    terms: 'https://petersmartlink.com/terms',
-    docs: 'https://petersmartlink.com/docs',
-    account: 'https://petersmartlink.com/account',
-    ai: 'https://petersmartlink.com/support',
+    website: `${PUBLIC_URLS.primary}/otya-player`,
+    download: `${PUBLIC_URLS.primary}/download/otya-player`,
+    support: `${PUBLIC_URLS.primary}/apps/otya-player/support`,
+    privacy: `${PUBLIC_URLS.primary}/privacy`,
+    terms: `${PUBLIC_URLS.primary}/terms`,
+    docs: PUBLIC_URLS.docs,
+    account: `${PUBLIC_URLS.space}/account`,
+    ai: `${PUBLIC_URLS.primary}/support`,
   },
   ai: {
     enabled: false,
