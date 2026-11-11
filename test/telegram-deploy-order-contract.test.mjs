@@ -6,7 +6,7 @@ const telegramSmoke = readFileSync(new URL('../.github/workflows/telegram-provid
 const deploy = readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8')
 const obsoleteSecretSync = new URL('../.github/workflows/telegram-auth-secret.yml', import.meta.url)
 
-test('Telegram Sign-In deep smoke stays manual while canonical deploy performs lightweight verification', () => {
+test('Telegram account-linking smoke stays manual while canonical deploy performs lightweight verification', () => {
   assert.equal(existsSync(obsoleteSecretSync), false)
 
   // Deep provider diagnostics are intentionally manual. Do not restore a
@@ -18,7 +18,7 @@ test('Telegram Sign-In deep smoke stays manual while canonical deploy performs l
   assert.doesNotMatch(telegramSmoke, /workflow_run\.conclusion/)
   assert.doesNotMatch(telegramSmoke, /workflow_run\.head_branch/)
 
-  assert.match(telegramSmoke, /Require Telegram Sign-In human security gate/)
+  assert.match(telegramSmoke, /Verify public retired Telegram sign-in remains blocked/)
   assert.match(telegramSmoke, /TURNSTILE_REQUIRED/)
   assert.match(telegramSmoke, /test "\$status" = "400"/)
   assert.match(telegramSmoke, /Check Telegram handoff page/)
