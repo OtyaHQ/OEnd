@@ -19,6 +19,7 @@ export interface SecureOtpEnv extends TelegramOtpEnv {
   AUTH_JWT_SECRET: string
   RESEND_API_KEY?: string
   OTYA_NO_REPLY_EMAIL?: string
+  OTYA_SUPPORT_EMAIL?: string
 }
 
 const OTP_TTL = 10 * 60
@@ -146,7 +147,7 @@ async function sendCode(
   await sendResendEmail(env.RESEND_API_KEY, {
     from: 'Otya <' + noReplyEmail(env) + '>',
     to: [to],
-    replyTo: env.OTYA_NO_REPLY_EMAIL?.trim() || 'support@otya.site',
+    replyTo: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
     subject,
     text: [
       intro,
@@ -262,14 +263,15 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     const code = generateOtp()
     const verificationKey = `verify_otp:${user.id}`
     await env.AUTH_KV.put(verificationKey, await digestCode(env, 'verify-email', user.id, code), { expirationTtl: OTP_TTL })
+    let telegramDelivered = false
     try {
-      const telegramDelivered = await sendCode(env, user.email, 'Your Otya verification code', 'Use this code to verify your Otya email address:', code, user.id)
+      telegramDelivered = await sendCode(env, user.email, 'Your Otya verification code', 'Use this code to verify your Otya email address:', code, user.id)
     } catch (error) {
       await env.AUTH_KV.delete(verificationKey)
       console.error('[auth/otp] Verification email failed:', (error as Error)?.message)
       return json({ error: 'Verification email is temporarily unavailable.' }, 503)
     }
-    return json({ ok: true, message: telegramDelivered ? 'Verification code sent to your email and linked Telegram.' : 'Verification code sent to your email.' , channels: telegramDelivered ? ['email', 'telegram'] : ['email'] })
+    return json({ ok: true, message: telegramDelivered ? 'Verification code sent to your email and linked Telegram.' : 'Verification code sent to your email.', channels: telegramDelivered ? ['email', 'telegram'] : ['email'] })
   }
 
   let body: { otp?: string }
