@@ -229,6 +229,17 @@ async function routeOtyaRequest(request, env, ctx) {
     return dispatchOpenNext(new Request(url, { method: request.method, headers }), env, ctx)
   }
 
+  if (configuredHosts(env, 'api').includes(host)
+    && (url.pathname === '/' || url.pathname === '/health' || url.pathname === '/health/')) {
+    return json({
+      ok: true,
+      product: 'otya',
+      platform: 'otya-os',
+      service: 'otya-end',
+      surface: 'api',
+    })
+  }
+
   if (isSurfaceHost(host, 'space', env)) {
     const spaceHost = resolveSurfaceHost(host, 'space', env)
     const consoleRoute = matchSpaceConsoleRoute(url.pathname)
