@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 'use client'
 
 import Link from 'next/link'
@@ -374,7 +375,7 @@ export default function SignInPage() {
 
   return <main className="otya-auth-page min-h-screen text-[color:var(--cosmos-text-primary)] grid place-items-center px-4 py-8 sm:py-12">
     <section className="w-full max-w-[460px]">
-      <Link href="https://petersmartlink.com" aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
+      <Link href={PUBLIC_URLS.primary} aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
       <div className="otya-auth-card rounded-[30px] border p-5 sm:p-7">
         <div className="mb-5"><OtyaBrandMark size={46}/></div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">{title}</h1>
@@ -415,7 +416,7 @@ export default function SignInPage() {
           </div>
         </div>}
       </div>
-      <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs otya-muted"><Link href="https://petersmartlink.com/terms">Terms</Link><Link href="https://petersmartlink.com/privacy">Privacy</Link><Link href="https://docs.petersmartlink.com">Help & Docs</Link></div>
+      <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs otya-muted"><Link href={`${PUBLIC_URLS.primary}/terms`}>Terms</Link><Link href={`${PUBLIC_URLS.primary}/privacy`}>Privacy</Link><Link href={PUBLIC_URLS.docs}>Help & Docs</Link></div>
     </section>
   </main>
 }
