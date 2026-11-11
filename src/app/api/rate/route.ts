@@ -103,6 +103,6 @@ export async function POST(req: NextRequest) {
   return secureJson({ ok: true, ts: Date.now() })
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { headers: CORS_HEADERS })
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, { headers: corsHeaders(request) })
 }
