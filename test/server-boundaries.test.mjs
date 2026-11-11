@@ -122,7 +122,7 @@ test('direct push batches continue after network failure with bounded concurrenc
     return new Response(null, { status: token === '2' ? 429 : 200 })
   }
   const tokens = Array.from({ length: 20 }, (_, i) => String(i))
-  const result = await sendFcmWithToken([...tokens, '0'], 'Title', 'Body', 'https://petersmartlink.com', 'mock', 'mock')
+  const result = await sendFcmWithToken([...tokens, '0'], 'Title', 'Body', 'https://otya.site', 'mock', 'mock')
   assert.deepEqual(result, { sent: 18, failed: 2 })
   assert.equal(seen.length, 20)
   assert.ok(peak <= 8 && peak > 1)
