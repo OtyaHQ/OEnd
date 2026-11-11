@@ -218,9 +218,9 @@ async function handleOtyaNextOpsEmail(request: Request, env: ProductionEnv): Pro
 
   try {
     const emailId = await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <${noReplyEmail(env)}>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: recipients,
-      replyTo: '${supportEmail(env)}',
+      replyTo: supportEmail(env),
       subject,
       text: content,
       idempotencyKey,
