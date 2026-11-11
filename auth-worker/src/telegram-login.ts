@@ -275,6 +275,19 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
   const isWidgetCallback = url.pathname === '/auth/telegram/widget/callback'
   if (!isStart && !isOidcCallback && !isWidgetCallback) return null
 
+  // Reject retired primary-login and admin modes before requiring D1 schema or
+  // provider credentials. Only a pre-authenticated Otya account may link Telegram.
+  if (isStart) {
+    if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+    const requested = url.searchParams.get('mode')
+    if (requested && requested !== 'link') {
+      return json({
+        error: 'Telegram is an OTP and notification channel, not an Otya sign-in provider.',
+        code: 'TELEGRAM_LOGIN_DISABLED',
+      }, 410)
+    }
+  }
+
   const oidcConfigured = Boolean(env.TELEGRAM_LOGIN_CLIENT_ID && env.TELEGRAM_LOGIN_CLIENT_SECRET)
   const widgetConfigured = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_LOGIN_BOT_USERNAME)
   if (!oidcConfigured && !widgetConfigured) {
