@@ -5,19 +5,21 @@ export const dynamic = 'force-dynamic'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
-const COOKIE_DOMAIN = '.petersmartlink.com'
 const ACCESS_MAX_AGE = 15 * 60
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 
 type AuthBinding = { fetch(request: Request): Promise<Response> }
 type JsonRecord = Record<string, unknown>
 
+// Session cookies are intentionally host-only. This avoids coupling identity
+// to one apex domain and prevents sibling products from implicitly receiving
+// each other's browser cookies. Shared identity is provided by the auth
+// service; each product surface receives its own secure session cookie.
 function cookieOptions(maxAge: number) {
   return {
     httpOnly: true,
     secure: true,
     sameSite: 'lax' as const,
-    domain: COOKIE_DOMAIN,
     path: '/',
     maxAge,
   }
