@@ -59,7 +59,7 @@ test('Core is the sole Telegram transport credential owner in production', () =>
 test('Next console reports Telegram health from canonical Core, not local secrets', () => {
   const consoleTools = read('ai-worker/src/console-tools.mjs')
 
-  assert.match(consoleTools, /function otyaCoreUrl\\(env\\)/)
+  assert.ok(consoleTools.includes('function otyaCoreUrl(env)'))
   assert.match(consoleTools, /\/api\/telegram\/status/)
   assert.match(consoleTools, /telegram\.connected \? 'connected'/)
   assert.match(consoleTools, /ai_service_ready/)
