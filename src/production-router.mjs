@@ -1,3 +1,4 @@
+import { handleAiInternalRequest } from "./lib/ai-internal-api.mjs";
 import openNextWorker from '../.open-next/worker.js'
 import backendWorker from './telegram-entrypoint.mjs'
 import { handleTogetherControl } from './together-control.mjs'
@@ -281,6 +282,10 @@ function withRequestSecurityHeaders(response, requestId, pathname) {
 export default {
   ...backendWorker,
   async fetch(request, env, ctx) {
+    const internalAiUrl = new URL(request.url);
+    if (internalAiUrl.pathname.startsWith("/internal/ai/")) {
+      return handleAiInternalRequest(request, env);
+    }
     const requestId = requestCorrelationId(request)
     const pathname = new URL(request.url).pathname
     try {
