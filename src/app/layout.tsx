@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import { Manrope } from 'next/font/google'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import './globals.css'
 import './brand-overrides.css'
 
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
-const SITE_URL = (process.env.NEXT_PUBLIC_OTYA_PUBLIC_URL || process.env.WEBSITE_URL || 'https://otya.site').replace(/\/+$/, '')
-const SUPPORT_EMAIL = process.env.OTYA_SUPPORT_EMAIL || 'support@otya.site'
+const SITE_URL = PUBLIC_URLS.primary
+const SUPPORT_EMAIL = PUBLIC_URLS.supportEmail
 const ADSENSE_ID = 'ca-pub-2517163652161686'
 const OTYA_MARK = '/otya-app-icon.webp'
 
