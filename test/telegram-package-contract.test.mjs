@@ -49,7 +49,7 @@ test('Telegram bot deep links use configurable Otya surface and API origins', ()
 test('the Telegram account-link flow and public surface are not login routes', () => {
   assert.match(linkPage, /Connect Telegram/)
   assert.match(linkPage, /does not sign you in/)
-  assert.match(linkPage, /window\.location\.origin/)
+  assert.match(linkPage, /PUBLIC_URLS\\.allowedOrigins/)
   assert.doesNotMatch(linkPage, /petersmartlink\.com|Continue with Telegram/)
   assert.match(proxy, /withoutSessionMaterial/)
   assert.doesNotMatch(proxy, /response\.cookies\.set|cookies\.set\(/)
