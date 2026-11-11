@@ -106,6 +106,38 @@ function isApiHost(hostname, env) {
   return configured.length ? configured.includes(hostname) : hostname.startsWith('api.')
 }
 
+function legacySurface(hostname) {
+  const first = hostname.split('.')[0]
+  return ['docs', 'status', 'space'].includes(first) ? first : 'primary'
+}
+
+function isLegacyCompatibilityPath(pathname) {
+  return pathname === '/api' || pathname.startsWith('/api/')
+    || pathname === '/auth' || pathname.startsWith('/auth/')
+    || pathname === '/latest' || pathname.startsWith('/latest/')
+    || pathname === '/check-update' || pathname.startsWith('/check-update/')
+    || pathname === '/apk' || pathname.startsWith('/apk/')
+    || pathname === '/webhooks' || pathname.startsWith('/webhooks/')
+}
+
+function redirectLegacyBrowser(request, url, env) {
+  if (!parseHosts(env?.OTYA_LEGACY_HOSTS).includes(url.hostname.toLowerCase())) return null
+  if (request.method !== 'GET' && request.method !== 'HEAD') return null
+  // Keep documented API, webhook and installed-app update paths available
+  // until older clients and callback consumers have migrated.
+  if (isLegacyCompatibilityPath(url.pathname)) return null
+
+  const surface = legacySurface(url.hostname)
+  const targetHost = surface === 'primary'
+    ? resolvePrimaryHost(url.hostname, env)
+    : resolveSurfaceHost(url.hostname, surface, env)
+  const target = new URL(url)
+  target.protocol = 'https:'
+  target.hostname = targetHost
+  // Preserve path, query and hash so old customer links continue to resolve.
+  return Response.redirect(target.toString(), 302)
+}
+
 function redirectToHost(url, hostname, pathname) {
   const target = new URL(url)
   target.protocol = 'https:'
@@ -233,6 +265,10 @@ async function routeOtyaRequest(request, env, ctx) {
     headers.set('X-OTYA-Version-Alias', 'api-version')
     return dispatchOpenNext(new Request(url, { method: request.method, headers }), env, ctx)
   }
+
+
+  const legacyRedirect = redirectLegacyBrowser(request, url, env)
+  if (legacyRedirect) return legacyRedirect
 
   if (isApiHost(host, env)
     && (url.pathname === '/' || url.pathname === '/health' || url.pathname === '/health/')) {
