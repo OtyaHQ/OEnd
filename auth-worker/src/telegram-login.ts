@@ -237,6 +237,7 @@ async function completeTelegramIdentity(
   ).bind('telegram', providerSubject).first<{ user_id: string }>()
 
   if (stored.mode === 'login') {
+    return json({ error: 'Telegram sign-in is disabled. Use your Otya email or Google account.', code: 'TELEGRAM_LOGIN_DISABLED' }, 410)
     if (!existingIdentity?.user_id) {
       return Response.redirect('https://petersmartlink.com/sign-in?telegram=not-linked', 302)
     }
@@ -312,6 +313,10 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
   const isOidcCallback = url.pathname === '/auth/telegram/callback'
   const isWidgetCallback = url.pathname === '/auth/telegram/widget/callback'
   if (!isStart && !isOidcCallback && !isWidgetCallback) return null
+
+  if (isStart && url.searchParams.get('mode') === 'login') {
+    return json({ error: 'Telegram sign-in is disabled. Use your Otya email or Google account.', code: 'TELEGRAM_LOGIN_DISABLED' }, 410)
+  }
 
   const oidcConfigured = Boolean(env.TELEGRAM_LOGIN_CLIENT_ID && env.TELEGRAM_LOGIN_CLIENT_SECRET)
   const widgetConfigured = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_LOGIN_BOT_USERNAME)
