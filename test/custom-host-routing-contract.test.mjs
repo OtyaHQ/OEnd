@@ -50,6 +50,20 @@ test('surface paths remain separated while sharing the same deployed app', () =>
   assert.match(router, /url\.pathname === '\/api\/status'/)
 })
 
+test('legacy browser hosts redirect to Otya while app and callback paths remain compatible', () => {
+  assert.match(router, /function redirectLegacyBrowser\(request, url, env\)/)
+  assert.match(router, /OTYA_LEGACY_HOSTS/)
+  assert.match(router, /legacySurface\(url\.hostname\)/)
+  assert.match(router, /Response\.redirect\(target\.toString\(\), 302\)/)
+  assert.match(router, /isLegacyCompatibilityPath\(url\.pathname\)/)
+  assert.match(router, /pathname\.startsWith\('\/api\/'\)/)
+  assert.match(router, /pathname\.startsWith\('\/auth\/'\)/)
+  assert.match(router, /pathname === '\/latest'/)
+  assert.match(router, /pathname\.startsWith\('\/apk\/'\)/)
+  assert.match(router, /pathname\.startsWith\('\/webhooks\/'\)/)
+  assert.match(router, /const legacyRedirect = redirectLegacyBrowser\(request, url, env\)/)
+})
+
 test('Next trailing slash and forwarded-host behavior remain explicit', () => {
   assert.match(nextConfig, /trailingSlash:\s*true/)
   assert.match(router, /X-Forwarded-Host/)
