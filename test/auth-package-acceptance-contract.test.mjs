@@ -26,8 +26,8 @@ test('Telegram is not an account sign-in provider', () => {
 
 test('provider-created accounts receive clear mobile sign-in guidance', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /Google or Telegram accounts may not have an Otya password yet\./)
-  assert.match(signIn, /If you created this account with Google or Telegram, use that same method below\./)
+  assert.match(signIn, /Google accounts may not have an Otya password yet\./)
+  assert.match(signIn, /If you created this account with Google, use that same method below\./)
   assert.match(signIn, /type: 'standard'/)
   assert.match(signIn, /shape: 'pill'/)
 })
