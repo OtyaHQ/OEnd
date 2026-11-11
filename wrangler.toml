@@ -5,7 +5,15 @@ compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 workers_dev = false
+# New Otya branded addresses plus temporary legacy aliases during migration.
+# Remove the petersmartlink.com entries only after callback, traffic, email,
+# app-config and customer-link migration has been verified.
 routes = [
+  { pattern = "otya.site", custom_domain = true },
+  { pattern = "www.otya.site", custom_domain = true },
+  { pattern = "docs.otya.site", custom_domain = true },
+  { pattern = "status.otya.site", custom_domain = true },
+  { pattern = "space.otya.site", custom_domain = true },
   { pattern = "petersmartlink.com", custom_domain = true },
   { pattern = "www.petersmartlink.com", custom_domain = true },
   { pattern = "docs.petersmartlink.com", custom_domain = true },
@@ -29,7 +37,15 @@ enabled = true
 [vars]
 ENVIRONMENT = "production"
 APP_NAME    = "OTYA"
-WEBSITE_URL = "https://petersmartlink.com"
+WEBSITE_URL = "https://otya.site"
+OTYA_PUBLIC_URL = "https://otya.site"
+NEXT_PUBLIC_OTYA_PUBLIC_URL = "https://otya.site"
+OTYA_PRIMARY_HOSTS = "otya.site,www.otya.site,petersmartlink.com,www.petersmartlink.com"
+OTYA_DOCS_HOSTS = "docs.otya.site,docs.petersmartlink.com"
+OTYA_STATUS_HOSTS = "status.otya.site,status.petersmartlink.com"
+OTYA_SPACE_HOSTS = "space.otya.site,space.petersmartlink.com"
+OTYA_SUPPORT_EMAIL = "support@otya.site"
+OTYA_NO_REPLY_EMAIL = "noreply@otya.site"
 ADMIN_REPORT_EMAIL = "petersmartlink@gmail.com"
 FIREBASE_PROJECT_ID = "otya-player"
 FIREBASE_PROJECT_NUMBER = "82776565585"
