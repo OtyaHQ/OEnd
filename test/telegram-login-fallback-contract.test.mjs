@@ -42,7 +42,7 @@ test('Telegram account linking remains authenticated and uses short-lived state'
   assert.match(start, /TELEGRAM_LOGIN_DISABLED/)
 })
 
-test('Telegram web linking keeps tokens out of browser JSON', () => {
+test('Telegram linking cannot set browser sign-in cookies', () => {
   const proxy = read('src/app/api/auth/telegram/[...path]/route.ts')
   assert.match(proxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
   assert.match(proxy, /__Secure-otya_access/)
