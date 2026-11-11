@@ -10,8 +10,6 @@ const AUTH_PREFIX = '/auth/telegram/'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
 const ADMIN_RETURN_COOKIE = 'otya_admin_return'
-const COOKIE_DOMAIN = '.petersmartlink.com'
-const SPACE_URL = 'https://space.petersmartlink.com/'
 const ACCESS_MAX_AGE = 15 * 60
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const ADMIN_RETURN_MAX_AGE = 10 * 60
@@ -29,14 +27,14 @@ type Payload = Record<string, unknown> & {
 }
 
 function cookieOptions(maxAge: number) {
-  return { httpOnly: true, secure: true, sameSite: 'lax' as const, domain: COOKIE_DOMAIN, path: '/', maxAge }
+  return { httpOnly: true, secure: true, sameSite: 'lax' as const, path: '/', maxAge }
 }
 function safeWidgetPage(request: NextRequest, data: Payload): string | null {
   if (data.provider_mode !== 'widget' || typeof data.bot_username !== 'string' || typeof data.widget_auth_url !== 'string') return null
   if (!/^[A-Za-z0-9_]{5,32}$/.test(data.bot_username)) return null
   let callback: URL
   try { callback = new URL(data.widget_auth_url) } catch { return null }
-  if (callback.protocol !== 'https:' || callback.hostname !== 'petersmartlink.com' || callback.pathname !== '/api/auth/telegram/widget/callback' || !callback.searchParams.get('state')) return null
+  if (callback.protocol !== 'https:' || callback.hostname !== new URL(request.url).hostname || callback.pathname !== '/api/auth/telegram/widget/callback' || !callback.searchParams.get('state')) return null
   const page = new URL('/telegram-login', request.url)
   page.searchParams.set('bot', data.bot_username)
   page.searchParams.set('auth', callback.toString())
@@ -132,13 +130,13 @@ async function forward(request: NextRequest): Promise<Response> {
 
     if (publicUrl.pathname.endsWith('/callback') && upstream.ok && data) {
       if (data.telegram_login === true && data.admin_mfa === true) {
-        const response = NextResponse.redirect(new URL(callbackAdminReturn(request), SPACE_URL), 302)
+        const response = NextResponse.redirect(new URL(callbackAdminReturn(request), publicUrl.origin), 302)
         clearAdminReturn(response)
         response.headers.set('Cache-Control', 'no-store')
         return response
       }
       if (data.telegram_login === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.redirect(SPACE_URL, 302)
+        const response = NextResponse.redirect(new URL('/', publicUrl.origin), 302)
         response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
         response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
         response.headers.set('Cache-Control', 'no-store')
