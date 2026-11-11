@@ -27,7 +27,7 @@ test('public Help teaches the current one-account and verification flow', () => 
   const help = read('src/app/help/page.tsx')
 
   assert.match(help, /title: 'Help | Otya Media'| Otya Player'/)
-  assert.match(help, /Email, Google and Telegram are sign-in methods for the same Otya account/)
+  assert.match(help, /Email and Google are Otya sign-in methods. Telegram is an optional linked delivery and notification channel/)
   assert.match(help, /Registration sends one verification code automatically/)
   assert.match(help, /request a new code only if you still need one/)
   assert.match(help, /Ordinary product or marketing notification permission is separate from starting local playback/)
