@@ -241,7 +241,7 @@ async function completeTelegramIdentity(
     await markAdminTelegramComplete(env, userId)
     return json({
       ok: true,
-      telegram_login: true,
+      telegram_step_up: true,
       admin_mfa: true,
       user: {
         id: user.id,
@@ -281,7 +281,7 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
   const oidcConfigured = Boolean(env.TELEGRAM_LOGIN_CLIENT_ID && env.TELEGRAM_LOGIN_CLIENT_SECRET)
   const widgetConfigured = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_LOGIN_BOT_USERNAME)
   if (!oidcConfigured && !widgetConfigured) {
-    return json({ error: 'Telegram Sign-In is not configured yet', code: 'TELEGRAM_LOGIN_UNAVAILABLE' }, 503)
+    return json({ error: 'Telegram account linking is not configured yet', code: 'TELEGRAM_LOGIN_UNAVAILABLE' }, 503)
   }
 
   await assertSchemaReady(env.AUTH_DB)
