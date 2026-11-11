@@ -148,9 +148,9 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   const digestHex = Array.from(tokenDigest).map(byte => byte.toString(16).padStart(2, '0')).join('')
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <${noReplyEmail(env)}>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: [email],
-      replyTo: '${supportEmail(env)}',
+      replyTo: supportEmail(env),
       subject: 'You have been invited to OtyaPoint',
       idempotencyKey: `otyapoint/staff-invitation/${invitationId}/${digestHex}`,
       text: [
