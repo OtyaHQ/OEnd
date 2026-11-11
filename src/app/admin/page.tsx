@@ -129,7 +129,7 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
         <button onClick={sendOtp} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Sending…' : 'Unlock Admin'}</button>
       </div> : stage === 'otp' ? <form onSubmit={verifyOtp} className="mt-6 space-y-3">
         <input className={input} style={surfaceStyle()} autoComplete="one-time-code" inputMode="text" placeholder="Email verification code" value={otp} onChange={e => setOtp(e.target.value.toUpperCase().slice(0, 5))} />
-        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Continue with Telegram'}</button>
+        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Verify with Telegram'}</button>
         <button type="button" onClick={sendOtp} disabled={loading} className="w-full rounded-xl border px-4 py-2.5 text-sm font-bold" style={{ borderColor: 'var(--cosmos-divider)' }}>Send a new code</button>
       </form> : <div className="mt-6 space-y-3">
         <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>Email verification passed. Complete verification with the Telegram identity linked to this same Otya account.</p>
@@ -142,7 +142,7 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
             if (!res.ok || !data.authorization_url) throw new Error(data.error ?? 'Telegram verification could not start.')
             window.location.assign(data.authorization_url)
           } catch (e) { setError((e as Error).message); setLoading(false) }
-        }} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Opening Telegram…' : 'Continue with Telegram'}</button>
+        }} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Opening Telegram…' : 'Verify with Telegram'}</button>
       </div>}
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
     </div>
