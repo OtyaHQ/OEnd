@@ -3,18 +3,13 @@ import backendWorker from './telegram-entrypoint.mjs'
 import { handleTogetherControl } from './together-control.mjs'
 export { OtyaReleaseWorkflow } from './telegram-entrypoint.mjs'
 
-const APP_HOST = 'petersmartlink.com'
-const DOCS_HOST = 'docs.petersmartlink.com'
-const STATUS_HOST = 'status.petersmartlink.com'
-const SPACE_HOST = 'space.petersmartlink.com'
-
 const CANONICAL_CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://accounts.google.com https://telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://tpc.googlesyndication.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://challenges.cloudflare.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https: https://pagead2.googlesyndication.com",
-  "connect-src 'self' https://petersmartlink.com https://space.petersmartlink.com https://accounts.google.com https://telegram.org https://oauth.telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google-analytics.com",
+  "connect-src 'self' https://accounts.google.com https://telegram.org https://oauth.telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google-analytics.com",
   "frame-src https://accounts.google.com https://oauth.telegram.org https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
   "object-src 'none'",
   "base-uri 'self'",
@@ -59,6 +54,53 @@ async function authenticateTogetherUser(request, env) {
   }
 }
 
+function parseHosts(value) {
+  if (typeof value !== 'string') return []
+  return [...new Set(value.split(',').map((host) => host.trim().toLowerCase()).filter(Boolean))]
+}
+
+function configuredHosts(env, surface) {
+  return parseHosts(env?.[`OTYA_${surface.toUpperCase()}_HOSTS`])
+}
+
+// Surface roles are configuration, not product identity. The default DNS
+// convention supports any branded apex; explicit host lists support custom
+// domains that do not use docs./status./space. subdomains.
+function rootHost(hostname) {
+  const firstLabel = hostname.split('.')[0]
+  if (['docs', 'status', 'space', 'www'].includes(firstLabel) && hostname.split('.').length > 2) {
+    return hostname.split('.').slice(1).join('.')
+  }
+  return hostname
+}
+
+function isSurfaceHost(hostname, surface, env) {
+  const configured = configuredHosts(env, surface)
+  if (configured.length) return configured.includes(hostname)
+  return hostname.startsWith(`${surface.toLowerCase()}.`)
+}
+
+function resolveSurfaceHost(hostname, surface, env) {
+  const root = rootHost(hostname)
+  const configured = configuredHosts(env, surface)
+  const sameBrand = configured.find((candidate) => rootHost(candidate) === root)
+  return sameBrand || configured[0] || `${surface.toLowerCase()}.${root}`
+}
+
+function resolvePrimaryHost(hostname, env) {
+  const root = rootHost(hostname)
+  const configured = configuredHosts(env, 'primary')
+  return configured.find((candidate) => rootHost(candidate) === root && !candidate.startsWith('www.'))
+    || configured.find((candidate) => rootHost(candidate) === root)
+    || root
+}
+
+function isPrimaryHost(hostname, env) {
+  const configured = configuredHosts(env, 'primary')
+  if (configured.length) return configured.includes(hostname)
+  return !['docs', 'status', 'space'].some((surface) => hostname.startsWith(`${surface}.`))
+}
+
 function redirectToHost(url, hostname, pathname) {
   const target = new URL(url)
   target.protocol = 'https:'
@@ -73,7 +115,7 @@ function isSharedAppAssetPath(pathname) {
   return pathname.startsWith('/_next/')
     || pathname === '/favicon.ico'
     || pathname === '/robots.txt'
-    || /\.(?:svg|png|webp|jpg|jpeg|gif|ico|css|js|woff2?)$/i.test(pathname)
+    || /\\.(?:svg|png|webp|jpg|jpeg|gif|ico|css|js|woff2?)$/i.test(pathname)
 }
 
 function isSpaceSurfacePath(pathname) {
@@ -98,7 +140,7 @@ function isSpaceSurfacePath(pathname) {
 // belong in the browser path.
 function matchSpaceConsoleRoute(pathname) {
   const parts = pathname.split('/').filter(Boolean)
-  if (parts[0] !== 'u' || !/^2IS\d{8}$/i.test(parts[1] || '')) return null
+  if (parts[0] !== 'u' || !/^2IS\\d{8}$/i.test(parts[1] || '')) return null
 
   const publicId = parts[1].toUpperCase()
   const section = parts.slice(2).join('/') || 'overview'
@@ -167,82 +209,88 @@ async function dispatchSurface(request, url, env, ctx, pathname = url.pathname) 
 }
 
 async function routeOtyaRequest(request, env, ctx) {
-    const url = new URL(request.url)
-    const host = url.hostname.toLowerCase()
+  const url = new URL(request.url)
+  const host = url.hostname.toLowerCase()
 
-    if (url.pathname.startsWith('/api/together/')) {
-      if (!env.KV || !env.AUTH?.fetch) {
-        return json({ error: 'Together control plane unavailable' }, 503)
+  if (url.pathname.startsWith('/api/together/')) {
+    if (!env.KV || !env.AUTH?.fetch) {
+      return json({ error: 'Together control plane unavailable' }, 503)
+    }
+    const user = await authenticateTogetherUser(request, env)
+    return handleTogetherControl(request, env, user)
+  }
+
+  if (isCoreBackendRoute(url.pathname)) return backendWorker.fetch(request, env, ctx)
+
+  if (url.pathname === '/api/version' || url.pathname === '/api/version/') {
+    url.pathname = '/latest'
+    const headers = new Headers(request.headers)
+    headers.set('X-OTYA-Version-Alias', 'api-version')
+    return dispatchOpenNext(new Request(url, { method: request.method, headers }), env, ctx)
+  }
+
+  if (isSurfaceHost(host, 'space', env)) {
+    const spaceHost = resolveSurfaceHost(host, 'space', env)
+    const consoleRoute = matchSpaceConsoleRoute(url.pathname)
+    if (consoleRoute) {
+      if (consoleRoute.unknown && (request.method === 'GET' || request.method === 'HEAD')) {
+        return redirectToHost(url, spaceHost, `/u/${consoleRoute.publicId}/overview`)
       }
-      const user = await authenticateTogetherUser(request, env)
-      return handleTogetherControl(request, env, user)
+      return dispatchSurface(request, url, env, ctx, consoleRoute.target)
     }
 
-    if (isCoreBackendRoute(url.pathname)) return backendWorker.fetch(request, env, ctx)
-
-    if (url.pathname === '/api/version' || url.pathname === '/api/version/') {
-      url.pathname = '/latest'
-      const headers = new Headers(request.headers)
-      headers.set('X-OTYA-Version-Alias', 'api-version')
-      return dispatchOpenNext(new Request(url, { method: request.method, headers }), env, ctx)
+    if (url.pathname === '/' || url.pathname === '/space' || url.pathname === '/space/') {
+      return dispatchSurface(request, url, env, ctx, '/space/')
     }
+    if (url.pathname === '/account') return dispatchSurface(request, url, env, ctx, '/account/')
+    if (url.pathname === '/sign-in') return dispatchSurface(request, url, env, ctx, '/sign-in/')
+    if (isSpaceSurfacePath(url.pathname)) return dispatchSurface(request, url, env, ctx)
+    if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, spaceHost, '/')
+    return dispatchSurface(request, url, env, ctx)
+  }
 
-    if (host === SPACE_HOST) {
-      const consoleRoute = matchSpaceConsoleRoute(url.pathname)
-      if (consoleRoute) {
-        if (consoleRoute.unknown && (request.method === 'GET' || request.method === 'HEAD')) {
-          return redirectToHost(url, SPACE_HOST, `/u/${consoleRoute.publicId}/overview`)
-        }
-        return dispatchSurface(request, url, env, ctx, consoleRoute.target)
-      }
-
-      if (url.pathname === '/' || url.pathname === '/space' || url.pathname === '/space/') {
-        return dispatchSurface(request, url, env, ctx, '/space/')
-      }
-      if (url.pathname === '/account') return dispatchSurface(request, url, env, ctx, '/account/')
-      if (url.pathname === '/sign-in') return dispatchSurface(request, url, env, ctx, '/sign-in/')
-      if (isSpaceSurfacePath(url.pathname)) return dispatchSurface(request, url, env, ctx)
-      if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, SPACE_HOST, '/')
-      return dispatchSurface(request, url, env, ctx)
+  if (isSurfaceHost(host, 'docs', env)) {
+    const docsHost = resolveSurfaceHost(host, 'docs', env)
+    if (url.pathname === '/' || url.pathname === '/docs' || url.pathname === '/docs/') return dispatchSurface(request, url, env, ctx, '/docs/')
+    if (url.pathname === '/help' || url.pathname === '/help/') return dispatchSurface(request, url, env, ctx, '/help/')
+    // Shared navigation and documentation links target public product pages,
+    // not another copy of the documentation index.
+    const publicPath = url.pathname.replace(/\\/$/, '')
+    const publicDestinations = new Set([
+      '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
+      '/developers', '/company', '/contact', '/privacy', '/terms',
+      '/delete-account',
+    ])
+    if ((request.method === 'GET' || request.method === 'HEAD') && publicDestinations.has(publicPath)) {
+      return redirectToHost(url, resolvePrimaryHost(host, env), url.pathname)
     }
+    if (isSharedAppAssetPath(url.pathname)) return dispatchSurface(request, url, env, ctx)
+    if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, docsHost, '/')
+    return dispatchSurface(request, url, env, ctx)
+  }
 
-    if (host === DOCS_HOST) {
-      if (url.pathname === '/' || url.pathname === '/docs' || url.pathname === '/docs/') return dispatchSurface(request, url, env, ctx, '/docs/')
-      if (url.pathname === '/help' || url.pathname === '/help/') return dispatchSurface(request, url, env, ctx, '/help/')
-      // Shared navigation and documentation links target public product pages,
-      // not another copy of the documentation index.
-      const publicPath = url.pathname.replace(/\/$/, '')
-      const publicDestinations = new Set([
-        '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
-        '/developers', '/company', '/contact', '/privacy', '/terms',
-        '/delete-account',
-      ])
-      if ((request.method === 'GET' || request.method === 'HEAD') && publicDestinations.has(publicPath)) {
-        return redirectToHost(url, APP_HOST, url.pathname)
-      }
-      if (isSharedAppAssetPath(url.pathname)) return dispatchSurface(request, url, env, ctx)
-      if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, DOCS_HOST, '/')
-      return dispatchSurface(request, url, env, ctx)
-    }
+  if (isSurfaceHost(host, 'status', env)) {
+    const statusHost = resolveSurfaceHost(host, 'status', env)
+    if (url.pathname === '/api/status' || url.pathname === '/api/status/') return dispatchSurface(request, url, env, ctx, '/api/status/')
+    if (url.pathname === '/' || url.pathname === '/status' || url.pathname === '/status/') return dispatchSurface(request, url, env, ctx, '/status/')
+    if (isSharedAppAssetPath(url.pathname)) return dispatchSurface(request, url, env, ctx)
+    if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, statusHost, '/')
+    return dispatchSurface(request, url, env, ctx)
+  }
 
-    if (host === STATUS_HOST) {
-      if (url.pathname === '/api/status' || url.pathname === '/api/status/') return dispatchSurface(request, url, env, ctx, '/api/status/')
-      if (url.pathname === '/' || url.pathname === '/status' || url.pathname === '/status/') return dispatchSurface(request, url, env, ctx, '/status/')
-      if (isSharedAppAssetPath(url.pathname)) return dispatchSurface(request, url, env, ctx)
-      if (request.method === 'GET' || request.method === 'HEAD') return redirectToHost(url, STATUS_HOST, '/')
-      return dispatchSurface(request, url, env, ctx)
-    }
+  if (isPrimaryHost(host, env) && (request.method === 'GET' || request.method === 'HEAD')) {
+    const spaceHost = resolveSurfaceHost(host, 'space', env)
+    const docsHost = resolveSurfaceHost(host, 'docs', env)
+    const statusHost = resolveSurfaceHost(host, 'status', env)
+    if (url.pathname === '/account' || url.pathname === '/account/') return redirectToHost(url, spaceHost, '/account/')
+    if (url.pathname === '/sign-in' || url.pathname === '/sign-in/') return redirectToHost(url, spaceHost, '/sign-in/')
+    if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) return redirectToHost(url, spaceHost, url.pathname)
+    if (url.pathname === '/help' || url.pathname === '/help/') return redirectToHost(url, docsHost, '/help/')
+    if (url.pathname === '/docs' || url.pathname === '/docs/') return redirectToHost(url, docsHost, '/')
+    if (url.pathname === '/status' || url.pathname === '/status/') return redirectToHost(url, statusHost, '/')
+  }
 
-    if (request.method === 'GET' || request.method === 'HEAD') {
-      if (host === APP_HOST && (url.pathname === '/account' || url.pathname === '/account/')) return redirectToHost(url, SPACE_HOST, '/account/')
-      if (host === APP_HOST && (url.pathname === '/sign-in' || url.pathname === '/sign-in/')) return redirectToHost(url, SPACE_HOST, '/sign-in/')
-      if (host === APP_HOST && (url.pathname === '/admin' || url.pathname.startsWith('/admin/'))) return redirectToHost(url, SPACE_HOST, url.pathname)
-      if (host === APP_HOST && (url.pathname === '/help' || url.pathname === '/help/')) return redirectToHost(url, DOCS_HOST, '/help/')
-      if (host === APP_HOST && (url.pathname === '/docs' || url.pathname === '/docs/')) return redirectToHost(url, DOCS_HOST, '/')
-      if (host === APP_HOST && (url.pathname === '/status' || url.pathname === '/status/')) return redirectToHost(url, STATUS_HOST, '/')
-    }
-
-    return dispatchOpenNext(request, env, ctx)
+  return dispatchOpenNext(request, env, ctx)
 }
 
 function requestCorrelationId(request) {
