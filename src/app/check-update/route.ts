@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import { NextRequest, NextResponse } from 'next/server'
 import { GET as getLatest } from '../latest/route'
 
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
   const downloadUrl =
     (typeof downloads.auto === 'string' && downloads.auto) ||
     (typeof downloads.arm64 === 'string' && downloads.arm64) ||
-    'https://petersmartlink.com/download/otya-player'
+    `${PUBLIC_URLS.primary}/download/otya-player`
 
   return NextResponse.json(
     {
