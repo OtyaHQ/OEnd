@@ -28,10 +28,10 @@ Otya is the public brand. Otya Holdings Limited is the intended parent company, 
 
 The existing public hostnames remain the operational domains until a separate domain migration is planned, verified and approved:
 
-- https://petersmartlink.com — Otya website and product discovery.
-- https://docs.petersmartlink.com — public documentation.
-- https://status.petersmartlink.com — public service status.
-- https://space.petersmartlink.com — account and signed-in environment.
+- https://otya.site — Otya website and product discovery.
+- https://docs.otya.site — public documentation.
+- https://status.otya.site — public service status.
+- https://space.otya.site — account and signed-in environment.
 
 The legacy domain and technical repository owner are compatibility identifiers, not the customer-facing brand or a statement of corporate ownership. Keep existing domains, cookies, CORS origins, API paths, app IDs, Worker names, OAuth redirect URIs and email addresses unchanged until a coordinated migration has tested redirects, DNS, authentication, certificates, provider callbacks and rollback.
 
