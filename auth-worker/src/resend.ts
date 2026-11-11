@@ -109,7 +109,9 @@ function fallbackPayload(email: ResendEmail): Record<string, unknown> {
 
 export async function sendResendEmail(apiKey:string|undefined,email:ResendEmail):Promise<string>{
   if(!apiKey)throw new Error('RESEND_API_KEY is not configured')
-  // Custom public-brand configuration requires the transport-owned fallback\n  // template so a Resend dashboard template cannot retain a retired domain.\n  const template = email.supportEmail || email.logoUrl ? null : selectTemplate(email)
+  // Custom public-brand configuration requires the transport-owned fallback
+  // template so a Resend dashboard template cannot retain a retired domain.
+  const template = email.supportEmail || email.logoUrl ? null : selectTemplate(email)
   if (template) {
     try {
       const data = await postEmail(apiKey, {
