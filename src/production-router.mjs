@@ -68,7 +68,7 @@ function configuredHosts(env, surface) {
 // domains that do not use docs./status./space. subdomains.
 function rootHost(hostname) {
   const firstLabel = hostname.split('.')[0]
-  if (['docs', 'status', 'space', 'www'].includes(firstLabel) && hostname.split('.').length > 2) {
+  if (['docs', 'status', 'space', 'www', 'api', 'assets'].includes(firstLabel) && hostname.split('.').length > 2) {
     return hostname.split('.').slice(1).join('.')
   }
   return hostname
@@ -98,7 +98,12 @@ function resolvePrimaryHost(hostname, env) {
 function isPrimaryHost(hostname, env) {
   const configured = configuredHosts(env, 'primary')
   if (configured.length) return configured.includes(hostname)
-  return !['docs', 'status', 'space'].some((surface) => hostname.startsWith(`${surface}.`))
+  return !['docs', 'status', 'space', 'api', 'assets'].some((surface) => hostname.startsWith(`${surface}.`))
+}
+
+function isApiHost(hostname, env) {
+  const configured = configuredHosts(env, 'api')
+  return configured.length ? configured.includes(hostname) : hostname.startsWith('api.')
 }
 
 function redirectToHost(url, hostname, pathname) {
@@ -229,7 +234,7 @@ async function routeOtyaRequest(request, env, ctx) {
     return dispatchOpenNext(new Request(url, { method: request.method, headers }), env, ctx)
   }
 
-  if (configuredHosts(env, 'api').includes(host)
+  if (isApiHost(host, env)
     && (url.pathname === '/' || url.pathname === '/health' || url.pathname === '/health/')) {
     return json({
       ok: true,
