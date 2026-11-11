@@ -1,6 +1,7 @@
 import { generateOtp, hashPassword, verifyJwt } from './crypto'
 import { getUserByEmail, getUserById, updatePasswordHash, type D1Database } from './db'
 import { sendResendEmail } from './resend'
+import { sendLinkedTelegramOtp, type TelegramOtpEnv } from './telegram-otp'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -13,11 +14,11 @@ interface KVNamespaceLike {
   }>
 }
 
-export interface SecureOtpEnv {
-  AUTH_DB: D1Database
+export interface SecureOtpEnv extends TelegramOtpEnv {
   AUTH_KV: KVNamespaceLike
   AUTH_JWT_SECRET: string
   RESEND_API_KEY?: string
+  OTYA_NO_REPLY_EMAIL?: string
 }
 
 const OTP_TTL = 10 * 60
@@ -129,10 +130,23 @@ async function revokeRefreshTokens(env: SecureOtpEnv, userId: string): Promise<v
   } while (cursor)
 }
 
-async function sendCode(env: SecureOtpEnv, to: string, subject: string, intro: string, code: string): Promise<void> {
+function noReplyEmail(env: SecureOtpEnv): string {
+  const candidate = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate) ? candidate : 'noreply@otya.site'
+}
+
+async function sendCode(
+  env: SecureOtpEnv,
+  to: string,
+  subject: string,
+  intro: string,
+  code: string,
+  userId?: string,
+): Promise<boolean> {
   await sendResendEmail(env.RESEND_API_KEY, {
-    from: 'OTYA <noreply@petersmartlink.com>',
+    from: 'Otya <' + noReplyEmail(env) + '>',
     to: [to],
+    replyTo: env.OTYA_NO_REPLY_EMAIL?.trim() || 'support@otya.site',
     subject,
     text: [
       intro,
@@ -142,10 +156,16 @@ async function sendCode(env: SecureOtpEnv, to: string, subject: string, intro: s
       'This code expires in 10 minutes.',
       'It contains 1 uppercase letter followed by 4 digits.',
       '',
+      'If you have linked Telegram to this Otya Account and started the Otya bot, a copy may also be delivered there.',
+      'Telegram messages are a delivery channel only. They never sign you in.',
+      '',
       'If you did not request this, you can ignore this message.',
       '— The Otya Team',
     ].join('\n'),
   })
+
+  if (!userId) return false
+  return sendLinkedTelegramOtp(env, userId, code, subject).catch(() => false)
 }
 
 export async function hardenRegistrationVerification(response: Response, env: SecureOtpEnv): Promise<void> {
@@ -189,7 +209,7 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     const resetKey = `otp:${email}`
     await env.AUTH_KV.put(resetKey, await digestCode(env, 'password-reset', email, code), { expirationTtl: OTP_TTL })
     try {
-      await sendCode(env, email, 'Your Otya password reset code', 'Use this code to reset your Otya password:', code)
+      await sendCode(env, email, 'Your Otya password reset code', 'Use this code to reset your Otya password:', code, user.id)
     } catch (error) {
       await env.AUTH_KV.delete(resetKey)
       console.error('[auth/otp] Password-reset email failed:', (error as Error)?.message)
@@ -243,13 +263,13 @@ export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv):
     const verificationKey = `verify_otp:${user.id}`
     await env.AUTH_KV.put(verificationKey, await digestCode(env, 'verify-email', user.id, code), { expirationTtl: OTP_TTL })
     try {
-      await sendCode(env, user.email, 'Your Otya verification code', 'Use this code to verify your Otya email address:', code)
+      const telegramDelivered = await sendCode(env, user.email, 'Your Otya verification code', 'Use this code to verify your Otya email address:', code, user.id)
     } catch (error) {
       await env.AUTH_KV.delete(verificationKey)
       console.error('[auth/otp] Verification email failed:', (error as Error)?.message)
       return json({ error: 'Verification email is temporarily unavailable.' }, 503)
     }
-    return json({ ok: true, message: 'Verification code sent.' })
+    return json({ ok: true, message: telegramDelivered ? 'Verification code sent to your email and linked Telegram.' : 'Verification code sent to your email.' , channels: telegramDelivered ? ['email', 'telegram'] : ['email'] })
   }
 
   let body: { otp?: string }
