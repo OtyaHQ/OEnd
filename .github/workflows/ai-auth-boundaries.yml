@@ -1,0 +1,35 @@
+name: Otya identity and AI boundary checks
+
+on:
+  push:
+    branches:
+      - identity-ai-separation
+    paths:
+      - "ai-worker/**"
+      - "auth-worker/**"
+      - "src/lib/ai-internal-api.mjs"
+      - "src/production-router.mjs"
+      - ".github/workflows/ai-auth-boundaries.yml"
+  pull_request:
+    paths:
+      - "ai-worker/**"
+      - "auth-worker/**"
+      - "src/lib/ai-internal-api.mjs"
+      - "src/production-router.mjs"
+      - ".github/workflows/ai-auth-boundaries.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check Core AI API syntax
+        run: node --check src/lib/ai-internal-api.mjs
+      - name: Run Core API tests
+        run: node --test ai-worker/test/core-client.test.mjs auth-worker/test/telegram-signin-disabled.contract.test.mjs ai-worker/test/core-api-boundary.test.mjs
