@@ -33,7 +33,7 @@ test('Telegram account linking requires an existing Otya session', () => {
   assert.match(telegramLink, /provider_subject/)
   assert.match(linkPage, /Connect Telegram/)
   assert.match(linkPage, /does not sign you in/)
-  assert.match(linkPage, /window\.location\.origin/)
+  assert.match(linkPage, /PUBLIC_URLS\\.allowedOrigins/)
   assert.doesNotMatch(linkPage, /Continue with Telegram|Sign in with Telegram|petersmartlink\.com/)
   assert.doesNotMatch(signIn, /Telegram Sign-In|Sign in with Telegram|Continue with Telegram/)
 })
