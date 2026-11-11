@@ -4,7 +4,7 @@ Status: canonical public-information map
 
 The Otya ecosystem must feel like one organized platform with clear product boundaries, not a collection of internal services or unrelated landing pages.
 
-## 1. Main site — petersmartlink.com
+## 1. Main site — otya.site
 
 Purpose: **Otya brand + product discovery**.
 
@@ -38,7 +38,9 @@ Otya Media has its own product page. Do not make the Otya homepage look like the
 
 Do not expose internal infrastructure or unfinished product claims.
 
-## 2. Docs — docs.petersmartlink.com
+## 2. API — api.otya.site
+
+## 3. Docs — docs.otya.site
 
 Purpose: public product guidance and user documentation.
 
@@ -98,7 +100,7 @@ Forbidden in public Docs:
 - release-control internals
 - incident playbooks
 
-## 3. Status — status.petersmartlink.com
+## 4. Status — status.otya.site
 
 Purpose: safe operational transparency.
 
@@ -124,7 +126,7 @@ Incident stages:
 
 Never expose stack traces, internal service names, database details or security-sensitive diagnostics.
 
-## 4. Space — space.petersmartlink.com
+## 5. Space — space.otya.site
 
 Purpose: one signed-in environment for one Otya identity.
 
@@ -161,7 +163,7 @@ Normal users must never gain Admin capability by entering an Admin URL. UI visib
 
 Do not show raw infrastructure, deployment secrets, logs or owner-only implementation details to normal users.
 
-## 5. Products — petersmartlink.com/apps
+## 6. Products — otya.site/apps
 
 Purpose: portfolio view of current Otya products and connected surfaces.
 
@@ -172,7 +174,7 @@ Current product presentation may include:
 
 Do not fill the portfolio with speculative or placeholder products merely to look larger.
 
-## 6. Developers — petersmartlink.com/developers
+## 7. Developers — otya.site/developers
 
 Purpose: safe developer-facing resources.
 
@@ -185,7 +187,7 @@ May link to:
 
 Do not expose private production topology as though it were a public developer API.
 
-## 7. Company — petersmartlink.com/company
+## 8. Company — otya.site/company
 
 Purpose: explain the Otya ecosystem, intended parent company and product principles. Otya Holdings Limited is in the process of URSB registration; do not claim it is already incorporated.
 
