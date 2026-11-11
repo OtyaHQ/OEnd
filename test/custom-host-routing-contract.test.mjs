@@ -54,6 +54,7 @@ test('legacy browser hosts redirect to Otya while app and callback paths remain 
   assert.match(router, /function redirectLegacyBrowser\(request, url, env\)/)
   assert.match(router, /OTYA_LEGACY_HOSTS/)
   assert.match(router, /legacySurface\(url\.hostname\)/)
+  assert.match(router, /canonicalHosts\.find\(candidate => !legacyHosts\.has\(candidate\)\)/)
   assert.match(router, /Response\.redirect\(target\.toString\(\), 302\)/)
   assert.match(router, /isLegacyCompatibilityPath\(url\.pathname\)/)
   assert.match(router, /pathname\.startsWith\('\/api\/'\)/)
