@@ -171,7 +171,8 @@ test('device, feedback and push routes reject non-object JSON before database wo
       const verifyRequest = () => {};
       const verifyAdminSession = async () => true;
       const errorJson = (error, status) => Response.json({ error }, { status });
-      const getDB = () => { throw new Error('unexpected database access'); };\n      const PUBLIC_URLS = { primary: 'https://otya.site', api: 'https://api.otya.site', docs: 'https://docs.otya.site', status: 'https://status.otya.site', space: 'https://space.otya.site' };
+      const getDB = () => { throw new Error('unexpected database access'); };
+      const PUBLIC_URLS = { primary: 'https://otya.site', api: 'https://api.otya.site', docs: 'https://docs.otya.site', status: 'https://status.otya.site', space: 'https://space.otya.site' };
     `
     const { outputText } = ts.transpileModule(mocks + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } })
     const { POST } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
@@ -188,7 +189,10 @@ test('device, feedback and push routes reject non-object JSON before database wo
 
 test('admin notification URLs reject embedded credentials and nonstandard ports', async () => {
   const source = readFileSync(new URL('../src/app/api/push/route.ts', import.meta.url), 'utf8')
-  const helper = `const PUBLIC_URLS = { primary: 'https://otya.site', docs: 'https://docs.otya.site', status: 'https://status.otya.site', space: 'https://space.otya.site' };\\n` + source.slice(source.indexOf('function approvedPublicOrigins'), source.indexOf('function corsHeaders'))
+  const helper = [
+    "const PUBLIC_URLS = { primary: 'https://otya.site', docs: 'https://docs.otya.site', status: 'https://status.otya.site', space: 'https://space.otya.site' };",
+    source.slice(source.indexOf('function approvedPublicOrigins'), source.indexOf('function corsHeaders')),
+  ].join('\\n')
   const { outputText } = ts.transpileModule(helper + '\nexport { officialNotificationUrl }', { compilerOptions: { module: ts.ModuleKind.ESNext } })
   const { officialNotificationUrl } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
   for (const url of ['https://user:password@otya.site/', 'https://otya.site:8443/', 'https://otya.site.evil.example/']) {
