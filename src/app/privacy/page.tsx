@@ -2,15 +2,16 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const metadata: Metadata = {
   title: 'Privacy | Otya',
   description: 'How Otya handles accounts, local media, Next and connected services.',
-  alternates: { canonical: 'https://petersmartlink.com/privacy' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/privacy` },
 }
 
 const SECTIONS = [
-  ['About Otya', 'Otya is a product and services ecosystem developed in Uganda. This policy covers Otya accounts and connected Otya services. Privacy questions can be sent to support@petersmartlink.com.'],
+  ['About Otya', 'Otya is a product and services ecosystem developed in Uganda. This policy covers Otya accounts and connected Otya services. Privacy questions can be sent to support@otya.site.'],
   ['Current operator and legal identity', 'For services currently operated or contracted in an individual capacity, the current individual operator/account holder is Peter Katabira. Otya is the public brand. Otya Holdings Limited is the intended parent entity and its URSB registration is in progress; it is not yet represented as an incorporated data controller or merchant-account holder. Existing provider accounts remain in their verified holder’s name until incorporation and formal provider approval. This notice will be updated before any change to the responsible controller.'],
   ['Your Otya account', 'Your Otya account provides one identity across connected Otya services. Product-specific data and permissions remain separately scoped under the same account ID.'],
   ['Local media', 'Otya primarily works with media stored on your device. Local files are not uploaded simply because you play, browse, search or organize them. Local music search runs on the device and does not contact a music-provider catalog while you type. Core local playback is designed to work without a cloud account.'],
@@ -20,7 +21,7 @@ const SECTIONS = [
   ['How information is used', 'Information is used to provide and secure Otya, synchronize optional account features, deliver updates, diagnose failures, prevent abuse and answer support requests. Otya does not sell personal information.'],
   ['Infrastructure and providers', 'Otya may use Cloudflare, Resend, Firebase, Google and Telegram for specific features. Those providers may process information under their own terms when you choose to use the relevant integration. The retired built-in Online Music/Jamendo catalog is not part of the current product.'],
   ['Your choices', 'You may use supported local playback without Next or an Otya account. Optional connected services can be avoided when you do not need them. You may request access, correction or deletion of personal information associated with your Otya account, subject to applicable law and security requirements.'],
-  ['Contact', 'For privacy questions or requests, email support@petersmartlink.com.'],
+  ['Contact', 'For privacy questions or requests, email support@otya.site.'],
 ]
 
 export default function PrivacyPage() {
