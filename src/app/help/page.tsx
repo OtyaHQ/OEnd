@@ -6,13 +6,13 @@ import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 import { SITE_CONFIG } from '@/lib/constants'
 
 export const metadata: Metadata = {
-  title: 'Help | Otya Media',
+  title: 'Help | Omy Play',
   description: 'Quick help for Otya Media accounts, local music and video, Send, Private and Android playback.',
   alternates: { canonical: 'https://petersmartlink.com/help' },
 }
 
 const quickHelp = [
-  ['I cannot sign in', 'Email, Google and Telegram are sign-in methods for the same Otya account. Use the method already connected to your account. When adding another provider to an existing account, sign in first and link it from your account settings rather than creating a second account.'],
+  ['I cannot sign in', 'Use your Otya email/password or Google account. Telegram is not a sign-in method; it can only be linked after you sign in, for supported account verification.'],
   ['I did not receive a verification code', 'Registration sends one verification code automatically. Check spam or promotions first, then request a new code only if you still need one. When a newer code is issued, use that newest code.'],
   ['I did not receive a password-reset email', 'Request one fresh reset code and check spam or promotions. Avoid repeatedly requesting codes because only the newest valid reset request should be used.'],
   ['Music or videos are missing in the Android app', 'Allow the media permissions requested by Android, then refresh or rescan the local library. Local media scanning does not require an Otya account.'],
