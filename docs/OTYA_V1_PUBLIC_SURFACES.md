@@ -134,7 +134,8 @@ Signed out:
 - Sign in
 - Create Otya Account
 - Google sign-in
-- Telegram sign-in where supported
+- Optional Telegram account linking for notifications and one-time-code delivery only
+- Telegram never creates an account or issues an Otya session
 - Recover account
 - Concise explanation of Space
 
