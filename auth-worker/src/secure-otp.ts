@@ -20,6 +20,7 @@ export interface SecureOtpEnv extends TelegramOtpEnv {
   RESEND_API_KEY?: string
   OTYA_NO_REPLY_EMAIL?: string
   OTYA_SUPPORT_EMAIL?: string
+  OTYA_EMAIL_LOGO_URL?: string
 }
 
 const OTP_TTL = 10 * 60
@@ -148,6 +149,8 @@ async function sendCode(
     from: 'Otya <' + noReplyEmail(env) + '>',
     to: [to],
     replyTo: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+    supportEmail: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+    logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
     subject,
     text: [
       intro,
