@@ -1,5 +1,6 @@
-import { PUBLIC_URLS } from '@/lib/public-urls'
 'use client'
+
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 import Link from 'next/link'
 import { FormEvent, useEffect, useRef, useState } from 'react'
