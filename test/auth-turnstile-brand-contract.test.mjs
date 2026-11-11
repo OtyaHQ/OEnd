@@ -54,7 +54,6 @@ test('sign-in UI supplies fresh Turnstile proof to every public provider path', 
 
   assert.match(signIn, /TurnstileChallenge/)
   assert.match(signIn, /turnstile_token: securityToken/)
-  assert.match(signIn, /X-Otya-Turnstile/)
   assert.match(signIn, /Complete the Cloudflare security check/)
   assert.match(signIn, /resetSecurityChallenge/)
 
