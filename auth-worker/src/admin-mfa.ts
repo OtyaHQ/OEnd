@@ -15,6 +15,12 @@ export interface AdminMfaEnv {
   RESEND_API_KEY?: string
   ADMIN_EMAILS?: string
   INTERNAL_SECRET?: string
+  OTYA_NO_REPLY_EMAIL?: string
+}
+
+function noReplyEmail(env: AdminMfaEnv): string {
+  const value = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'noreply@otya.site'
 }
 
 const OTP_TTL = 10 * 60
@@ -272,7 +278,7 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
     const otp = generateOtp()
     await env.AUTH_KV.put(`admin_mfa_otp:${user.id}`, await otpDigest(user.id, otp), { expirationTtl: OTP_TTL })
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'OTYA <noreply@petersmartlink.com>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: [user.email!],
       subject: 'Trust this phone for Next',
       text: [
