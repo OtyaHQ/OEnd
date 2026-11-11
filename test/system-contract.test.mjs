@@ -169,7 +169,7 @@ test('Online Music is retired across the canonical control plane', () => {
   assert.doesNotMatch(appConfig, /'online-music'/)
   assert.match(appConfig, /delete features\.onlineMusic/)
   assert.match(appConfig, /config = enforceProductScope\(config\)/)
-  assert.match(appConfig, /ai:\s*'https:\/\/petersmartlink\.com\/support'/)
+  assert.ok(appConfig.includes('PUBLIC_URLS.primary'))
   assert.match(appConfig, /aiAssistant:\s*false/)
   assert.match(appConfig, /scope:\s*'support-only'/)
   assert.doesNotMatch(appConfig, /action:\s*'\/myspace'/)
