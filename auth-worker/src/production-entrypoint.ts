@@ -27,6 +27,7 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
   RESEND_API_KEY?: string
   OTYA_NO_REPLY_EMAIL?: string
   OTYA_SUPPORT_EMAIL?: string
+  OTYA_EMAIL_LOGO_URL?: string
   OTYAPOINT_INVITE_SERVICE_TOKEN?: string | { get(): Promise<string> }
   OTYA_NEXT_MAIL_SERVICE_TOKEN?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
@@ -151,6 +152,8 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
       from: `Otya <${noReplyEmail(env)}>`,
       to: [email],
       replyTo: supportEmail(env),
+      supportEmail: supportEmail(env),
+      logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
       subject: 'You have been invited to OtyaPoint',
       idempotencyKey: `otyapoint/staff-invitation/${invitationId}/${digestHex}`,
       text: [
