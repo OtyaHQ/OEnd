@@ -21,7 +21,7 @@ test('Telegram account-linking smoke stays manual while canonical deploy perform
   assert.match(telegramSmoke, /Verify public retired Telegram sign-in remains blocked/)
   assert.match(telegramSmoke, /TURNSTILE_REQUIRED/)
   assert.match(telegramSmoke, /test "\$status" = "400"/)
-  assert.match(telegramSmoke, /Check Telegram handoff page/)
+  assert.match(telegramSmoke, /Check Telegram account-linking page/)
   assert.match(telegramSmoke, /test "\$status" = "200"/)
   assert.doesNotMatch(telegramSmoke, /grep -q 'authorization_url'/)
 
