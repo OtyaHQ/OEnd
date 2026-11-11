@@ -179,7 +179,7 @@ async function sendAdminHandoff(env,{message,email,name,source,userId}){
     method:'POST',
     headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},
     body:JSON.stringify({
-      from:'Otya Support <${noReplyEmail(env)}>',
+      from:`Otya Support <${noReplyEmail(env)}>`,
       to:[admin],
       reply_to:clean(email,180)||supportEmail(env),
       subject:`Otya support handoff · ${ticket}`,
@@ -254,7 +254,7 @@ export async function handlePublicChat(request,env){
       return json({ok:true,handoff_sent:true,ticket,message:'Otya support has been notified.'})
     }catch(e){
       console.error('[support-handoff]',e?.message)
-      return json({error:'Could not notify support right now. Please use ${supportEmail(env)}.',code:'HANDOFF_FAILED'},503)
+      return json({error:`Could not notify support right now. Please use ${supportEmail(env)}.`,code:'HANDOFF_FAILED'},503)
     }
   }
 
