@@ -62,7 +62,7 @@ test('Telegram cannot create or elevate Otya sessions', () => {
   assert.match(worker, /TELEGRAM_LOGIN_DISABLED/)
   assert.match(worker, /Sign in to your Otya Account first/)
   assert.match(callback, /withoutSessionMaterial/)
-  assert.doesNotMatch(callback, /response\\.cookies\\.set|cookies\\.set\\(/)
+  assert.ok(!callback.includes('cookies.set('))
 })
 
 
