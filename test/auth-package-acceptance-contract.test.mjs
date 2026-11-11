@@ -27,7 +27,7 @@ test('provider-created accounts receive clear mobile sign-in guidance', () => {
   assert.match(signIn, /Use Google if that is the method linked to your Otya Account/)
   assert.match(signIn, /type: 'standard'/)
   assert.match(signIn, /shape: 'pill'/)
-  assert.match(signIn, /<span>Continue with Telegram<\/span>/)
+  assert.doesNotMatch(signIn, /Continue with Telegram|Sign in with Telegram/)
 })
 
 test('admin uses unified OTYA identity but keeps separate elevated MFA', () => {
