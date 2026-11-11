@@ -37,7 +37,7 @@ test('public status API exposes only sanitized component state', () => {
 
 test('status host keeps the public status API same-origin', () => {
   const router = read('src/production-router.mjs')
-  assert.match(router, /isSurfaceHost\\(host, 'status', env\\)/)
+  assert.ok(router.includes("isSurfaceHost(host, 'status', env)"))
   assert.match(router, /url\.pathname === '\/api\/status' \|\| url\.pathname === '\/api\/status\/'/)
   assert.match(router, /dispatchSurface\(request, url, env, ctx, '\/api\/status\/'\)/)
   assert.match(read('next.config.mjs'), /trailingSlash: true/)
