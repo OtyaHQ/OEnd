@@ -101,7 +101,10 @@ async function matchesInternalServiceSecret(provided: string, expected: string):
 
 async function handleOtyaPointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
   const url = new URL(request.url)
-  if (url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
+  // OtyaPoint is the current product identity. Keep the prior internal path as
+  // a temporary compatibility alias for already-deployed callers.
+  if (url.pathname !== '/internal/notifications/otyapoint/staff-invitation'
+    && url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
   if (request.method !== 'POST') return authError('Method not allowed', 405)
   // The service binding is the network boundary; the shared secret is a second
   // authorization boundary so another bound Worker cannot impersonate OtyaPoint.
