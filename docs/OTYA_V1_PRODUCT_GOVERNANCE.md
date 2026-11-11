@@ -80,7 +80,8 @@ Admin is not a separate account system. The server resolves the signed-in Otya i
 
 ## Authentication and Admin rules
 
-- Email, Google and supported providers are ways to authenticate the same Otya identity.
+- Email/password and Google are the normal Otya account sign-in methods.
+- Telegram private-bot chat is a separate one-time security-code channel; a linked Telegram identity may confirm owner-only step-up actions but cannot create or resume an ordinary account session.
 - Google authentication must not be followed by a demand for the normal Otya password merely because Google was used.
 - Admin eligibility is resolved server-side from the authenticated account.
 - A normal user must never see or gain Admin capability merely by navigating to an Admin URL.

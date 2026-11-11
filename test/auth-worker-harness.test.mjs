@@ -3,7 +3,19 @@ import assert from 'node:assert/strict'
 import { createTestHarness } from 'wrangler'
 
 const server = createTestHarness({
-  workers: [{ configPath: './auth-worker/wrangler.toml' }],
+  workers: [
+    {
+      configPath: './auth-worker/wrangler.toml',
+      bindingOverrides: { CORE: 'otya-core-test' },
+    },
+    {
+      config: {
+        name: 'otya-core-test',
+        main: './test/fixtures/otya-core-test.mjs',
+        compatibility_date: '2026-11-10',
+      },
+    },
+  ],
 })
 
 before(async () => {
@@ -43,8 +55,8 @@ test('Telegram login fails closed when provider credentials are unavailable', as
   const response = await server.fetch('http://localhost/auth/telegram/start?mode=login', {
     method: 'POST',
   })
-  assert.equal(response.status, 503)
+  assert.equal(response.status, 403)
   const body = await response.json()
-  assert.equal(body.code, 'TELEGRAM_LOGIN_UNAVAILABLE')
-  assert.match(String(body.error ?? ''), /unavailable/i)
+  assert.equal(body.code, 'TELEGRAM_SIGN_IN_DISABLED')
+  assert.match(String(body.error ?? ''), /not a sign-in method/i)
 })

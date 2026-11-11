@@ -52,7 +52,7 @@ test('Telegram bot command surface matches the approved package', () => {
   assert.match(core, /Elevated administrator verification required/)
 })
 
-test('Telegram Mini App validates raw initData server-side and creates or logs in the verified identity', () => {
+test('Telegram Mini App validates raw initData but never signs users into Otya', () => {
   assert.match(miniAuth, /verifyTelegramInitData/)
   assert.match(miniAuth, /params\.delete\('hash'\)/)
   assert.match(miniAuth, /join\('\\n'\)/)
@@ -60,22 +60,17 @@ test('Telegram Mini App validates raw initData server-side and creates or logs i
   assert.match(miniAuth, /constantTimeHexEqual/)
   assert.match(miniAuth, /MAX_AGE_SECONDS/)
   assert.match(miniAuth, /Number\.isSafeInteger\(user\.id\)/)
-  assert.match(miniAuth, /createOrGetTelegramUser/)
-  assert.match(miniAuth, /created_or_logged_in/)
-  assert.doesNotMatch(miniAuth, /OTYA_ACCOUNT_REQUIRED/)
+  assert.match(miniAuth, /currentUserId\(request, env\)/)
+  assert.match(miniAuth, /OTYA_ACCOUNT_REQUIRED/)
+  assert.doesNotMatch(miniAuth, /createOrGetTelegramUser|issueSession|access_token|refresh_token/)
   assert.doesNotMatch(miniAuth, /initDataUnsafe/)
 })
 
-test('Mini App auth establishes shared secure Otya browser cookies without exposing tokens', () => {
-  assert.match(proxy, /endsWith\('\/miniapp'\)/)
-  assert.match(proxy, /__Secure-otya_access/)
-  assert.match(proxy, /__Secure-otya_refresh/)
-  assert.match(proxy, /COOKIE_DOMAIN = '\.petersmartlink\.com'/)
-  assert.match(proxy, /delete safe\.access_token/)
-  assert.match(proxy, /delete safe\.refresh_token/)
-  assert.match(proxy, /httpOnly: true/)
-  assert.match(proxy, /secure: true/)
-  assert.match(proxy, /sameSite: 'lax'/)
+test('Mini App cannot establish Otya sign-in cookies or expose authentication tokens', () => {
+  const miniProxyBlock = proxy.slice(proxy.indexOf("if (publicUrl.pathname.endsWith('/miniapp')"), proxy.indexOf("if (publicUrl.pathname.endsWith('/start')"))
+  assert.match(miniProxyBlock, /Mini App identity data may confirm/)
+  assert.match(miniProxyBlock, /withoutTokens\(data\)/)
+  assert.doesNotMatch(miniProxyBlock, /cookies\.set/)
 })
 
 test('Mini App exposes all approved product surfaces and keeps identity server verified', () => {

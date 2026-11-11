@@ -104,11 +104,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data, { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
     }
 
+    if (action === 'verify-telegram-otp') {
+      const upstream = await authStep(request, recordEnv, '/auth/admin/verify-telegram-otp', { otp: body.otp })
+      const data = await upstream.json().catch(() => ({}))
+      return NextResponse.json(data, { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
+    }
+
     if (action === 'complete') {
       const upstream = await authStep(request, recordEnv, '/auth/admin/consume')
       const data = await upstream.json().catch(() => ({})) as { ok?: boolean; email?: string; error?: string }
       if (!upstream.ok || data.ok !== true || data.email?.toLowerCase() !== accountEmail) {
-        return NextResponse.json({ error: data.error ?? 'Complete Telegram verification first.' }, { status: 401 })
+        return NextResponse.json({ error: data.error ?? 'Complete both email and Telegram OTP checks first.' }, { status: 401 })
       }
 
       const session = await createAdminSession(recordEnv, accountEmail)

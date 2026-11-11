@@ -43,7 +43,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 
 function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }: { configured: boolean; accountAdmin: boolean; checkError: string; onRetry: () => void; onSuccess: () => void }) {
   const [otp, setOtp] = useState('')
-  const [stage, setStage] = useState<'start' | 'otp' | 'telegram'>('start')
+  const [stage, setStage] = useState<'start' | 'email-otp' | 'telegram-otp' | 'complete'>('start')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -60,49 +60,51 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
     return data
   }, [])
 
-  useEffect(() => {
-    if (!accountAdmin || typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    const telegram = params.get('telegram')
-    if (telegram === 'verified') {
-      setLoading(true)
-      post({ action: 'complete' })
-        .then(() => {
-          window.history.replaceState({}, '', '/admin')
-          onSuccess()
-        })
-        .catch(e => setError((e as Error).message))
-        .finally(() => setLoading(false))
-    } else if (telegram === 'not-linked') {
-      setStage('telegram')
-      setError('Link your Telegram account to this Otya account before using it for admin verification.')
-    } else if (telegram === 'error' || telegram === 'expired' || telegram === 'cancelled') {
-      setStage('telegram')
-      setError('Telegram verification was not completed. Try again.')
-    }
-  }, [accountAdmin, onSuccess, post])
-
   async function sendOtp() {
     setLoading(true); setError('')
     try {
       await post({ action: 'start' })
-      setStage('otp')
-    } catch (e) { setError((e as Error).message) } finally { setLoading(false) }
+      setOtp('')
+      setStage('email-otp')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally { setLoading(false) }
   }
 
-  async function verifyOtp(e: FormEvent) {
-    e.preventDefault()
+  async function verifyEmailOtp(event: FormEvent) {
+    event.preventDefault()
     if (!otp.trim()) return
     setLoading(true); setError('')
     try {
-      await post({ action: 'verify-otp', otp: otp.trim() })
+      await post({ action: 'verify-otp', otp: otp.trim().toUpperCase() })
       setOtp('')
-      setStage('telegram')
-      const res = await fetch('/api/auth/telegram/start?mode=admin', { method: 'POST', credentials: 'same-origin' })
-      const data = await res.json().catch(() => ({})) as { authorization_url?: string; error?: string }
-      if (!res.ok || !data.authorization_url) throw new Error(data.error ?? 'Telegram verification could not start.')
-      window.location.assign(data.authorization_url)
-    } catch (e) { setError((e as Error).message) } finally { setLoading(false) }
+      setStage('telegram-otp')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally { setLoading(false) }
+  }
+
+  async function verifyTelegramOtp(event: FormEvent) {
+    event.preventDefault()
+    if (!otp.trim()) return
+    setLoading(true); setError('')
+    try {
+      await post({ action: 'verify-telegram-otp', otp: otp.trim().toUpperCase() })
+      setOtp('')
+      setStage('complete')
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally { setLoading(false) }
+  }
+
+  async function completeOwnerAccess() {
+    setLoading(true); setError('')
+    try {
+      await post({ action: 'complete' })
+      onSuccess()
+    } catch (cause) {
+      setError((cause as Error).message)
+    } finally { setLoading(false) }
   }
 
   return <main className="min-h-screen grid place-items-center px-4 py-10" style={{ background: 'var(--cosmos-scaffold)' }}>
@@ -112,7 +114,7 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
       </div>
       <h1 className="text-center text-2xl font-black">Otya Admin</h1>
       <p className="mt-2 text-center text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>
-        Admin uses your existing Otya sign-in. Owner controls are unlocked with fresh email and Telegram verification, not a second account login.
+        Admin uses your existing Otya sign-in. Owner access requires two separate one-time codes: one by email and one through your linked private OtyaPlayerBot chat. Telegram never signs you in.
       </p>
 
       {checkError ? <div className="mt-5 rounded-xl border p-4 text-xs leading-6" style={{ borderColor: 'var(--cosmos-divider)' }}>
@@ -120,29 +122,25 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
         <p className="mt-2 text-red-400">{checkError}</p>
         <button type="button" onClick={onRetry} className="mt-3 w-full rounded-xl border px-4 py-2.5 text-sm font-bold" style={{ borderColor: 'var(--cosmos-divider)' }}>Retry session check</button>
       </div> : !configured ? <div className="mt-5 rounded-xl border p-4 text-xs leading-6" style={{ borderColor: 'var(--cosmos-divider)' }}>
-        Admin MFA is not fully configured on the server. Check the owner allowlist, Auth service binding, and Admin session secret.
+        Admin verification is not fully configured on the server. Check the owner allowlist, Auth service binding, email and Telegram bot delivery, and Admin session secret.
       </div> : !accountAdmin ? <div className="mt-6 space-y-3">
         <p className="text-sm text-center" style={{ color: 'var(--cosmos-text-secondary)' }}>Sign in to your Otya account first. Only allowlisted accounts can continue to Admin.</p>
         <a href="/sign-in?next=/admin" className="block w-full rounded-xl bg-violet-500 px-4 py-3 text-center text-sm font-black text-white">Sign in to Otya</a>
       </div> : stage === 'start' ? <div className="mt-6 space-y-3">
-        <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>You are already signed in. To unlock Admin, we will send a single-use code to the verified email on this Otya account, then confirm the linked Telegram identity.</p>
-        <button onClick={sendOtp} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Sending…' : 'Unlock Admin'}</button>
-      </div> : stage === 'otp' ? <form onSubmit={verifyOtp} className="mt-6 space-y-3">
-        <input className={input} style={surfaceStyle()} autoComplete="one-time-code" inputMode="text" placeholder="Email verification code" value={otp} onChange={e => setOtp(e.target.value.toUpperCase().slice(0, 5))} />
-        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Continue with Telegram'}</button>
-        <button type="button" onClick={sendOtp} disabled={loading} className="w-full rounded-xl border px-4 py-2.5 text-sm font-bold" style={{ borderColor: 'var(--cosmos-divider)' }}>Send a new code</button>
+        <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>Otya will send one code to your verified email and a different code to your linked private bot chat. Both are required.</p>
+        <button onClick={() => void sendOtp()} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Sending both codes…' : 'Unlock Admin'}</button>
+      </div> : stage === 'email-otp' ? <form onSubmit={verifyEmailOtp} className="mt-6 space-y-3">
+        <label className="block text-xs font-bold" style={{ color: 'var(--cosmos-text-secondary)' }}>Code sent to your Otya email</label>
+        <input className={input} style={surfaceStyle()} autoComplete="one-time-code" inputMode="text" placeholder="Email code · A1234" value={otp} onChange={event => setOtp(event.target.value.toUpperCase().slice(0, 5))} />
+        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Verify email code'}</button>
+        <button type="button" onClick={() => void sendOtp()} disabled={loading} className="w-full rounded-xl border px-4 py-2.5 text-sm font-bold" style={{ borderColor: 'var(--cosmos-divider)' }}>Send both codes again</button>
+      </form> : stage === 'telegram-otp' ? <form onSubmit={verifyTelegramOtp} className="mt-6 space-y-3">
+        <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>Email verified. Enter the different one-time code sent to your linked private OtyaPlayerBot chat.</p>
+        <input className={input} style={surfaceStyle()} autoComplete="one-time-code" inputMode="text" placeholder="Telegram bot code · A1234" value={otp} onChange={event => setOtp(event.target.value.toUpperCase().slice(0, 5))} />
+        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Verify bot code'}</button>
       </form> : <div className="mt-6 space-y-3">
-        <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>Email verification passed. Complete verification with the Telegram identity linked to this same Otya account.</p>
-        <button onClick={() => verifyOtp({ preventDefault() {} } as FormEvent)} disabled className="hidden" />
-        <button onClick={async () => {
-          setLoading(true); setError('')
-          try {
-            const res = await fetch('/api/auth/telegram/start?mode=admin', { method: 'POST', credentials: 'same-origin' })
-            const data = await res.json().catch(() => ({})) as { authorization_url?: string; error?: string }
-            if (!res.ok || !data.authorization_url) throw new Error(data.error ?? 'Telegram verification could not start.')
-            window.location.assign(data.authorization_url)
-          } catch (e) { setError((e as Error).message); setLoading(false) }
-        }} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Opening Telegram…' : 'Continue with Telegram'}</button>
+        <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>Both channels are verified. Complete the secure Admin session.</p>
+        <button onClick={() => void completeOwnerAccess()} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Unlocking…' : 'Complete and open Admin'}</button>
       </div>}
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
     </div>

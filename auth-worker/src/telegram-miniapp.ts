@@ -1,11 +1,5 @@
-import { generateRefreshToken, signJwt, verifyJwt } from './crypto'
-import { assertSchemaReady, getUserById, type D1Database, type UserRow } from './db'
-import { createOrGetTelegramUser } from './telegram-account'
-
-interface KVNamespaceLike {
-  get(key: string): Promise<string | null>
-  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>
-}
+import { verifyJwt } from './crypto'
+import { getUserById, type D1Database } from './db'
 
 interface SecretsStoreSecret {
   get(): Promise<string>
@@ -13,7 +7,6 @@ interface SecretsStoreSecret {
 
 export interface TelegramMiniAppEnv {
   AUTH_DB: D1Database
-  AUTH_KV: KVNamespaceLike
   AUTH_JWT_SECRET: string
   TELEGRAM_BOT_TOKEN?: SecretsStoreSecret
 }
@@ -35,8 +28,6 @@ type VerifiedMiniApp = {
 }
 
 const MAX_AGE_SECONDS = 10 * 60
-const ACCESS_TOKEN_TTL_SECS = 15 * 60
-const REFRESH_TOKEN_TTL_SECS = 30 * 24 * 60 * 60
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -118,20 +109,6 @@ async function currentUserId(request: Request, env: TelegramMiniAppEnv): Promise
   return payload?.sub ?? null
 }
 
-async function issueSession(user: UserRow, env: TelegramMiniAppEnv) {
-  const now = Math.floor(Date.now() / 1000)
-  const accessToken = await signJwt({ sub: user.id, email: user.email, iat: now, exp: now + ACCESS_TOKEN_TTL_SECS }, env.AUTH_JWT_SECRET)
-  const refreshToken = generateRefreshToken()
-  await env.AUTH_KV.put(`rt:${refreshToken}`, user.id, { expirationTtl: REFRESH_TOKEN_TTL_SECS })
-  await env.AUTH_KV.put(`rt_user:${user.id}:${refreshToken}`, '1', { expirationTtl: REFRESH_TOKEN_TTL_SECS })
-  return { accessToken, refreshToken }
-}
-
-function providerUsername(user: TelegramWebAppUser): string | null {
-  const username = String(user.username ?? '').trim()
-  return /^[A-Za-z0-9_]{1,64}$/.test(username) ? username : null
-}
-
 export async function handleTelegramMiniApp(request: Request, env: TelegramMiniAppEnv): Promise<Response | null> {
   const url = new URL(request.url)
   if (url.pathname !== '/auth/telegram/miniapp') return null
@@ -141,76 +118,40 @@ export async function handleTelegramMiniApp(request: Request, env: TelegramMiniA
   try { body = await request.json() as { initData?: string } }
   catch { return json({ error: 'Invalid JSON body' }, 400) }
 
-  let verified: VerifiedMiniApp
-  try { verified = await verifyTelegramInitData(String(body.initData ?? ''), env) }
+  try { await verifyTelegramInitData(String(body.initData ?? ''), env) }
   catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Telegram Mini App verification failed', code: 'TELEGRAM_MINIAPP_INVALID' }, 401)
   }
 
-  await assertSchemaReady(env.AUTH_DB)
-  const providerSubject = String(verified.user.id)
-  const identity = await env.AUTH_DB.prepare(
-    "SELECT user_id FROM linked_identities WHERE provider = 'telegram' AND provider_subject = ? LIMIT 1",
-  ).bind(providerSubject).first<{ user_id?: string }>()
-
-  if (identity?.user_id) {
-    const user = await getUserById(env.AUTH_DB, identity.user_id)
-    if (!user) return json({ error: 'Linked OTYA Account could not be found', code: 'OTYA_ACCOUNT_MISSING' }, 409)
-    await env.AUTH_DB.prepare(
-      "UPDATE linked_identities SET provider_username = ?, last_used_at = datetime('now') WHERE provider = 'telegram' AND provider_subject = ?",
-    ).bind(providerUsername(verified.user), providerSubject).run()
-    const session = await issueSession(user, env)
-    return json({
-      ok: true,
-      authenticated: true,
-      telegram_user_id: providerSubject,
-      access_token: session.accessToken,
-      refresh_token: session.refreshToken,
-      user: { id: user.id, otya_id: user.otya_id, email: user.email, name: user.name, avatar_url: user.avatar_url },
-    })
-  }
-
+  // Telegram Mini App data is a channel assertion only. It must never create
+  // an Otya identity or mint an Otya session. The user must already hold a
+  // valid Otya session obtained through Google or email/password.
   const userId = await currentUserId(request, env)
   if (!userId) {
-    const name = [verified.user.first_name, verified.user.last_name].filter(Boolean).join(' ').trim()
-    const user = await createOrGetTelegramUser(env, providerSubject, providerUsername(verified.user), name)
-    const session = await issueSession(user, env)
     return json({
-      ok: true,
-      authenticated: true,
-      created_or_logged_in: true,
-      telegram_user_id: providerSubject,
-      access_token: session.accessToken,
-      refresh_token: session.refreshToken,
-      user: { id: user.id, otya_id: user.otya_id, email: user.email, name: user.name, avatar_url: user.avatar_url },
-    })
+      error: 'Sign in to your Otya account with Google or email before opening the account-connected Mini App.',
+      code: 'OTYA_ACCOUNT_REQUIRED',
+    }, 401)
   }
-
-  const conflicting = await env.AUTH_DB.prepare(
-    "SELECT provider_subject FROM linked_identities WHERE provider = 'telegram' AND user_id = ? LIMIT 1",
-  ).bind(userId).first<{ provider_subject?: string }>()
-  if (conflicting?.provider_subject && conflicting.provider_subject !== providerSubject) {
-    return json({ error: 'This OTYA Account is already connected to another Telegram account.', code: 'TELEGRAM_ALREADY_LINKED' }, 409)
-  }
-
-  await env.AUTH_DB.prepare(`
-    INSERT INTO linked_identities (user_id, provider, provider_subject, provider_username)
-    VALUES (?, 'telegram', ?, ?)
-    ON CONFLICT(provider, provider_subject) DO UPDATE SET
-      provider_username = excluded.provider_username,
-      last_used_at = datetime('now')
-  `).bind(userId, providerSubject, providerUsername(verified.user)).run()
 
   const user = await getUserById(env.AUTH_DB, userId)
-  if (!user) return json({ error: 'OTYA Account could not be found', code: 'OTYA_ACCOUNT_MISSING' }, 409)
-  const session = await issueSession(user, env)
+  if (!user) {
+    return json({
+      error: 'Your Otya session is no longer valid. Sign in again.',
+      code: 'OTYA_ACCOUNT_REQUIRED',
+    }, 401)
+  }
+
   return json({
     ok: true,
     authenticated: true,
-    linked: true,
-    telegram_user_id: providerSubject,
-    access_token: session.accessToken,
-    refresh_token: session.refreshToken,
-    user: { id: user.id, otya_id: user.otya_id, email: user.email, name: user.name, avatar_url: user.avatar_url },
+    telegram_verified: true,
+    user: {
+      id: user.id,
+      otya_id: user.otya_id,
+      email: user.email,
+      name: user.name,
+      avatar_url: user.avatar_url,
+    },
   })
 }

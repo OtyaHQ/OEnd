@@ -1,6 +1,7 @@
 import worker from './entrypoint.mjs'
 import {
   getTelegramWebhookInfo,
+  handleInternalTelegramOtp,
   handleTelegramAdmin,
   handleTelegramWebhook,
   sendTelegramMessage,
@@ -235,6 +236,9 @@ export default {
   ...worker,
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
+    if (url.pathname === '/internal/telegram/otp') {
+      return handleInternalTelegramOtp(request, env) ?? json({ error: 'Not found' }, 404)
+    }
     if (url.pathname === '/api/telegram/webhook') {
       const ownerEnrollment = await handleOwnerEnrollmentWebhook(request, env)
       if (ownerEnrollment) return ownerEnrollment

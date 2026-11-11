@@ -19,6 +19,9 @@ const telegramProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
 const telegramCore = read('src/lib/telegram-bot.mjs')
 const telegramReceiptMigration = read('migrations/0010_telegram_update_receipts.sql')
 const telegramMini = read('auth-worker/src/telegram-miniapp.ts')
+const telegramLogin = read('auth-worker/src/telegram-login.ts')
+const telegramPrimaryLogin = read('auth-worker/src/telegram-primary-login.ts')
+const secureOtp = read('auth-worker/src/secure-otp.ts')
 
 requireMatch('public Worker must be otya-core', core, /^name\s*=\s*"otya-core"$/m)
 requireMatch('otya-core workers.dev must be disabled', core, /^workers_dev\s*=\s*false$/m)
@@ -61,14 +64,21 @@ requireMatch('otya-auth live analytics dataset', auth, /^dataset\s*=\s*"otya-aut
 requireMatch('Android Google client id must be verified', auth, /^GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 requireMatch('Web Google client id must be verified', auth, /^GOOGLE_WEB_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
 requireMatch('otya-auth Firebase project id', auth, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
-requireMatch('Telegram redirect must match live canonical API callback', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=\s*"https:\/\/petersmartlink\.com\/api\/auth\/telegram\/callback"$/m)
+forbidMatch('Retired Telegram OIDC redirect must not remain configured', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=/m)
+forbidMatch('Retired Telegram OIDC client credentials must not remain configured', auth, /^TELEGRAM_LOGIN_CLIENT_(?:ID|SECRET)\s*=/m)
+requireMatch('Telegram account login route must explicitly return retired status', telegramLogin, /TELEGRAM_LOGIN_RETIRED/)
+requireMatch('Telegram primary OIDC route must explicitly return retired status', telegramPrimaryLogin, /TELEGRAM_LOGIN_RETIRED/)
 requireMatch('Telegram Mini App auth uses purpose-specific Secrets Store alias', auth, /binding\s*=\s*"TELEGRAM_MINIAPP_BOT_TOKEN"[\s\S]*?secret_name\s*=\s*"TELEGRAM_BOT_TOKEN"/m)
 requireMatch('Telegram Mini App derives WebAppData HMAC', telegramMini, /WebAppData/)
 requireMatch('Telegram Mini App validates auth_date freshness', telegramMini, /MAX_AGE_SECONDS/)
 requireMatch('Telegram Mini App uses numeric Telegram ID', telegramMini, /Number\.isSafeInteger\(user\.id\)/)
-requireMatch('Telegram public callback must proxy to private auth service', telegramProxy, /PUBLIC_PREFIX\s*=\s*'\/api\/auth\/telegram\/'/)
-requireMatch('Telegram public callback must preserve private auth route', telegramProxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
-requireMatch('Telegram public callback must use AUTH binding', telegramProxy, /\.AUTH as AuthService/)
+requireMatch('Telegram Mini App requires an existing Otya identity session', telegramMini, /currentUserId\(request, env\)/)
+forbidMatch('Telegram Mini App must not create accounts or mint Otya sessions', telegramMini, /createOrGetTelegramUser|issueSession|access_token|refresh_token/)
+requireMatch('Telegram OTP delivery uses the private Core service binding', secureOtp, /CORE\.fetch\(new Request\('https:\/\/otya-core\/internal\/telegram\/otp'/)
+requireMatch('Telegram OTP delivery uses a separately linked bot identity', secureOtp, /provider = 'telegram_otp_bot'/)
+requireMatch('Telegram Mini App public proxy requires the Otya access cookie', telegramProxy, /ACCESS_COOKIE = '__Secure-otya_access'/)
+requireMatch('Telegram Mini App public proxy maps only the miniapp endpoint', telegramProxy, /authUrl\.pathname = '\/auth\/telegram\/miniapp'/)
+requireMatch('Telegram Mini App public proxy uses the private AUTH service binding', telegramProxy, /AUTH as AuthService/)
 forbidMatch('Cloudflare EMAIL binding must not return to auth Wrangler', auth, /\[\[send_email\]\]|binding\s*=\s*"EMAIL"/i)
 requireMatch('production Google wrapper must support web audience', googleWrapper, /GOOGLE_WEB_CLIENT_ID/)
 requireMatch('production Google wrapper must reject unconfigured audiences', googleWrapper, /configuredGoogleAudiences/)
@@ -115,6 +125,9 @@ const scanned = [
   telegramCore,
   telegramReceiptMigration,
   telegramMini,
+  telegramLogin,
+  telegramPrimaryLogin,
+  secureOtp,
 ].join('\n')
 forbidMatch('Firebase Admin private key material must not be committed', scanned, /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/)
 forbidMatch('Resend API key values must not be committed', scanned, /\bre_[A-Za-z0-9_-]{20,}\b/)

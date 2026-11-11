@@ -29,9 +29,9 @@ export default {
       if (response) return response
     }
 
-    // Browser Telegram login is a first-class OTYA provider: start uses KV +
-    // PKCE only; callback verifies Telegram OIDC and creates or reuses exactly
-    // one D1 OTYA user before issuing the normal OTYA session.
+    // Telegram account identity sign-in and OIDC linking are retired. Only
+    // the private bot OTP delivery channel remains; Mini App is handled above
+    // under an existing authenticated Otya account session.
     const primaryLogin = await handleTelegramPrimaryLogin(request, authEnv)
     if (primaryLogin) return primaryLogin
 

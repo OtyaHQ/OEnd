@@ -14,7 +14,7 @@ type User = {
 }
 
 type Identity = { provider: string; provider_username?: string | null }
-type Json = { error?: string; user?: User; identities?: Identity[]; authorization_url?: string }
+type Json = { error?: string; user?: User; identities?: Identity[]; bot_url?: string; email_verification_required?: boolean; message?: string }
 type GoogleCredentialResponse = { credential?: string }
 type GoogleApi = { accounts: { id: { initialize(input: { client_id: string; callback: (response: GoogleCredentialResponse) => void; auto_select?: boolean }): void; renderButton(element: HTMLElement, options: Record<string, unknown>): void } } }
 declare global { interface Window { google?: GoogleApi } }
@@ -31,12 +31,14 @@ export default function SignInMethodsPage() {
   const [identities, setIdentities] = useState<Identity[]>([])
   const [primaryEmail, setPrimaryEmail] = useState('')
   const [emailCode, setEmailCode] = useState('')
+  const [telegramLinkCode, setTelegramLinkCode] = useState('')
+  const [telegramLinkPending, setTelegramLinkPending] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
   const google = identities.find(identity => identity.provider === 'google')
-  const telegram = identities.find(identity => identity.provider === 'telegram')
+  const telegramOtp = identities.find(identity => identity.provider === 'telegram_otp_bot')
 
   useEffect(() => { void loadAccount() }, [])
 
@@ -152,13 +154,49 @@ export default function SignInMethodsPage() {
     })
   }
 
-  async function connectTelegram() {
+  async function connectTelegramOtp() {
     await action(async () => {
-      const response = await accountFetch('telegram/start', { method: 'POST' })
+      const response = await accountFetch('telegram-otp/link/start', { method: 'POST' })
       const data = await response.json().catch(() => ({})) as Json
-      if (!response.ok || !data.authorization_url) throw new Error(data.error || 'Telegram linking is unavailable.')
-      window.location.assign(data.authorization_url)
-      return ''
+      if (!response.ok || data.email_verification_required !== true) {
+        throw new Error(data.error || 'Could not start the secure Telegram connection.')
+      }
+      setTelegramLinkCode('')
+      setTelegramLinkPending(true)
+      return data.message || `A verification code was sent to ${user?.email || 'your current email'}. Confirm it before opening OtyaPlayerBot.`
+    })
+  }
+
+  async function verifyTelegramOtpEmail() {
+    if (!telegramLinkCode.trim()) return setError('Enter the code sent to your current verified Otya email.')
+    await action(async () => {
+      const response = await accountFetch('telegram-otp/link/verify', {
+        method: 'POST',
+        body: JSON.stringify({ otp: telegramLinkCode.trim().toUpperCase() }),
+      })
+      const data = await response.json().catch(() => ({})) as Json
+      if (!response.ok || !data.bot_url) throw new Error(data.error || 'The email proof could not be confirmed.')
+      setTelegramLinkPending(false)
+      setTelegramLinkCode('')
+      window.location.assign(data.bot_url)
+      return 'Email ownership verified. Open OtyaPlayerBot and press Start to finish linking.'
+    })
+  }
+
+  async function refreshTelegramOtpStatus() {
+    await action(async () => {
+      await loadAccount()
+      return 'Telegram connection status refreshed.'
+    })
+  }
+
+  async function disconnectTelegramOtp() {
+    await action(async () => {
+      const response = await accountFetch('telegram-otp/link/revoke', { method: 'POST' })
+      const data = await response.json().catch(() => ({})) as Json
+      if (!response.ok) throw new Error(data.error || 'Could not disconnect Telegram OTP delivery.')
+      await loadAccount()
+      return 'Telegram OTP delivery has been disconnected.'
     })
   }
 
@@ -168,7 +206,7 @@ export default function SignInMethodsPage() {
     <div className="mb-7">
       <div className="text-[11px] font-black uppercase tracking-[.16em] otya-muted">Otya Space</div>
       <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Sign-in methods</h1>
-      <p className="mt-2 text-sm sm:text-base otya-muted">Telegram, Google and email can all belong to one OTYA ID. Connecting another method does not create another account.</p>
+      <p className="mt-2 text-sm sm:text-base otya-muted">Google and email are Otya sign-in methods. Telegram can be connected separately for one-time security codes; it does not sign you in.</p>
       <div className="mt-3 text-xs font-mono otya-muted">OTYA ID: {user.otya_id || 'Being assigned'}</div>
     </div>
 
@@ -194,12 +232,25 @@ export default function SignInMethodsPage() {
         {google ? <p className="mt-3 text-sm otya-muted">You can use this Google account to access the same OTYA identity.</p> : <div className="mt-4"><div ref={googleButtonRef} className={busy ? 'pointer-events-none opacity-55' : ''} /></div>}
       </MethodRow>
 
-      <MethodRow title="Telegram" status={telegram ? `Connected${telegram.provider_username ? ` · ${telegram.provider_username}` : ''}` : 'Not connected'}>
-        {telegram ? <p className="mt-3 text-sm otya-muted">Telegram is already attached to this OTYA identity.</p> : <button onClick={() => void connectTelegram()} disabled={busy} className="mt-4 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram</button>}
+      <MethodRow title="Telegram OTP delivery" status={telegramOtp ? 'Connected' : 'Not connected'}>
+        {telegramOtp ? <div className="mt-3 space-y-3">
+          <p className="text-sm otya-muted">Your private OtyaPlayerBot chat can receive one-time security codes. Telegram is not a sign-in method.</p>
+          <button onClick={() => void disconnectTelegramOtp()} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Disconnect OTP delivery</button>
+        </div> : <div className="mt-3 space-y-3">
+          <p className="text-sm otya-muted">Connect your private Telegram bot chat to receive Otya security codes. Telegram cannot sign in to your Otya account. Before a bot link is created or replaced, Otya sends a one-time proof code to your current verified email.</p>
+          {telegramLinkPending ? <div className="grid gap-2">
+            <label className="grid gap-1.5 text-xs font-bold otya-muted">Current email verification code ({user.email})
+              <input value={telegramLinkCode} onChange={event => setTelegramLinkCode(event.target.value.toUpperCase().slice(0, 5))} placeholder="A1234" autoComplete="one-time-code" className="method-input" />
+            </label>
+            <button onClick={() => void verifyTelegramOtpEmail()} disabled={busy} className="cosmos-button rounded-xl px-4 min-h-11 text-sm font-black">Verify email and open Telegram</button>
+            <button onClick={() => { setTelegramLinkPending(false); setTelegramLinkCode('') }} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Cancel</button>
+          </div> : <button onClick={() => void connectTelegramOtp()} disabled={busy || !user.email || Number(user.is_verified) !== 1} className="mt-1 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram for OTPs</button>}
+          <button onClick={() => void refreshTelegramOtpStatus()} disabled={busy} className="otya-quiet-button rounded-xl px-4 min-h-10 text-sm font-bold">Refresh connection status</button>
+        </div>}
       </MethodRow>
     </section>
 
-    <p className="mt-5 text-sm otya-muted">For security, OTYA will not automatically merge two existing accounts just because they appear to belong to the same person. Sign in to the account you want to keep, then connect the other method here.</p>
+    <p className="mt-5 text-sm otya-muted">Google or email remains your way to sign in. Telegram bot linking only enables OTP delivery and never merges accounts or grants a sign-in session.</p>
     <Link href="/account#connected" className="inline-block mt-5 text-sm font-black">Back to account overview</Link>
 
     <style jsx global>{`.method-input{min-height:44px;border:1px solid var(--cosmos-divider);background:var(--cosmos-card);color:var(--cosmos-text-primary);border-radius:12px;padding:10px 12px;outline:none}.method-input:focus{border-color:var(--cosmos-primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--cosmos-primary) 12%,transparent)}`}</style>

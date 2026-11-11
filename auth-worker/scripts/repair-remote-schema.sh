@@ -88,6 +88,11 @@ run_sql "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_otya_id ON users(otya_id) W
 run_sql "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number) WHERE phone_number IS NOT NULL"
 run_sql "CREATE INDEX IF NOT EXISTS idx_user_products_product ON user_products(product_id, last_seen_at DESC)"
 run_sql "CREATE INDEX IF NOT EXISTS idx_linked_identities_user ON linked_identities(user_id, provider)"
+# Atomic, one-use Telegram owner-link proof. Only an email digest is retained.
+run_sql "CREATE TABLE IF NOT EXISTS telegram_identity_link_proofs (user_id TEXT PRIMARY KEY, email_hash TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)"
+run_sql "CREATE INDEX IF NOT EXISTS idx_telegram_identity_link_proofs_expiry ON telegram_identity_link_proofs(expires_at)"
+run_sql "CREATE TABLE IF NOT EXISTS telegram_identity_link_challenges (user_id TEXT PRIMARY KEY, email_hash TEXT NOT NULL, otp_digest TEXT NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime('now')), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)"
+run_sql "CREATE INDEX IF NOT EXISTS idx_telegram_identity_link_challenges_expiry ON telegram_identity_link_challenges(expires_at)"
 run_sql "CREATE INDEX IF NOT EXISTS idx_auth_security_events_created ON auth_security_events(created_at DESC)"
 run_sql "CREATE INDEX IF NOT EXISTS idx_auth_security_events_user_created ON auth_security_events(user_id, created_at DESC) WHERE user_id IS NOT NULL"
 

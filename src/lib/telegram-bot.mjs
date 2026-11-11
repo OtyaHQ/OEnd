@@ -195,12 +195,107 @@ async function finishTelegramUpdate(updateId, status, env, error = '') {
   }
 }
 
+async function handleTelegramOtpLinkStart(message, env) {
+  if (!message || message?.chat?.type !== 'private' || message?.from?.is_bot === true) return false
+  const text = clean(message?.text, 3000)
+  const match = text.match(/^\/start(?:@OtyaPlayerBot)?\s+otya_otp_([A-Za-z0-9_-]{32,80})$/i)
+  if (!match) return false
+
+  const chatId = message?.chat?.id
+  const senderId = message?.from?.id
+  if (!Number.isSafeInteger(chatId) || !Number.isSafeInteger(senderId) || String(chatId) !== String(senderId)) {
+    await sendTelegramMessage(String(chatId || ''), 'Open this link in a private chat with OtyaPlayerBot to connect OTP delivery.', env)
+    return true
+  }
+
+  let connected = false
+  if (env.AUTH?.fetch && env.INTERNAL_SECRET) {
+    try {
+      const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/telegram-otp/link/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'X-OTYA-Internal-Secret': String(env.INTERNAL_SECRET),
+          'X-OTYA-Service': 'otya-core',
+        },
+        body: JSON.stringify({
+          challenge: match[1],
+          chat_id: String(chatId),
+          username: clean(message?.from?.username, 80),
+        }),
+        signal: AbortSignal.timeout(8000),
+      }))
+      const data = await response.json().catch(() => ({}))
+      connected = response.ok && data?.ok === true && data?.telegram_otp_enabled === true
+    } catch (error) {
+      console.error('[telegram-otp] account link confirmation failed:', error instanceof Error ? error.message : 'unknown error')
+    }
+  }
+
+  await sendTelegramMessage(
+    String(chatId),
+    connected
+      ? 'Telegram OTP delivery is now connected to your Otya account. Otya may send account-security codes to this private chat. This does not make Telegram a sign-in method. Never share a code with anyone.'
+      : 'Otya could not verify this connection link. Return to Otya Account settings, request a new Telegram OTP link, and try again.',
+    env,
+  )
+  return true
+}
+
+/** Auth-only service endpoint for sending OTPs through the existing Telegram bot. */
+export async function handleInternalTelegramOtp(request, env) {
+  const url = new URL(request.url)
+  if (url.pathname !== '/internal/telegram/otp') return null
+  if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+
+  const provided = request.headers.get('X-OTYA-Internal-Secret') || ''
+  if (!env.INTERNAL_SECRET || !constantTimeEqual(provided, env.INTERNAL_SECRET)
+    || request.headers.get('X-OTYA-Service') !== 'otya-auth') {
+    return json({ error: 'Unauthorized' }, 401)
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const chatId = String(body?.chat_id ?? '').trim()
+  const code = String(body?.code ?? '').trim().toUpperCase()
+  const purpose = String(body?.purpose ?? '').trim()
+  const purposeText = {
+    'email-change': 'Confirm the existing Otya account before changing its primary email.',
+    'password-reset': 'Continue the Otya password-reset process.',
+    'owner-verification': 'Confirm an Otya owner-security request.',
+  }[purpose]
+  if (!/^[1-9][0-9]{3,15}$/.test(chatId) || !/^[A-Z][0-9]{4}$/.test(code) || !purposeText) {
+    return json({ error: 'Invalid OTP delivery request' }, 400)
+  }
+
+  try {
+    await sendTelegramMessage(
+      chatId,
+      [
+        'Your Otya security code:',
+        '',
+        code,
+        '',
+        purposeText,
+        'This code expires in 10 minutes. Otya will never ask you to share it with support or another person.',
+        'If you did not request this, ignore the message and secure your Otya account.',
+      ].join('\n'),
+      env,
+    )
+    return json({ ok: true }, 202)
+  } catch (error) {
+    console.warn('[telegram-otp] message delivery failed:', error instanceof Error ? error.message : 'unknown error')
+    return json({ error: 'Telegram could not deliver the security code to this chat.' }, 502)
+  }
+}
+
 async function processPrivateMessage(message, env) {
   if (!message || message?.from?.is_bot === true || message?.chat?.type !== 'private') return
   const chatId = message?.chat?.id
   const senderId = message?.from?.id ?? chatId
   const text = clean(message?.text, 3000)
   if (!chatId || !text) return
+  if (await handleTelegramOtpLinkStart(message, env)) return
   let reply = commandReply(text)
   if (!reply) {
     const dynamic = await dynamicCommandReply(text)
