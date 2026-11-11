@@ -46,9 +46,12 @@ test('Telegram linking cannot set browser sign-in cookies', () => {
   const proxy = read('src/app/api/auth/telegram/[...path]/route.ts')
   assert.match(proxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
   assert.match(proxy, /__Secure-otya_access/)
-  assert.match(proxy, /__Secure-otya_refresh/)
+  assert.doesNotMatch(proxy, /__Secure-otya_refresh/)
   assert.match(proxy, /delete safe\.access_token/)
   assert.match(proxy, /delete safe\.refresh_token/)
+  assert.match(proxy, /request\.cookies\.get\(ACCESS_COOKIE\)/)
+  assert.doesNotMatch(proxy, /cookies\.set\(ACCESS_COOKIE/)
+  assert.doesNotMatch(proxy, /cookies\.set\(REFRESH_COOKIE/)
 })
 
 test('Telegram linking keeps the bot credential in Cloudflare Secrets Store', () => {
