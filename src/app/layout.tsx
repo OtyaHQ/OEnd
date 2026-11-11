@@ -159,13 +159,20 @@ const initialThemeScript = `try {
   }
 } catch (e) {}`
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="en-UG" suppressHydrationWarning>
-      <body className={manrope.variable}>
-        <script dangerouslySetInnerHTML={{ __html: initialThemeScript }} />
-        {children}
-      </body>
-    </html>
-  )
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return <html lang="en" dir="ltr" className={manrope.variable} suppressHydrationWarning>
+    <head>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }} />
+      <meta name="google-adsense-account" content={ADSENSE_ID} />
+      <script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}`}
+        crossOrigin="anonymous"
+      />
+      <script dangerouslySetInnerHTML={{ __html: initialThemeScript }} />
+    </head>
+    <body className={manrope.className}>
+      {children}
+    </body>
+  </html>
 }
