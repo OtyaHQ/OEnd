@@ -35,7 +35,7 @@ test('Telegram account-linking deep verification is manual and keeps the product
   assert.match(smoke, /Verify public retired Telegram sign-in remains blocked/)
   assert.match(smoke, /TURNSTILE_REQUIRED/)
   assert.match(smoke, /test "\$status" = "400"/)
-  assert.match(smoke, /Check Telegram handoff page/)
+  assert.match(smoke, /Check Telegram account-linking page/)
   assert.match(smoke, /test "\$status" = "200"/)
   assert.doesNotMatch(smoke, /grep -q 'authorization_url'/)
 
