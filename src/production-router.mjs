@@ -128,9 +128,11 @@ function redirectLegacyBrowser(request, url, env) {
   if (isLegacyCompatibilityPath(url.pathname)) return null
 
   const surface = legacySurface(url.hostname)
-  const targetHost = surface === 'primary'
-    ? resolvePrimaryHost(url.hostname, env)
-    : resolveSurfaceHost(url.hostname, surface, env)
+  const legacyHosts = new Set(parseHosts(env?.OTYA_LEGACY_HOSTS))
+  const canonicalHosts = configuredHosts(env, surface)
+  const targetHost = canonicalHosts.find(candidate => !legacyHosts.has(candidate))
+    || canonicalHosts[0]
+    || (surface === 'primary' ? rootHost(url.hostname) : `${surface}.${rootHost(url.hostname)}`)
   const target = new URL(url)
   target.protocol = 'https:'
   target.hostname = targetHost
