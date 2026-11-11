@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import type { Metadata } from 'next'
 import { DownloadPageClient } from './DownloadButtons'
 
@@ -13,10 +14,10 @@ export const metadata: Metadata = {
     'offline video player Android',
     'Otya Otya',
   ],
-  alternates: { canonical: 'https://petersmartlink.com/download/otya-player' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/download/otya-player` },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com/download/otya-player',
+    url: `${PUBLIC_URLS.primary}/download/otya-player`,
     title: 'Download Otya Media for Android',
     description:
       'Official Android download for Otya Media by Otya — local music and video, offline playback, nearby Transfer and Private media.',
