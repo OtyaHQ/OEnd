@@ -60,19 +60,23 @@ API keys, tokens, JWT secrets, private keys, service-account credentials and enc
 
 The public product must stay simpler than the internal system.
 
-### petersmartlink.com
+### otya.site
 
 Primary **Otya organization** surface. It must answer: who Otya is, what products exist, where OTYA belongs, how to get support, where documentation/status live and how to enter the signed-in environment. Otya Media marketing belongs on its product route rather than making the company homepage look like a single-app landing page.
 
-### docs.petersmartlink.com
+### api.otya.site
+
+Dedicated API and mobile gateway.
+
+### docs.otya.site
 
 Public product documentation. Do not expose Worker names, database IDs, queue names, secrets, internal monitoring thresholds, release internals, raw logs or private architecture.
 
-### status.petersmartlink.com
+### status.otya.site
 
 Operational truth only: service state, incidents and incident history. No marketing copy and no stack traces.
 
-### space.petersmartlink.com
+### space.otya.site
 
 OTYA Account/Space entry point. Signed-out users get the single Otya sign-in journey. Signed-in users get their own Space. Account, security, connected providers, devices, settings, Next, Telegram and role-authorized Admin entry points belong in this environment.
 
