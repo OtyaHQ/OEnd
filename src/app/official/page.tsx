@@ -70,7 +70,7 @@ export default function OfficialLinksPage() {
           <Link href="/company">About Otya</Link>
           <Link href="/help">Help</Link>
           <Link href="/contact">Contact</Link>
-          <Link href="https://docs.otya.site">Documentation</Link>
+          <Link href={PUBLIC_URLS.docs}>Documentation</Link>
         </div>
       </section>
     </main>
