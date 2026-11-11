@@ -1,5 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { NextRequest, NextResponse } from 'next/server'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,7 +41,7 @@ function safeWidgetAuthorizationUrl(request: NextRequest, data: Payload): string
 
   const publicUrl = new URL(request.url)
   if (callback.protocol !== 'https:'
-    || callback.hostname !== publicUrl.hostname
+    || !PUBLIC_URLS.allowedOrigins.includes(callback.origin)
     || callback.pathname !== '/api/auth/telegram/widget/callback'
     || !callback.searchParams.get('state')) return null
 
