@@ -13,7 +13,7 @@ test('browser auth defaults to OTYA Space and only accepts safe same-site return
   assert.match(signIn, /window\.location\.replace\(afterAuthDestination\(\)\)/)
 })
 
-test('Telegram stays a first-class create-or-login provider in the auth UI', () => {
+test('Telegram is not an Otya sign-in or account-creation provider', () => {
   const signIn = read('src/app/sign-in/page.tsx')
   assert.match(signIn, /\/api\/auth\/telegram\/start\?mode=login/)
   assert.match(signIn, /disabled=\{busy\}[^\n]*Continue with Telegram/)
