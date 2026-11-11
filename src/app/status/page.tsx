@@ -44,7 +44,7 @@ export default function StatusPage() {
             These destinations expose only information intended for customers and can be checked without private admin access.
           </p>
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <Link href="https://petersmartlink.com" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Website</Link>
+            <Link href={PUBLIC_URLS.primary} className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Website</Link>
             <Link href={`${PUBLIC_URLS.primary}/download/otya-player`} className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Downloads & updates</Link>
             <Link href={PUBLIC_URLS.docs} className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Documentation</Link>
           </div>
