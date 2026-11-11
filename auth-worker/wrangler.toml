@@ -43,7 +43,7 @@ dataset = "otya-auth-analytics"
 
 [vars]
 OTYA_PUBLIC_URL = "https://otya.site"
-OTYA_ALLOWED_ORIGINS = "https://otya.site,https://www.otya.site,https://space.otya.site"
+OTYA_ALLOWED_ORIGINS = "https://otya.site,https://www.otya.site,https://space.otya.site,https://api.otya.site"
 OTYA_NO_REPLY_EMAIL = "noreply@otya.site"
 OTYA_SUPPORT_EMAIL = "support@otya.site"
 GOOGLE_CLIENT_ID = "82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv.apps.googleusercontent.com"
