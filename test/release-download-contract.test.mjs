@@ -9,7 +9,7 @@ test('generic release downloads never silently select ARM64', () => {
   const workflow = read('src/release-workflow.mjs')
   const downloadPage = read('src/app/download/otya-player/DownloadButtons.tsx')
 
-  assert.match(latest, /const DOWNLOAD_PAGE = 'https:\/\/petersmartlink\.com\/download\/otya-player'/)
+  assert.match(latest, /const DOWNLOAD_PAGE = `\\$\\{PUBLIC_URLS\\.primary\\}\\/download\\/otya-player`/)
   assert.match(latest, /auto:\s+DOWNLOAD_PAGE/)
   assert.doesNotMatch(latest, /auto:\s+ARM64_APK/)
 
@@ -59,7 +59,7 @@ test('missing immutable APKs fail closed instead of redirecting an updater to HT
   assert.match(route, /'X-Content-Type-Options': 'nosniff'/)
 
   const exactFailure = route.indexOf('if (tag || version)')
-  const humanFallback = route.indexOf("return NextResponse.redirect(\n        `\\${PUBLIC_URLS.primary}/download/otya-player`")
+  const humanFallback = route.indexOf("return NextResponse.redirect(\\n        `\\${PUBLIC_URLS.primary}/download/otya-player`")
   assert.ok(exactFailure >= 0, 'exact missing-release guard must exist')
   assert.ok(humanFallback > exactFailure, 'HTML redirect must only remain after exact-release failure handling')
 })
