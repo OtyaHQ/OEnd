@@ -53,7 +53,7 @@ async function runAi(env, messages) {
   return clean(aiText(await env.AI.run(env.OTYA_AI_MODEL || DEFAULT_MODEL, { messages })), 12000)
 }
 
-async function telegramCoreStatus() {
+async function telegramCoreStatus(env) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 3500)
   try {
@@ -88,7 +88,7 @@ async function pluginRegistry(env) {
   const [gmail, control, telegram] = await Promise.all([
     gmailStatus(env),
     controlPlaneStatus(env),
-    telegramCoreStatus(),
+    telegramCoreStatus(env),
   ])
   const firebase = control.firebase_remote_config
   const emailGatewayReady = sharedEmailGatewayReady(env)
