@@ -115,7 +115,7 @@ function isSharedAppAssetPath(pathname) {
   return pathname.startsWith('/_next/')
     || pathname === '/favicon.ico'
     || pathname === '/robots.txt'
-    || /\\.(?:svg|png|webp|jpg|jpeg|gif|ico|css|js|woff2?)$/i.test(pathname)
+    || /\.(?:svg|png|webp|jpg|jpeg|gif|ico|css|js|woff2?)$/i.test(pathname)
 }
 
 function isSpaceSurfacePath(pathname) {
@@ -140,7 +140,7 @@ function isSpaceSurfacePath(pathname) {
 // belong in the browser path.
 function matchSpaceConsoleRoute(pathname) {
   const parts = pathname.split('/').filter(Boolean)
-  if (parts[0] !== 'u' || !/^2IS\\d{8}$/i.test(parts[1] || '')) return null
+  if (parts[0] !== 'u' || !/^2IS\d{8}$/i.test(parts[1] || '')) return null
 
   const publicId = parts[1].toUpperCase()
   const section = parts.slice(2).join('/') || 'overview'
@@ -255,7 +255,7 @@ async function routeOtyaRequest(request, env, ctx) {
     if (url.pathname === '/help' || url.pathname === '/help/') return dispatchSurface(request, url, env, ctx, '/help/')
     // Shared navigation and documentation links target public product pages,
     // not another copy of the documentation index.
-    const publicPath = url.pathname.replace(/\\/$/, '')
+    const publicPath = url.pathname.replace(/\/$/, '')
     const publicDestinations = new Set([
       '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
       '/developers', '/company', '/contact', '/privacy', '/terms',
