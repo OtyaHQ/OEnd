@@ -9,7 +9,7 @@ const API = '/api/account-session'
 const GOOGLE_WEB_CLIENT_ID = '82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com'
 const TERMS_VERSION = '2026-11-10'
 const PRIVACY_VERSION = '2026-11-10'
-const DEFAULT_AFTER_AUTH = 'https://space.petersmartlink.com/'
+const DEFAULT_AFTER_AUTH = '/space/'
 
 type Mode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset' | 'twofactor' | 'owner' | 'owner-otp' | 'owner-telegram'
 type Json = { error?: string; code?: string; message?: string; authenticated?: boolean; authorization_url?: string }
