@@ -8,6 +8,8 @@ export interface ResendEmail {
   subject: string
   text: string
   replyTo?: string
+  supportEmail?: string
+  logoUrl?: string
   /** Stable per logical notification; reused on retries within Resend's window. */
   idempotencyKey?: string
 }
@@ -15,8 +17,8 @@ export interface ResendEmail {
 interface ResendResponse { id?: string; message?: string; name?: string; statusCode?: number }
 interface TemplateSelection { id: string; variables: Record<string, string | number> }
 
-const OTYA_SUPPORT_EMAIL = 'support@petersmartlink.com'
-const OTYA_LOGO_URL = 'https://petersmartlink.com/otya-app-icon.webp'
+const OTYA_SUPPORT_EMAIL = 'support@otya.site'
+const OTYA_LOGO_URL = 'https://otya.site/otya-app-icon.webp'
 
 function escapeHtml(value: string): string {
   return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')
@@ -33,7 +35,7 @@ function renderParagraph(line: string): string {
 
 function renderEmailHtml(subject: string, text: string): string {
   const body = text.split('\n').map(renderParagraph).join('')
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"></head><body style="margin:0;padding:0;background-color:#F5FAFF;font-family:Arial,Helvetica,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#F5FAFF" style="background-color:#F5FAFF;padding-top:28px;padding-bottom:28px;padding-left:14px;padding-right:14px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-left:auto;margin-right:auto"><tr><td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding-top:24px;padding-bottom:24px;padding-left:26px;padding-right:26px;border-top-left-radius:22px;border-top-right-radius:22px;border-width:1px;border-style:solid;border-color:#D7E8F8;border-bottom-width:0"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="vertical-align:middle"><img src="${OTYA_LOGO_URL}" alt="Otya" width="46" height="46" border="0" style="display:block;width:46px;height:46px;background-color:transparent" /></td><td style="padding-left:10px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:28px;font-weight:800;color:#0A1020">Otya</td></tr></table></td></tr><tr><td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding-top:8px;padding-bottom:28px;padding-left:26px;padding-right:26px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;border-width:1px;border-style:solid;border-color:#D7E8F8;border-top-width:0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding-bottom:20px;font-family:Arial,Helvetica,sans-serif;font-size:24px;line-height:32px;font-weight:800;color:#0A1020">${escapeHtml(subject)}</td></tr>${body}<tr><td style="padding-top:18px;border-top-width:1px;border-top-style:solid;border-top-color:#D7E8F8;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#60748C">This is an automated Otya account or security message. Never share passwords, verification codes or recovery codes.<br/>Need help? <a href="mailto:${OTYA_SUPPORT_EMAIL}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#087EAE;text-decoration:underline">${OTYA_SUPPORT_EMAIL}</a></td></tr></table></td></tr></table></td></tr></table></body></html>`
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"></head><body style="margin:0;padding:0;background-color:#F5FAFF;font-family:Arial,Helvetica,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#F5FAFF" style="background-color:#F5FAFF;padding-top:28px;padding-bottom:28px;padding-left:14px;padding-right:14px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-left:auto;margin-right:auto"><tr><td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding-top:24px;padding-bottom:24px;padding-left:26px;padding-right:26px;border-top-left-radius:22px;border-top-right-radius:22px;border-width:1px;border-style:solid;border-color:#D7E8F8;border-bottom-width:0"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="vertical-align:middle"><img src="${logoUrl}" alt="Otya" width="46" height="46" border="0" style="display:block;width:46px;height:46px;background-color:transparent" /></td><td style="padding-left:10px;vertical-align:middle;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:28px;font-weight:800;color:#0A1020">Otya</td></tr></table></td></tr><tr><td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding-top:8px;padding-bottom:28px;padding-left:26px;padding-right:26px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;border-width:1px;border-style:solid;border-color:#D7E8F8;border-top-width:0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding-bottom:20px;font-family:Arial,Helvetica,sans-serif;font-size:24px;line-height:32px;font-weight:800;color:#0A1020">${escapeHtml(subject)}</td></tr>${body}<tr><td style="padding-top:18px;border-top-width:1px;border-top-style:solid;border-top-color:#D7E8F8;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#60748C">This is an automated Otya account or security message. Never share passwords, verification codes or recovery codes.<br/>Need help? <a href="mailto:${escapeHtml(supportEmail)}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#087EAE;text-decoration:underline">${escapeHtml(supportEmail)}</a></td></tr></table></td></tr></table></td></tr></table></body></html>`
 }
 
 function extractOtp(text: string): string | null { return text.match(/\b[A-Z][0-9]{4}\b/)?.[0] ?? null }
@@ -90,7 +92,7 @@ async function postEmail(apiKey: string, payload: Record<string, unknown>, idemp
   }
 }
 
-function fallbackPayload(email:ResendEmail):Record<string,unknown>{return{from:email.from.replaceAll('OTYA','Otya'),to:email.to,subject:email.subject.replaceAll('OTYA','Otya'),text:email.text.replaceAll('OTYA','Otya'),html:renderEmailHtml(email.subject.replaceAll('OTYA','Otya'),email.text.replaceAll('OTYA','Otya')),reply_to:email.replyTo??OTYA_SUPPORT_EMAIL}}
+function fallbackPayload(email: ResendEmail): Record<string, unknown> {\n  const supportEmail = email.supportEmail || OTYA_SUPPORT_EMAIL\n  const logoUrl = email.logoUrl || OTYA_LOGO_URL\n  return {\n    from: email.from.replaceAll('OTYA', 'Otya'),\n    to: email.to,\n    subject: email.subject.replaceAll('OTYA', 'Otya'),\n    text: email.text.replaceAll('OTYA', 'Otya'),\n    html: renderEmailHtml(email.subject.replaceAll('OTYA', 'Otya'), email.text.replaceAll('OTYA', 'Otya'), supportEmail, logoUrl),\n    reply_to: email.replyTo ?? supportEmail,\n  }\n}
 
 export async function sendResendEmail(apiKey:string|undefined,email:ResendEmail):Promise<string>{
   if(!apiKey)throw new Error('RESEND_API_KEY is not configured')
@@ -100,7 +102,7 @@ export async function sendResendEmail(apiKey:string|undefined,email:ResendEmail)
       const data = await postEmail(apiKey, {
         from: email.from.replaceAll('OTYA', 'Otya'), to: email.to,
         subject: email.subject.replaceAll('OTYA', 'Otya'),
-        template, reply_to: email.replyTo ?? OTYA_SUPPORT_EMAIL,
+        template, reply_to: email.replyTo ?? email.supportEmail ?? OTYA_SUPPORT_EMAIL,
       }, email.idempotencyKey)
       return data.id!
     } catch (error) {
