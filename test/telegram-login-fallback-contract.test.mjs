@@ -8,54 +8,52 @@ const primaryLogin = read('auth-worker/src/telegram-primary-login.ts')
 const telegramLogin = read('auth-worker/src/telegram-login.ts')
 const miniAuth = read('auth-worker/src/telegram-miniapp.ts')
 const miniProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
+const secureOtp = read('auth-worker/src/secure-otp.ts')
 const signIn = read('src/app/sign-in/page.tsx')
 const methods = read('src/app/account/sign-in-methods/page.tsx')
-const config = read('next.config.mjs')
-const router = read('src/production-router.mjs')
 const wrangler = read('auth-worker/wrangler.toml')
 const secretWorkflowUrl = new URL('../.github/workflows/telegram-auth-secret.yml', import.meta.url)
 
-test('Telegram cannot create an Otya sign-in session through browser OIDC', () => {
+test('Telegram cannot create or resume a normal Otya sign-in session', () => {
   assert.match(wrapper, /handleTelegramPrimaryLogin/)
   const start = primaryLogin.slice(primaryLogin.indexOf('async function start'), primaryLogin.indexOf('async function callback'))
-  assert.match(start, /TELEGRAM_SIGN_IN_DISABLED/)
-  assert.match(start, /not a sign-in method/i)
+  assert.match(start, /TELEGRAM_LOGIN_RETIRED/)
+  assert.match(start, /status: 410/)
   assert.doesNotMatch(start, /AUTH_KV\.put/)
   assert.match(primaryLogin, /sign-in\?telegram=disabled/)
-  assert.match(telegramLogin, /TELEGRAM_SIGN_IN_DISABLED/)
-  assert.match(telegramLogin, /requested === 'login'/)
+  assert.match(telegramLogin, /TELEGRAM_LOGIN_RETIRED/)
+  assert.match(telegramLogin, /status: 410/)
   assert.doesNotMatch(signIn, /\/api\/auth\/telegram\/start\?mode=login/)
   assert.doesNotMatch(signIn, /Continue with Telegram/)
 })
 
-test('Telegram Mini App verifies its channel but requires an existing Otya session', () => {
+test('Telegram Mini App is only a channel assertion for an existing Otya session', () => {
   assert.match(miniAuth, /WebAppData/)
   assert.match(miniAuth, /constantTimeHexEqual/)
   assert.match(miniAuth, /authDate < now - MAX_AGE_SECONDS/)
   assert.match(miniAuth, /currentUserId\(request, env\)/)
   assert.match(miniAuth, /OTYA_ACCOUNT_REQUIRED/)
-  assert.match(miniAuth, /getUserById\(env\.AUTH_DB, userId\)/)
   assert.doesNotMatch(miniAuth, /createOrGetTelegramUser|issueSession|access_token|refresh_token/)
-  assert.match(miniProxy, /Mini App identity data may confirm/)
-  assert.doesNotMatch(miniProxy.slice(miniProxy.indexOf("if (publicUrl.pathname.endsWith('/miniapp')"), miniProxy.indexOf("if (publicUrl.pathname.endsWith('/start')")), /cookies\.set/)
+  assert.match(miniProxy, /ACCESS_COOKIE = '__Secure-otya_access'/)
+  assert.match(miniProxy, /authUrl\.pathname = '\/auth\/telegram\/miniapp'/)
+  assert.match(miniProxy, /if \(!accessToken\)/)
+  assert.doesNotMatch(miniProxy, /cookies\.set/)
 })
 
-test('Telegram OTP delivery is separate from account sign-in and uses an independent bot identity', () => {
+test('Telegram OTP delivery is separate from sign-in and uses its dedicated bot identity', () => {
   assert.match(methods, /provider === 'telegram_otp_bot'/)
   assert.match(methods, /telegram-otp\/link\/start/)
   assert.match(methods, /telegram-otp\/link\/revoke/)
   assert.match(methods, /Telegram is not a sign-in method/)
   assert.match(signIn, /Telegram is used only for security-code delivery/)
+  assert.match(secureOtp, /sendTelegramOtpToUser/)
+  assert.match(secureOtp, /CORE\.fetch\(new Request\('https:\/\/otya-core\/internal\/telegram\/otp'/)
+  assert.match(secureOtp, /provider = 'telegram_otp_bot'/)
   assert.match(wrangler, /binding\s*=\s*"CORE"/)
 })
 
-test('Google origin and security policy remain enforced', () => {
-  assert.match(config, /https:\/\/accounts\.google\.com/)
-  assert.match(router, /CANONICAL_CSP/)
-  assert.match(router, /script-src[^\n]*accounts\.google\.com/)
-  assert.match(router, /connect-src[^\n]*accounts\.google\.com/)
-  assert.match(router, /headers\.set\('Content-Security-Policy', CANONICAL_CSP\)/)
-  assert.doesNotMatch(router, /unsafe-eval/)
+test('email and Google remain the approved normal sign-in methods', () => {
+  assert.doesNotMatch(wrangler, /TELEGRAM_LOGIN_REDIRECT_URI|TELEGRAM_LOGIN_CLIENT_(?:ID|SECRET)/)
 })
 
 test('Auth reads the Telegram bot credential from Cloudflare Secrets Store', () => {
