@@ -14,5 +14,5 @@ test('browser account proxy clears shared secure cookies when reauthentication i
   assert.match(source, /sameSite: 'lax'/)
   assert.doesNotMatch(source, /domain:/)
   assert.doesNotMatch(source, /COOKIE_DOMAIN/)
-  assert.match(source, /path: '\\/'/)
+  assert.ok(source.includes("path: '/'") )
 })
