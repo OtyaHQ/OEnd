@@ -1,71 +1,69 @@
-# Otya End
+# OEnd
 
-**Otya End** is the shared backend and integration layer for **Otya OS** and its connected products.
+**Shared backend, identity integration and service infrastructure for the Otya ecosystem.**
 
-It provides reusable server-side identity, product-scoped APIs, integrations, delivery services, audit and operational capabilities. It is one shared backend—not a reason to merge every product's private data into one database.
+OEnd provides shared server-side capabilities through narrow, authenticated service contracts. It is not a shared product database: OPoint and Omy Play each own their operational data, backend API, release workflow and observability boundary.
 
-## Product boundaries
+## Product and service boundaries
 
-- **Otya OS** — the unified platform and shared experience.
-- **Otya End** — shared backend and integration layer.
-- **OtyaPoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
-- **Otya Media** — local-first music and video. Core playback must remain available without the backend.
-- **OtyaHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
-- **Leo / Otya Next** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
+- **OPoint** — retail, inventory, cash, agency operations, payments, ledger and reconciliation. Its business records remain in the OPoint data plane.
+- **Omy Play** — local-first media application with its own connected-services API, D1, R2, Firebase project and release pipeline. Playback remains available offline.
+- **O** — private owner AI application. It receives only explicitly authorized operational summaries and acts through reviewed OEnd/product APIs.
+- **Otya ID** — shared identity, email OTP, session security and optional Telegram bot OTP delivery. Telegram Login/OIDC is not a sign-in method.
+- **Otya Control** — private administration and operational visibility, separate from consumer APIs.
+- **OHub** — public developer and partner documentation. Private infrastructure, credentials and operator runbooks do not belong there.
 
-Legacy repository slugs, Worker names, API paths, and database identifiers may remain where required for compatibility. Do not rename or delete a deployed resource solely to make its name match the product label.
+## OEnd responsibilities
 
-## Shared responsibilities
+- Otya ID integration and identity service contracts.
+- Product-specific service authentication and authorization primitives.
+- Transactional email through Resend.
+- Shared webhook, event-delivery and notification transport where appropriate.
+- Operational monitoring, audit correlation and recovery support.
+- AI model routing, policy enforcement and the private O tool gateway.
+- Narrow service-to-service integrations without cross-product direct database access.
 
-- Otya identity, session and account-security services.
-- Server-side authorization and product-scoped service contracts.
-- Transactional email through the existing Resend integration.
-- Otya Media release delivery and supporting APIs.
-- Otya Next owner intelligence, support, incidents and approved actions.
-- Secure recovery, audit trails, monitoring and operational readiness.
-- Private service-to-service integration between ecosystem products.
+## Isolation rules
 
-## Engineering and safety principles
+- OPoint and Omy Play do not share D1 databases, private files, queues, Firebase service credentials or operational keys.
+- Product APIs resolve user and product permissions server-side. A valid Otya ID session does not automatically grant product membership.
+- O does not query product databases directly. It calls typed, scoped APIs and receives only data needed for the approved task.
+- Opoint financial actions remain disabled until provider, compliance, security and reconciliation gates pass.
+- Omy Play local playback, local file access and Private/Vault remain on-device and work without OEnd or AI.
+- FCM/email notifications are delivery hints; the owning product API remains authoritative.
 
-- One shared identity, with product-specific authorization and data ownership.
-- No browser-supplied roles, provider secrets, or trusted identity claims.
-- No cross-product direct writes to another product's database.
-- Financial operations must be idempotent, atomic, auditable and reconciled.
-- Unknown provider outcomes remain UNKNOWN until independently confirmed.
-- Email and internal service routes require server-side secrets and bounded permissions.
-- AI can prepare and recommend actions; privileged execution requires explicit authorization.
-- Production migrations, deployments, DNS changes, secret rotation and payment-provider activation require explicit authorization and a reviewed recovery plan.
-- Preserve user data, local-first guarantees and existing compatibility contracts.
+## Current runtime compatibility
 
-## Current backend layout
+Some deployed Workers and routes still carry older internal script names. Those are compatibility identifiers, not customer-facing product names. Migrate them through separately named staging resources, verified service bindings, smoke tests and an approved cutover. Do not delete or rename an active production resource solely to improve its label.
 
-| Runtime | Responsibility |
+| Runtime responsibility | Product owner |
 |---|---|
-| `otya-auth` | Shared identity, account security and Resend transport |
-| `otya-core` | Shared product APIs, release/notification transport and backend routing |
-| `otya-next` | Owner intelligence, scheduled operations and AI workflows |
-| OtyaPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
+| Shared identity and OTP | Otya ID |
+| Shared routing, email and service integration | OEnd |
+| Private owner assistant runtime | O |
+| Business operations API and database | OPoint |
+| Media connected-services API and database | Omy Play |
+| Public developer content | OHub |
 
-These names describe separate runtime responsibilities; they are not duplicate backends. Do not add another Worker or database for a capability already owned by one of these services without a concrete isolation or scaling reason.
+## Engineering and release rules
 
-## Production and compatibility
+- GitHub is the source of truth for code and review.
+- Cloudflare is the runtime and data platform.
+- Resend is the transactional email provider.
+- Secrets remain in Cloudflare Secrets Store or the relevant provider's secure secret manager.
+- Financial writes must be idempotent, atomic, auditable and reconciled.
+- Unknown provider outcomes remain UNKNOWN until independently confirmed.
+- AI may inspect, explain and draft; privileged execution requires server-side authorization and explicit approval.
+- Production migrations, deployment, DNS changes, secret rotation, payment-provider activation and irreversible deletion require a reviewed recovery plan and owner authorization.
 
-GitHub is the source of truth for code and review. Cloudflare is the runtime and data platform. Resend is the shared transactional email provider. Provider-specific financial integrations remain disabled until their exact Uganda contracts, credential custody, callback verification, reconciliation and compliance requirements are approved.
-
-Merging source code is not a production deployment. The production deployment workflow remains explicitly approval-gated. Never apply a D1 migration to a remote database just because it exists in the repository.
+A successful CI build or staging deployment is not a production release.
 
 ## Public information
 
-- Otya: https://petersmartlink.com
-- Documentation: https://petersmartlink.com/docs
-- OtyaHub: https://github.com/PeterSmartLink/OtyaHub
+Use [otya.site](https://otya.site) as the current ecosystem domain. Product documentation belongs on OHub; private operational material belongs in restricted repositories and approved internal workspaces.
 
-Keep customer-facing product documentation on the official public surfaces. Do not publish secrets, private endpoints, internal infrastructure inventories, customer records, recovery material, signing keys or administrative procedures here.
-
-## Security and licensing
-
-Report vulnerabilities privately through [SECURITY.md](SECURITY.md). This repository contains proprietary Otya backend software and infrastructure; use is governed by [LICENSE](LICENSE).
+Report vulnerabilities privately through [SECURITY.md](SECURITY.md). This repository contains proprietary OEnd backend software and infrastructure; use is governed by [LICENSE](LICENSE).
 
 ---
 
-**Otya End · Otya OS**
+**OEnd · Otya**
