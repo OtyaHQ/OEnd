@@ -12,7 +12,12 @@ import {
 } from './conversations.mjs'
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-const OTYA_CORE_URL = 'https://petersmartlink.com'
+function otyaCoreUrl(env) {
+  try {
+    const parsed = new URL(env.OTYA_API_URL || 'https://api.otya.site')
+    return parsed.protocol === 'https:' && !parsed.username && !parsed.password ? parsed.origin : 'https://api.otya.site'
+  } catch { return 'https://api.otya.site' }
+}
 
 const clean = (v, max = 5000) => String(v ?? '')
   .replace(/[\u0000-\u001f]/g, ' ')
@@ -52,7 +57,7 @@ async function telegramCoreStatus() {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 3500)
   try {
-    const response = await fetch(`${OTYA_CORE_URL}/api/telegram/status`, {
+    const response = await fetch(`${otyaCoreUrl(env)}/api/telegram/status`, {
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     })
@@ -263,7 +268,7 @@ async function recentReleases(env) {
 async function supportInbox(env, limit = 12) {
   const gmail = await gmailStatus(env)
   if (!gmail.connected) return []
-  const rows = await listGmailMessages(env, 'to:support@petersmartlink.com in:inbox', Math.max(1, Math.min(limit, 20)))
+  const rows = await listGmailMessages(env, `to:${env.OTYA_SUPPORT_EMAIL || 'support@otya.site'} in:inbox`, Math.max(1, Math.min(limit, 20)))
   return rows.map((x) => ({
     id: x.id,
     from: clean(x.from, 300),
