@@ -57,7 +57,7 @@ export async function deliverRegistrationEmails(response: Response, env: Product
 
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <${noReplyEmail(env)}>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: [email],
       subject: 'Your Otya verification code',
       text: [
@@ -110,7 +110,7 @@ export async function deliverNewDeviceAlert(request: Request, response: Response
 
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya Security <${noReplyEmail(env)}>',
+      from: `Otya Security <${noReplyEmail(env)}>`,
       to: [email],
       subject: 'New login to your Otya account',
       text: [
