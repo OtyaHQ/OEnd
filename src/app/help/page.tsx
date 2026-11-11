@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
@@ -8,7 +9,7 @@ import { SITE_CONFIG } from '@/lib/constants'
 export const metadata: Metadata = {
   title: 'Help | Otya Media',
   description: 'Quick help for Otya Media accounts, local music and video, Send, Private and Android playback.',
-  alternates: { canonical: 'https://petersmartlink.com/help' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/help` },
 }
 
 const quickHelp = [
@@ -38,7 +39,7 @@ export default function HelpPage() {
             <OtyaBrandMark size={40}/>
             <span><strong className="block text-base">Otya Account</strong><span className="text-xs otya-muted">Sign in, create an account or recover access</span></span>
           </Link>
-          <Link href="https://docs.petersmartlink.com" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/75 dark:bg-white/[.025] p-5 min-h-28 flex flex-col justify-between">
+          <Link href={PUBLIC_URLS.docs} className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/75 dark:bg-white/[.025] p-5 min-h-28 flex flex-col justify-between">
             <OtyaBrandMark size={40}/>
             <span><strong className="block text-base">Documentation</strong><span className="text-xs otya-muted">Read official Otya setup, playback, Send and account guidance</span></span>
           </Link>
@@ -70,13 +71,13 @@ export default function HelpPage() {
         <section id="contact" className="mt-9" aria-labelledby="contact-title">
           <div className="flex items-end justify-between gap-4 mb-3"><h2 id="contact-title" className="text-xl font-black">Contact Otya</h2><span className="text-xs otya-muted">Human support</span></div>
           <div className="grid sm:grid-cols-2 gap-3">
-            <a href="mailto:support@petersmartlink.com?subject=Otya%20Support" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4 min-h-20 flex items-center gap-3"><span className="w-9 h-9 rounded-full grid place-items-center bg-black/[.045] dark:bg-white/[.06] font-black">✉</span><span><strong className="block text-sm">Email support</strong><span className="block mt-1 text-xs otya-muted">support@petersmartlink.com</span></span></a>
+            <a href={`mailto:${PUBLIC_URLS.supportEmail}?subject=Otya%20Support`} className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4 min-h-20 flex items-center gap-3"><span className="w-9 h-9 rounded-full grid place-items-center bg-black/[.045] dark:bg-white/[.06] font-black">✉</span><span><strong className="block text-sm">Email support</strong><span className="block mt-1 text-xs otya-muted">{PUBLIC_URLS.supportEmail}</span></span></a>
             <a href={SITE_CONFIG.telegram} target="_blank" rel="noopener noreferrer" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4 min-h-20 flex items-center gap-3"><span className="w-9 h-9 rounded-full grid place-items-center bg-[#229ED9]/10 text-[#229ED9] font-black">➤</span><span><strong className="block text-sm">Telegram bot</strong><span className="block mt-1 text-xs otya-muted">@OtyaPlayerBot</span></span></a>
           </div>
         </section>
 
         <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-sm font-bold">
-          <Link href="https://status.petersmartlink.com">Status</Link>
+          <Link href={PUBLIC_URLS.status}>Status</Link>
           <Link href="https://docs.petersmartlink.com">Documentation</Link>
           <Link href="/privacy">Privacy</Link>
         </div>
