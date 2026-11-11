@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       const upstream = await authStep(request, recordEnv, '/auth/admin/consume')
       const data = await upstream.json().catch(() => ({})) as { ok?: boolean; email?: string; error?: string }
       if (!upstream.ok || data.ok !== true || data.email?.toLowerCase() !== accountEmail) {
-        return NextResponse.json({ error: data.error ?? 'Complete Telegram verification first.' }, { status: 401 })
+        return NextResponse.json({ error: data.error ?? 'Complete email verification first.' }, { status: 401 })
       }
 
       const session = await createAdminSession(recordEnv, accountEmail)
