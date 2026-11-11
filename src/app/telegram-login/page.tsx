@@ -61,7 +61,7 @@ export default function TelegramLoginPage() {
         <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Connect Telegram</h1>
         <p className="mt-3 text-sm leading-6 otya-muted">Connect Telegram only after signing in to your existing Otya account with email or Google. Telegram cannot create an account or sign in to Otya.</p>
 
-        {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[.07] px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div> : <div ref={widgetRef} className="mt-7 min-h-12 flex items-center justify-center" aria-label="Telegram Sign-In" />}
+        {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[.07] px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div> : <div ref={widgetRef} className="mt-7 min-h-12 flex items-center justify-center" aria-label="Telegram account linking" />}
 
         <div className="mt-7 border-t border-black/[.06] dark:border-white/[.08] pt-5 text-xs leading-5 otya-muted">
           Telegram is a linked channel, not a sign-in method. Never share an Otya password or one-time code with anyone. Sign in with email or Google first, then connect Telegram from Account settings.
