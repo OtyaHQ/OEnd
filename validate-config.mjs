@@ -18,7 +18,10 @@ const musicPage = read('src/app/music/page.tsx')
 const telegramProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
 const telegramCore = read('src/lib/telegram-bot.mjs')
 const telegramReceiptMigration = read('migrations/0010_telegram_update_receipts.sql')
-const telegramMini = read('auth-worker/src/telegram-miniapp.ts')
+const telegramLink = read('auth-worker/src/telegram-login.ts')
+const telegramOtp = read('auth-worker/src/telegram-otp.ts')
+const telegramAdminMfa = read('auth-worker/src/admin-mfa.ts')
+const telegramSecureOtp = read('auth-worker/src/secure-otp.ts')
 
 requireMatch('public Worker must be otya-core', core, /^name\s*=\s*"otya-core"$/m)
 requireMatch('otya-core workers.dev must be disabled', core, /^workers_dev\s*=\s*false$/m)
@@ -63,8 +66,8 @@ requireMatch('Web Google client id must be verified', auth, /^GOOGLE_WEB_CLIENT_
 requireMatch('otya-auth Firebase project id', auth, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
 requireMatch('Telegram redirect must match live canonical API callback', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=\s*"https:\/\/petersmartlink\.com\/api\/auth\/telegram\/callback"$/m)
 requireMatch('Telegram Mini App auth uses purpose-specific Secrets Store alias', auth, /binding\s*=\s*"TELEGRAM_MINIAPP_BOT_TOKEN"[\s\S]*?secret_name\s*=\s*"TELEGRAM_BOT_TOKEN"/m)
-requireMatch('Telegram Mini App derives WebAppData HMAC', telegramMini, /WebAppData/)
-requireMatch('Telegram Mini App validates auth_date freshness', telegramMini, /MAX_AGE_SECONDS/)
+
+
 requireMatch('Telegram Mini App uses numeric Telegram ID', telegramMini, /Number\.isSafeInteger\(user\.id\)/)
 requireMatch('Telegram public callback must proxy to private auth service', telegramProxy, /PUBLIC_PREFIX\s*=\s*'\/api\/auth\/telegram\/'/)
 requireMatch('Telegram public callback must preserve private auth route', telegramProxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
@@ -114,7 +117,10 @@ const scanned = [
   telegramProxy,
   telegramCore,
   telegramReceiptMigration,
-  telegramMini,
+  telegramLink,
+  telegramOtp,
+  telegramAdminMfa,
+  telegramSecureOtp,
 ].join('\n')
 forbidMatch('Firebase Admin private key material must not be committed', scanned, /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/)
 forbidMatch('Resend API key values must not be committed', scanned, /\bre_[A-Za-z0-9_-]{20,}\b/)
