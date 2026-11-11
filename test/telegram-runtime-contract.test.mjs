@@ -27,7 +27,7 @@ test('Telegram runtime self-heals the canonical webhook and exposes dependency r
 test('Next owner Telegram actions use the core gateway rather than a second bot token', () => {
   const actions = read('ai-worker/src/owner-actions.mjs')
 
-  assert.match(actions, /coreApiOrigin\\(env\\)/)
+  assert.ok(actions.includes('coreApiOrigin(env)'))
   assert.match(actions, /\/api\/admin\/telegram\/test/)
   assert.match(actions, /X-OTYA-Internal-Secret/)
   assert.match(actions, /X-OTYA-Admin-Action/)
