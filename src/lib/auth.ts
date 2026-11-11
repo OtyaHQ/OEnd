@@ -1,3 +1,5 @@
+import { PUBLIC_URLS } from './public-urls'
+
 import { NextRequest as _NextRequest } from 'next/server'
 
 /**
@@ -80,7 +82,7 @@ function timingSafeEqual(a: string, b: string): boolean {
  * Restricts Allow-Origin to the canonical domain.
  */
 export const API_CORS = {
-  'Access-Control-Allow-Origin':  'https://petersmartlink.com',
+  'Access-Control-Allow-Origin':  PUBLIC_URLS.primary,
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, X-App-Token, X-Otya-Timestamp, X-Otya-Signature, X-Otya-Device-Id',
 } as const
