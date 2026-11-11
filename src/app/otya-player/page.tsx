@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -21,10 +22,10 @@ export const metadata: Metadata = {
     'Android media player Uganda',
     'Otya Otya',
   ],
-  alternates: { canonical: 'https://petersmartlink.com/otya-player' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/otya-player` },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com/otya-player',
+    url: `${PUBLIC_URLS.primary}/otya-player`,
     title: 'Otya — Offline Music & Video for Android',
     description:
       'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Otya by Otya.',
