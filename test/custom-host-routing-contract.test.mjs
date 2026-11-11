@@ -28,7 +28,7 @@ test('routing recognizes primary, API, docs, status, Space and assets as indepen
   assert.match(router, /isSurfaceHost\(host, 'docs', env\)/)
   assert.match(router, /isSurfaceHost\(host, 'status', env\)/)
   assert.match(router, /isSurfaceHost\(host, 'space', env\)/)
-  assert.match(router, /'api', 'assets', 'www'/)
+  assert.match(router, /'docs', 'status', 'space', 'www', 'api', 'assets'/)
 })
 
 test('surface routing preserves the requested hostname for browser cookies and origin checks', () => {
