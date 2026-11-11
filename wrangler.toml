@@ -11,12 +11,10 @@ routes = [
   { pattern = "www.otya.site", custom_domain = true },
   { pattern = "docs.otya.site", custom_domain = true },
   { pattern = "status.otya.site", custom_domain = true },
-  { pattern = "space.otya.site", custom_domain = true },
-  { pattern = "petersmartlink.com", custom_domain = true },
-  { pattern = "www.petersmartlink.com", custom_domain = true },
-  { pattern = "docs.petersmartlink.com", custom_domain = true },
-  { pattern = "status.petersmartlink.com", custom_domain = true },
-  { pattern = "space.petersmartlink.com", custom_domain = true }
+  { pattern = "api.otya.site", custom_domain = true },
+  { pattern = "docs.otya.site", custom_domain = true },
+  { pattern = "status.otya.site", custom_domain = true },
+  { pattern = "space.otya.site", custom_domain = true }
 ]
 
 [observability]
