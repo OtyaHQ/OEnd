@@ -28,7 +28,7 @@ test('OtyaPoint page describes the real physical shop and avoids invented contac
   assert.match(page, /Electronics/)
   assert.match(page, /Mobile-money agency/)
   assert.match(page, /google\.com\/maps\/search/)
-  assert.match(page, /support@petersmartlink\.com/)
+  assert.match(page, /support@otya\.site/)
   assert.doesNotMatch(page, /tel:|wa\.me|openingHours|telephone:/i)
 })
 
