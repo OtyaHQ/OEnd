@@ -167,7 +167,7 @@ export default function SignInMethodsPage() {
   return <main className="px-4 sm:px-7 lg:px-10 py-8 max-w-[900px]">
     <div className="mb-7">
       <div className="text-[11px] font-black uppercase tracking-[.16em] otya-muted">Otya Space</div>
-      <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Sign-in methods</h1>
+      <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Account access & verification</h1>
       <p className="mt-2 text-sm sm:text-base otya-muted">Email and Google are sign-in methods. Telegram can be linked after sign-in for supported account verification, but it can never sign in to Otya.</p>
       <div className="mt-3 text-xs font-mono otya-muted">OTYA ID: {user.otya_id || 'Being assigned'}</div>
     </div>
