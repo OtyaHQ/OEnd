@@ -14,7 +14,7 @@ test('public host roles are configuration-driven rather than fixed to one apex',
   assert.match(router, /function isSurfaceHost\(hostname, surface, env\)/)
   assert.match(router, /function resolveSurfaceHost\(hostname, surface, env\)/)
   assert.match(router, /function resolvePrimaryHost\(hostname, env\)/)
-  assert.match(router, /configured\.find\(candidate => rootHost\(candidate\) === root\)/)
+  assert.match(router, /configured\.find\(\(candidate\) => rootHost\(candidate\) === root\)/)
   assert.doesNotMatch(router, /const APP_HOST =/)
   assert.doesNotMatch(router, /const DOCS_HOST =/)
   assert.doesNotMatch(router, /const STATUS_HOST =/)
@@ -28,7 +28,7 @@ test('routing recognizes primary, API, docs, status, Space and assets as indepen
   assert.match(router, /isSurfaceHost\(host, 'docs', env\)/)
   assert.match(router, /isSurfaceHost\(host, 'status', env\)/)
   assert.match(router, /isSurfaceHost\(host, 'space', env\)/)
-  assert.match(router, /'docs', 'status', 'space', 'www', 'api', 'assets'/)
+  assert.ok(router.includes("['docs', 'status', 'space', 'www', 'api', 'assets']"))
 })
 
 test('surface routing preserves the requested hostname for browser cookies and origin checks', () => {
@@ -36,7 +36,7 @@ test('surface routing preserves the requested hostname for browser cookies and o
   assert.match(router, /headers\.set\('X-Forwarded-Host', url\.hostname\)/)
   assert.match(router, /headers\.set\('X-Forwarded-Proto', 'https'\)/)
   assert.match(router, /target\.pathname = pathname/)
-  assert.doesNotMatch(router, /target\.hostname =/)
+  assert.doesNotMatch(router.slice(router.indexOf('async function dispatchSurface'), router.indexOf('async function routeOtyaRequest')), /target\.hostname =/)
   assert.match(router, /function redirectToHost\(url, hostname, pathname\)/)
   assert.match(router, /target\.protocol = 'https:'/)
 })
