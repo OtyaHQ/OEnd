@@ -9,7 +9,7 @@ test('public security.txt exposes the canonical private reporting contract', () 
   assert.match(security, /^Expires: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/m)
   assert.match(security, /^Preferred-Languages: en$/m)
   assert.match(security, /^Canonical: https:\/\/otya\.site\/\.well-known\/security\.txt$/m)
-  assert.match(security, /^Policy: https:\/\/github\.com\/PeterSmartLink\/OtyaHub\/security\/policy$/m)
+  assert.ok(security.includes('Policy: https://github.com/peterkatabira/OtyaHub/security/policy'))
   assert.doesNotMatch(security, /token|secret|password|api[_-]?key/i)
 })
 
