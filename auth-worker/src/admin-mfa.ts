@@ -16,6 +16,8 @@ export interface AdminMfaEnv extends TelegramOtpEnv {
   ADMIN_EMAILS?: string
   INTERNAL_SECRET?: string
   OTYA_NO_REPLY_EMAIL?: string
+  OTYA_SUPPORT_EMAIL?: string
+  OTYA_EMAIL_LOGO_URL?: string
 }
 
 const OTP_TTL = 10 * 60
@@ -211,6 +213,9 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
       await sendResendEmail(env.RESEND_API_KEY, {
         from: `Otya <${noReplyEmail(env)}>`,
         to: [user.email!],
+        replyTo: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+        supportEmail: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+        logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
         subject: 'Trust this phone for Next',
         text: [
           'A request was made to enroll a trusted owner phone for Next.',
