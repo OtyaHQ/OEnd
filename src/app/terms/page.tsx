@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const metadata: Metadata = {
   title: 'Terms | Otya',
   description: 'Terms for using Otya accounts, Next and connected services.',
-  alternates: { canonical: 'https://petersmartlink.com/terms' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/terms` },
 }
 
 const SECTIONS = [
@@ -22,7 +23,7 @@ const SECTIONS = [
   ['Third-party services', 'Optional features may interact with services such as Google, Telegram, Firebase, Resend and Cloudflare. Their terms and privacy practices may apply when you use those integrations.'],
   ['Liability', 'To the extent permitted by applicable law, Otya is not responsible for indirect, incidental or consequential losses resulting from use of the services or from third-party service availability.'],
   ['Governing law', 'These terms are governed by the applicable laws of the Republic of Uganda.'],
-  ['Contact', 'Questions about these terms can be sent to support@petersmartlink.com.'],
+  ['Contact', 'Questions about these terms can be sent to support@otya.site.'],
 ]
 
 export default function TermsPage() {
