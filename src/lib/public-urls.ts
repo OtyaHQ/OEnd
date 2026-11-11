@@ -9,6 +9,23 @@ function safeHttpsOrigin(value: string | undefined, fallback: string): string {
   }
 }
 
+function safeHttpsOrigins(value: string | undefined, fallback: string[]): string[] {
+  const values = value
+    ? value.split(',').map(item => item.trim()).filter(Boolean)
+    : fallback
+  const origins = values.flatMap(item => {
+    try {
+      const parsed = new URL(item)
+      return parsed.protocol === 'https:' && !parsed.username && !parsed.password
+        ? [parsed.origin]
+        : []
+    } catch {
+      return []
+    }
+  })
+  return [...new Set(origins)]
+}
+
 function safeEmail(value: string | undefined, fallback: string): string {
   const candidate = value?.trim() ?? ''
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate) ? candidate : fallback
@@ -26,6 +43,10 @@ export const PUBLIC_URLS = Object.freeze({
   docs: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_DOCS_URL, 'https://docs.otya.site'),
   status: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_STATUS_URL, 'https://status.otya.site'),
   space: safeHttpsOrigin(process.env.NEXT_PUBLIC_OTYA_SPACE_URL, 'https://space.otya.site'),
+  allowedOrigins: safeHttpsOrigins(
+    process.env.NEXT_PUBLIC_OTYA_ALLOWED_ORIGINS,
+    ['https://otya.site', 'https://space.otya.site', 'https://api.otya.site'],
+  ),
   supportEmail: safeEmail(process.env.OTYA_SUPPORT_EMAIL, 'support@otya.site'),
   noReplyEmail: safeEmail(process.env.OTYA_NO_REPLY_EMAIL, 'noreply@otya.site'),
 })
