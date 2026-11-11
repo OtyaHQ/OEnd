@@ -4,7 +4,8 @@ import './globals.css'
 import './brand-overrides.css'
 
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
-const SITE_URL = 'https://petersmartlink.com'
+const SITE_URL = (process.env.NEXT_PUBLIC_OTYA_PUBLIC_URL || process.env.WEBSITE_URL || 'https://otya.site').replace(/\/+$/, '')
+const SUPPORT_EMAIL = process.env.OTYA_SUPPORT_EMAIL || 'support@otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
 const OTYA_MARK = '/otya-app-icon.webp'
 
@@ -100,7 +101,7 @@ const schemaOrg = {
       description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
       logo: `${SITE_URL}${OTYA_MARK}`,
-      email: 'support@petersmartlink.com',
+      email: SUPPORT_EMAIL,
     },
     {
       '@type': 'SoftwareApplication',
@@ -158,20 +159,13 @@ const initialThemeScript = `try {
   }
 } catch (e) {}`
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en" dir="ltr" className={manrope.variable} suppressHydrationWarning>
-    <head>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrg) }} />
-      <meta name="google-adsense-account" content={ADSENSE_ID} />
-      <script
-        async
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}`}
-        crossOrigin="anonymous"
-      />
-      <script dangerouslySetInnerHTML={{ __html: initialThemeScript }} />
-    </head>
-    <body className={manrope.className}>
-      {children}
-    </body>
-  </html>
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en-UG" suppressHydrationWarning>
+      <body className={manrope.variable}>
+        <script dangerouslySetInnerHTML={{ __html: initialThemeScript }} />
+        {children}
+      </body>
+    </html>
+  )
 }
