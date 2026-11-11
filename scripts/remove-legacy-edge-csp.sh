@@ -4,7 +4,7 @@ set -euo pipefail
 : "${CLOUDFLARE_API_TOKEN:?CLOUDFLARE_API_TOKEN is required}"
 
 API='https://api.cloudflare.com/client/v4'
-ZONE_NAME='petersmartlink.com'
+ZONE_NAME="${CLOUDFLARE_ZONE_NAME:-otya.site}"
 PHASE='http_response_headers_transform'
 
 cf_get() {
@@ -17,7 +17,7 @@ cf_get() {
 zone_json="$(cf_get "${API}/zones?name=${ZONE_NAME}&status=active&per_page=50")"
 zone_id="$(printf '%s' "$zone_json" | jq -r --arg name "$ZONE_NAME" '[.result[] | select(.name == $name) | .id] | if length == 1 then .[0] else empty end')"
 if [[ -z "$zone_id" ]]; then
-  echo '::error::Could not resolve exactly one active petersmartlink.com zone.'
+  echo '::error::Could not resolve exactly one active Otya zone: ${ZONE_NAME}.'
   exit 1
 fi
 

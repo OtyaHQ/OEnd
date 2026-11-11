@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next'
 import { Manrope } from 'next/font/google'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import './globals.css'
 import './brand-overrides.css'
 
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
-const SITE_URL = 'https://petersmartlink.com'
+const SITE_URL = PUBLIC_URLS.primary
+const SUPPORT_EMAIL = PUBLIC_URLS.supportEmail
 const ADSENSE_ID = 'ca-pub-2517163652161686'
 const OTYA_MARK = '/otya-app-icon.webp'
 
@@ -100,7 +102,7 @@ const schemaOrg = {
       description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
       logo: `${SITE_URL}${OTYA_MARK}`,
-      email: 'support@petersmartlink.com',
+      email: SUPPORT_EMAIL,
     },
     {
       '@type': 'SoftwareApplication',

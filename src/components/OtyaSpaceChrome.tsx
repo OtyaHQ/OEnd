@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import { AccountNotices } from '@/components/AccountNotices'
 import { signOutBrowser } from '@/lib/browser-sign-out.mjs'
 import { ReactNode, useEffect, useRef, useState } from 'react'
@@ -91,7 +92,7 @@ export function OtyaSpaceChrome({ children, initialUser }: { children: ReactNode
             <button type="button" aria-label="Notifications" title="Notifications" onClick={() => { setNotificationsOpen(value => !value); setProfileOpen(false) }} className="relative h-11 w-11 grid place-items-center rounded-xl hover:bg-black/5 dark:hover:bg-white/5">{icons.bell}</button>
             {notificationsOpen && <FloatingPanel><div className="font-bold px-2 py-1">Notices</div><div className="mt-2 max-h-[65vh] overflow-y-auto px-2"><AccountNotices compact /></div><Link href={consoleHref(user.otya_id, 'notifications', '/account/notifications/')} className="mt-3 inline-flex min-h-11 items-center px-2 text-sm font-bold">View notices</Link></FloatingPanel>}
           </div>
-          <a href="https://docs.petersmartlink.com" aria-label="Help" title="Help" className="h-11 w-11 grid place-items-center rounded-xl hover:bg-black/5 dark:hover:bg-white/5">{icons.help}</a>
+          <a href={PUBLIC_URLS.docs} aria-label="Help" title="Help" className="h-11 w-11 grid place-items-center rounded-xl hover:bg-black/5 dark:hover:bg-white/5">{icons.help}</a>
           <div className="relative" ref={profileRef}>
             <button type="button" aria-label="Profile" title="Profile" onClick={() => { setProfileOpen(value => !value); setNotificationsOpen(false) }} className="h-11 min-w-11 rounded-full border grid place-items-center text-xs font-black overflow-hidden" style={{ borderColor: profileOpen ? 'var(--cosmos-primary)' : 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>{user.avatar_url ? <img src={user.avatar_url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" /> : initials}</button>
             {profileOpen && <FloatingPanel><div className="flex items-center gap-3 p-2.5"><div className="h-11 w-11 shrink-0 rounded-full grid place-items-center font-black" style={{ background: 'color-mix(in srgb,var(--cosmos-primary) 14%,var(--cosmos-card))' }}>{initials}</div><div className="min-w-0"><div className="font-bold truncate">{displayName}</div><div className="text-xs otya-muted truncate">{user.email || 'No primary email added'}</div>{user.otya_id && <div className="mt-1 text-sm font-mono otya-muted">{user.otya_id}</div>}</div></div><Divider/><PanelLink href={consoleHref(user.otya_id, 'account', '/account/')} onClick={() => setProfileOpen(false)}>Account</PanelLink><PanelLink href={consoleHref(user.otya_id, 'providers', '/account/sign-in-methods/')} onClick={() => setProfileOpen(false)}>Sign-in methods</PanelLink><PanelLink href={consoleHref(user.otya_id, 'settings', '/account/settings/')} onClick={() => setProfileOpen(false)}>Preferences</PanelLink><Divider/><button type="button" onClick={() => void signOut()} className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold hover:bg-black/5 dark:hover:bg-white/5">Sign out</button></FloatingPanel>}
@@ -130,7 +131,7 @@ function SpaceNav({ query, setQuery, publicId, onNavigate }: { query: string; se
     <label className="mb-3 flex h-11 items-center gap-2 rounded-xl border px-3" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}><Icon><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></Icon><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search Space" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-current placeholder:opacity-45" /></label>
     {match('Space home') && <NavLink item={{ label: 'Space home', section: 'overview', fallback: '/', icon: icons.overview }} publicId={publicId} onNavigate={onNavigate} strong />}
     {GROUPS.map(group => { const visible = group.items.filter(item => match(item.label)); if (!visible.length) return null; return <div key={group.label} className="mt-5"><div className="px-3 pb-2 text-sm font-semibold otya-muted">{group.label}</div><div className="space-y-0.5">{visible.map(item => <NavLink key={item.label} item={item} publicId={publicId} onNavigate={onNavigate} />)}</div></div> })}
-    <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}><NavLink item={{ label: 'Help & Docs', fallback: 'https://docs.petersmartlink.com', icon: icons.help, external: true }} publicId={publicId} onNavigate={onNavigate} /></div>
+    <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}><NavLink item={{ label: 'Help & Docs', fallback: PUBLIC_URLS.docs, icon: icons.help, external: true }} publicId={publicId} onNavigate={onNavigate} /></div>
   </nav>
 }
 

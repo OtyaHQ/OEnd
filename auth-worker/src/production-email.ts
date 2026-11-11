@@ -11,9 +11,17 @@ export interface ProductionEmailEnv {
   AUTH_KV: KVLike
   AUTH_JWT_SECRET: string
   RESEND_API_KEY?: string
+  OTYA_NO_REPLY_EMAIL?: string
+  OTYA_SUPPORT_EMAIL?: string
+  OTYA_EMAIL_LOGO_URL?: string
 }
 
 const VERIFY_TTL = 10 * 60
+
+function noReplyEmail(env: ProductionEmailEnv): string {
+  const value = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'noreply@otya.site'
+}
 const LAST_LOGIN_IP_TTL = 90 * 24 * 60 * 60
 
 function toHex(bytes: Uint8Array): string {
@@ -51,8 +59,11 @@ export async function deliverRegistrationEmails(response: Response, env: Product
 
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <noreply@petersmartlink.com>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: [email],
+      replyTo: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+      supportEmail: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+      logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
       subject: 'Your Otya verification code',
       text: [
         `Hi ${name},`,
@@ -104,8 +115,11 @@ export async function deliverNewDeviceAlert(request: Request, response: Response
 
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya Security <noreply@petersmartlink.com>',
+      from: `Otya Security <${noReplyEmail(env)}>`,
       to: [email],
+      replyTo: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+      supportEmail: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+      logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
       subject: 'New login to your Otya account',
       text: [
         'We detected a login to your Otya account from a different network.',

@@ -12,18 +12,22 @@ const deploy = read('.github/workflows/deploy.yml')
 const fcm = read('src/lib/fcm.ts')
 const appCheck = read('src/lib/firebase_app_check.ts')
 const googleWrapper = read('auth-worker/src/production-entrypoint.ts')
+const authWrapper = read('auth-worker/src/production-entrypoint-miniapp.ts')
 const appConfig = read('src/app/api/app-config/route.ts')
 const clientConfig = read('src/lib/client_config.ts')
 const musicPage = read('src/app/music/page.tsx')
 const telegramProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
 const telegramCore = read('src/lib/telegram-bot.mjs')
 const telegramReceiptMigration = read('migrations/0010_telegram_update_receipts.sql')
-const telegramMini = read('auth-worker/src/telegram-miniapp.ts')
+const telegramLink = read('auth-worker/src/telegram-login.ts')
+const telegramOtp = read('auth-worker/src/telegram-otp.ts')
+const telegramAdminMfa = read('auth-worker/src/admin-mfa.ts')
+const telegramSecureOtp = read('auth-worker/src/secure-otp.ts')
 
 requireMatch('public Worker must be otya-core', core, /^name\s*=\s*"otya-core"$/m)
 requireMatch('otya-core workers.dev must be disabled', core, /^workers_dev\s*=\s*false$/m)
 requireMatch('otya-core must redact query strings', core, /^redact_query_string\s*=\s*true$/m)
-for (const hostname of ['petersmartlink.com', 'www.petersmartlink.com', 'docs.petersmartlink.com', 'status.petersmartlink.com', 'space.petersmartlink.com']) requireMatch(`otya-core public hostname ${hostname}`, core, new RegExp(`pattern\\s*=\\s*"${hostname.replaceAll('.', '\\.') }"`))
+for (const hostname of ['otya.site', 'www.otya.site', 'api.otya.site', 'docs.otya.site', 'status.otya.site', 'space.otya.site']) requireMatch(`otya-core public hostname ${hostname}`, core, new RegExp(`pattern\\s*=\\s*"${hostname.replaceAll('.', '\\.') }"`))
 for (const binding of ['R2', 'KV', 'DB', 'ANALYTICS', 'OTYA_ANALYTICS', 'RATE_LIMITER', 'PUSH_QUEUE', 'AI_QUEUE', 'AUTH', 'AI_SUPPORT', 'OTYA_RELEASE_WORKFLOW']) requireMatch(`otya-core binding ${binding}`, core, new RegExp(`(?:binding|name)\\s*=\\s*"${binding}"`))
 requireMatch('otya-core Analytics Engine dataset', core, /^dataset\s*=\s*"otya-core-analytics"$/m)
 requireMatch('compatibility OTYA Analytics Engine dataset remains bound during migration', core, /^dataset\s*=\s*"otya_system_analytics"$/m)
@@ -53,7 +57,7 @@ forbidMatch('Telegram webhook must not regress to racy KV GET then PUT dedupe', 
 forbidMatch('Telegram bot token must not be treated as a raw committed string', telegramCore, /env\.TELEGRAM_BOT_TOKEN\s*\)/)
 
 requireMatch('otya-auth Worker name', auth, /^name\s*=\s*"otya-auth"$/m)
-requireMatch('otya-auth must use Mini App production wrapper', auth, /^main\s*=\s*"src\/production-entrypoint-miniapp\.ts"$/m)
+requireMatch('otya-auth must use the guarded auth session wrapper', auth, /^main\s*=\s*"src\/production-entrypoint-miniapp\.ts"$/m)
 requireMatch('otya-auth workers.dev must be disabled', auth, /^workers_dev\s*=\s*false$/m)
 requireMatch('otya-auth must redact query strings', auth, /^redact_query_string\s*=\s*true$/m)
 requireMatch('otya-auth live analytics binding', auth, /^binding\s*=\s*"ANALYTICS"$/m)
@@ -61,14 +65,22 @@ requireMatch('otya-auth live analytics dataset', auth, /^dataset\s*=\s*"otya-aut
 requireMatch('Android Google client id must be verified', auth, /^GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 requireMatch('Web Google client id must be verified', auth, /^GOOGLE_WEB_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
 requireMatch('otya-auth Firebase project id', auth, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
-requireMatch('Telegram redirect must match live canonical API callback', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=\s*"https:\/\/petersmartlink\.com\/api\/auth\/telegram\/callback"$/m)
-requireMatch('Telegram Mini App auth uses purpose-specific Secrets Store alias', auth, /binding\s*=\s*"TELEGRAM_MINIAPP_BOT_TOKEN"[\s\S]*?secret_name\s*=\s*"TELEGRAM_BOT_TOKEN"/m)
-requireMatch('Telegram Mini App derives WebAppData HMAC', telegramMini, /WebAppData/)
-requireMatch('Telegram Mini App validates auth_date freshness', telegramMini, /MAX_AGE_SECONDS/)
-requireMatch('Telegram Mini App uses numeric Telegram ID', telegramMini, /Number\.isSafeInteger\(user\.id\)/)
+requireMatch('Telegram account-link callback must use the Otya origin', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=\s*"https:\/\/otya\.site\/api\/auth\/telegram\/callback"$/m)
+
+
 requireMatch('Telegram public callback must proxy to private auth service', telegramProxy, /PUBLIC_PREFIX\s*=\s*'\/api\/auth\/telegram\/'/)
 requireMatch('Telegram public callback must preserve private auth route', telegramProxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
 requireMatch('Telegram public callback must use AUTH binding', telegramProxy, /\.AUTH as AuthService/)
+requireMatch('Telegram Mini App sign-in must be disabled', authWrapper, /return disabledTelegramAuth\(\)/)
+forbidMatch('Telegram auth wrapper must not create a primary identity', authWrapper, /handleTelegramPrimaryLogin|handleTelegramMiniApp|createOrGetTelegramUser/)
+requireMatch('Telegram auth must reject non-link modes', telegramLink, /requested && requested !== 'link'/)
+requireMatch('Telegram link must require an existing Otya session', telegramLink, /requireUser\(request, env\)/)
+requireMatch('Telegram link callback must reject legacy non-link state', telegramLink, /stored\.mode !== 'link'/)
+requireMatch('Telegram OTP delivery must use an existing linked identity', telegramOtp, /SELECT provider_subject FROM linked_identities/)
+requireMatch('Admin OTP may deliver a copy through linked Telegram', telegramAdminMfa, /sendLinkedTelegramOtp/)
+requireMatch('Account OTP may deliver a copy through linked Telegram', telegramSecureOtp, /sendLinkedTelegramOtp/)
+forbidMatch('Telegram proxy must never set Otya session cookies', telegramProxy, /cookies\.set\(/)
+forbidMatch('runtime host routing must not hardcode the retiring domain', read('src/production-router.mjs'), /petersmartlink\.com/)
 forbidMatch('Cloudflare EMAIL binding must not return to auth Wrangler', auth, /\[\[send_email\]\]|binding\s*=\s*"EMAIL"/i)
 requireMatch('production Google wrapper must support web audience', googleWrapper, /GOOGLE_WEB_CLIENT_ID/)
 requireMatch('production Google wrapper must reject unconfigured audiences', googleWrapper, /configuredGoogleAudiences/)
@@ -114,7 +126,10 @@ const scanned = [
   telegramProxy,
   telegramCore,
   telegramReceiptMigration,
-  telegramMini,
+  telegramLink,
+  telegramOtp,
+  telegramAdminMfa,
+  telegramSecureOtp,
 ].join('\n')
 forbidMatch('Firebase Admin private key material must not be committed', scanned, /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/)
 forbidMatch('Resend API key values must not be committed', scanned, /\bre_[A-Za-z0-9_-]{20,}\b/)

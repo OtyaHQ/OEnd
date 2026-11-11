@@ -3,9 +3,11 @@ import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 
-const SITE_URL = 'https://petersmartlink.com'
+import { PUBLIC_URLS } from '@/lib/public-urls'
+
+const SITE_URL = PUBLIC_URLS.primary
 const MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Old%20Market%2C%20Mbirizi%2C%20Lwengo%20District%2C%20Uganda'
-const ENQUIRY_URL = 'mailto:support@petersmartlink.com?subject=OtyaPoint%20shop%20enquiry'
+const ENQUIRY_URL = 'mailto:support@otya.site?subject=OtyaPoint%20shop%20enquiry'
 
 export const metadata: Metadata = {
   title: 'OtyaPoint | Physical shop in Mbirizi, Lwengo',
@@ -114,7 +116,7 @@ export default function OtyaPointPage() {
             <h3 className="mt-3 text-2xl sm:text-3xl font-black tracking-[-.045em]">Check first. Then come by.</h3>
             <p className="mt-4 text-sm leading-7 otya-muted">Stock and service availability can change. For current opening times or a specific item, send an enquiry before travelling.</p>
             <a href={ENQUIRY_URL} className="cosmos-button mt-6 inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-black">Email an enquiry</a>
-            <p className="mt-4 text-xs otya-muted">support@petersmartlink.com</p>
+            <p className="mt-4 text-xs otya-muted">support@otya.site</p>
           </div>
         </div>
       </section>

@@ -18,6 +18,7 @@ import { dualAuth } from '@/lib/auth-service'
 import { appCheckEnforced, verifyFirebaseAppCheck } from '@/lib/firebase_app_check'
 import { secureJson, errorJson } from '@/lib/response'
 import { getDB } from '@/lib/d1'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export interface DevicePayload {
   device_id:        string
@@ -34,10 +35,16 @@ export interface DevicePayload {
   locale?:          string
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  'https://petersmartlink.com',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Otya-Timestamp, X-Otya-Signature, X-Otya-Device-Id',
+function corsHeaders(request?: Request) {
+  const origin = request?.headers.get('Origin') ?? ''
+  const allowed = new Set([PUBLIC_URLS.primary, PUBLIC_URLS.api, PUBLIC_URLS.space].map(value => new URL(value).origin))
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Otya-Timestamp, X-Otya-Signature, X-Otya-Device-Id',
+    'Vary': 'Origin',
+  })
+  if (origin && allowed.has(origin)) headers.set('Access-Control-Allow-Origin', origin)
+  return headers
 }
 
 function cleanText(value: unknown, maxLength: number): string | null {
@@ -128,6 +135,6 @@ export async function POST(request: NextRequest) {
   })
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+export async function OPTIONS(request: Request) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request) })
 }

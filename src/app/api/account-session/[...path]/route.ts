@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
-const COOKIE_DOMAIN = '.petersmartlink.com'
 const ACCESS_MAX_AGE = 15 * 60
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const TURNSTILE_PROTECTED_AUTH = new Set([
@@ -34,7 +33,6 @@ function cookieOptions(maxAge: number) {
     httpOnly: true,
     secure: true,
     sameSite: 'lax' as const,
-    domain: COOKIE_DOMAIN,
     path: '/',
     maxAge,
   }

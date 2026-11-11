@@ -4,11 +4,12 @@ import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const metadata: Metadata = {
   title: 'Otya products and services',
   description: 'Explore Otya digital products, account services and the OtyaPoint physical shop.',
-  alternates: { canonical: 'https://petersmartlink.com/apps' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/apps` },
 }
 
 export default function ProductsPage() {
@@ -47,7 +48,7 @@ export default function ProductsPage() {
             <div className="mt-6 text-xs font-black otya-muted">Account environment</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-[-.045em]">Space</h2>
             <p className="mt-3 text-sm leading-7 otya-muted">One signed-in place for your Otya account, security, devices, providers, settings, Next and role-authorized Admin controls.</p>
-            <Link href="https://space.petersmartlink.com" className="mt-6 inline-flex text-sm font-black">Open Space →</Link>
+            <Link href={PUBLIC_URLS.space} className="mt-6 inline-flex text-sm font-black">Open Space →</Link>
           </article>
         <article className="overflow-hidden rounded-[30px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-7 sm:p-9 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-7 items-center">
           <div>

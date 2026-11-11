@@ -73,15 +73,21 @@ interface ResendEnv extends Record<string, unknown> {
   AUTH_KV: KVNamespace
   AUTH_DB: D1Database
   CORS_ORIGIN?: string
+  OTYA_NO_REPLY_EMAIL?: string
+  OTYA_SUPPORT_EMAIL?: string
 }
 
 const GOOGLE_RATE_LIMIT = 20
 const GOOGLE_RATE_TTL = 15 * 60
 const GOOGLE_VERIFY_TIMEOUT_MS = 8000
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
-const OTYA_NOREPLY_EMAIL = 'noreply@petersmartlink.com'
-const OTYA_SUPPORT_EMAIL = 'support@petersmartlink.com'
-const OTYA_NOREPLY_FROM = `OTYA <${OTYA_NOREPLY_EMAIL}>`
+function noReplyEmail(env: ResendEnv): string {
+  const value = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'noreply@otya.site'
+}
+function supportEmail(env: ResendEnv): string {
+  const value = env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site'
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'support@otya.site'
+}
 const LEGAL_ACCEPTANCE_REQUIRED = 428
 
 function normalizeEmailText(text: string): string {
@@ -91,16 +97,16 @@ function normalizeEmailText(text: string): string {
   )
 }
 
-function createEmailAdapter(apiKey: string | undefined) {
+function createEmailAdapter(env: ResendEnv) {
   return {
     async send(message: LegacyEmailMessage): Promise<void> {
       const email: ResendEmail = {
-        from: OTYA_NOREPLY_FROM,
+        from: `Otya <${noReplyEmail(env)}>`,
         to: message.to.map((recipient) => recipient.email),
         subject: message.subject,
-        text: `${normalizeEmailText(message.text)}\n\nNeed help? Contact ${OTYA_SUPPORT_EMAIL}.`,
+        text: `${normalizeEmailText(message.text)}\n\nNeed help? Contact ${supportEmail(env)}.`,
       }
-      await sendResendEmail(apiKey, email)
+      await sendResendEmail(env.RESEND_API_KEY, email)
     },
   }
 }
@@ -117,7 +123,6 @@ function jsonError(
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
-      'Access-Control-Allow-Origin': env.CORS_ORIGIN ?? PRIMARY_ORIGIN,
       'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Otya-Drive-Token',
       'Vary': 'Origin',
@@ -306,7 +311,7 @@ async function persistConsentFromResponse(
 
 export default {
   async fetch(request: Request, env: ResendEnv): Promise<Response> {
-    const resendEnv = { ...env, EMAIL: createEmailAdapter(env.RESEND_API_KEY) }
+    const resendEnv = { ...env, EMAIL: createEmailAdapter(env) }
     const url = new URL(request.url)
 
     if (url.pathname === '/auth/account' && request.method !== 'OPTIONS') {

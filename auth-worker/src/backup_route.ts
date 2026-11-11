@@ -33,7 +33,6 @@ interface BackupDeleteBody {
   drive_token?: unknown
 }
 
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
 const DRIVE_FILE_ID_TTL = 365 * 24 * 60 * 60
 
 function headers(env: BackupRouteEnv): Record<string, string> {
@@ -41,7 +40,6 @@ function headers(env: BackupRouteEnv): Record<string, string> {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
     'X-Content-Type-Options': 'nosniff',
-    'Access-Control-Allow-Origin': env.CORS_ORIGIN ?? PRIMARY_ORIGIN,
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Otya-Drive-Token',
     'Vary': 'Origin',

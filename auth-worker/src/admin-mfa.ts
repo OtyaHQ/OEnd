@@ -1,6 +1,7 @@
 import { generateOtp, verifyJwt } from './crypto'
 import { sendResendEmail } from './resend'
 import { assertSchemaReady, getUserById, type D1Database } from './db'
+import { sendLinkedTelegramOtp, type TelegramOtpEnv } from './telegram-otp'
 
 interface KVNamespaceLike {
   get(key: string): Promise<string | null>
@@ -8,22 +9,22 @@ interface KVNamespaceLike {
   delete(key: string): Promise<void>
 }
 
-export interface AdminMfaEnv {
-  AUTH_DB: D1Database
+export interface AdminMfaEnv extends TelegramOtpEnv {
   AUTH_KV: KVNamespaceLike
   AUTH_JWT_SECRET: string
   RESEND_API_KEY?: string
   ADMIN_EMAILS?: string
   INTERNAL_SECRET?: string
+  OTYA_NO_REPLY_EMAIL?: string
+  OTYA_SUPPORT_EMAIL?: string
+  OTYA_EMAIL_LOGO_URL?: string
 }
 
 const OTP_TTL = 10 * 60
 const OTP_WINDOW_TTL = 15 * 60
 const OTP_MAX_SENDS = 5
 const OTP_MAX_ATTEMPTS = 8
-const TELEGRAM_WINDOW_TTL = 10 * 60
 const COMPLETE_TTL = 5 * 60
-const TELEGRAM_CHALLENGE_PREFIX = 'admin_mfa_challenge:'
 // Next is a private owner device, not a browser admin session. Once the owner
 // completes the strong enrollment ceremony, keep the trusted device usable and
 // renew it at most weekly. A new enrollment automatically replaces the previous
@@ -38,6 +39,11 @@ type OwnerGrantRecord = {
   device_hash: string
   issued_at: number
   renewed_at: number
+}
+
+function noReplyEmail(env: AdminMfaEnv): string {
+  const candidate = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(candidate) ? candidate : 'noreply@otya.site'
 }
 
 function json(data: unknown, status = 200): Response {
@@ -91,10 +97,6 @@ async function digest(value: string): Promise<string> {
 
 async function otpDigest(userId: string, otp: string): Promise<string> {
   return digest(`otya-admin-mfa:${userId}:${otp.trim().toUpperCase()}`)
-}
-
-async function telegramChallengeDigest(challenge: string): Promise<string> {
-  return digest(`otya-admin-telegram-challenge:${challenge.trim()}`)
 }
 
 function deviceIdFrom(request: Request): string {
@@ -191,74 +193,10 @@ export async function consumeAdminMfaCompletion(request: Request, env: AdminMfaE
   return { ok: true, email: user.email!.toLowerCase() }
 }
 
-export async function markAdminTelegramComplete(env: AdminMfaEnv, userId: string): Promise<void> {
-  const pending = await env.AUTH_KV.get(`admin_mfa_telegram:${userId}`)
-  if (!pending) throw new Error('Admin email verification expired')
-  await env.AUTH_KV.delete(`admin_mfa_telegram:${userId}`)
-  await env.AUTH_KV.delete(`${TELEGRAM_CHALLENGE_PREFIX}${pending}`)
-  await env.AUTH_KV.put(`admin_mfa_complete:${userId}`, randomToken(), { expirationTtl: COMPLETE_TTL })
-}
-
-export async function adminTelegramPending(env: AdminMfaEnv, userId: string): Promise<boolean> {
-  return Boolean(await env.AUTH_KV.get(`admin_mfa_telegram:${userId}`))
-}
-
-export async function confirmAdminTelegramChallenge(
-  env: AdminMfaEnv,
-  challenge: string,
-  telegramUserId: string,
-): Promise<boolean> {
-  const normalizedChallenge = challenge.trim()
-  const telegramSubject = telegramUserId.trim()
-  if (!/^[A-Za-z0-9_-]{16,80}$/.test(normalizedChallenge)) return false
-  if (!/^\d{4,24}$/.test(telegramSubject)) return false
-
-  const challengeHash = await telegramChallengeDigest(normalizedChallenge)
-  const userId = await env.AUTH_KV.get(`${TELEGRAM_CHALLENGE_PREFIX}${challengeHash}`)
-  if (!userId) return false
-
-  const pending = await env.AUTH_KV.get(`admin_mfa_telegram:${userId}`)
-  if (!pending || !timingSafeEqual(pending, challengeHash)) return false
-
-  await assertSchemaReady(env.AUTH_DB)
-  const user = await getUserById(env.AUTH_DB, userId)
-  if (!user?.email || !allowlist(env).has(user.email.toLowerCase())) return false
-
-  const linked = await env.AUTH_DB.prepare(
-    "SELECT user_id FROM linked_identities WHERE provider = 'telegram' AND provider_subject = ? LIMIT 1",
-  ).bind(telegramSubject).first<{ user_id?: string }>()
-  if (!linked?.user_id || linked.user_id !== userId) return false
-
-  await env.AUTH_DB.prepare(
-    "UPDATE linked_identities SET last_used_at = datetime('now') WHERE provider = 'telegram' AND provider_subject = ? AND user_id = ?",
-  ).bind(telegramSubject, userId).run()
-  await markAdminTelegramComplete(env, userId)
-  return true
-}
-
 export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promise<Response | null> {
   const url = new URL(request.url)
   if (!url.pathname.startsWith('/auth/admin/')) return null
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
-
-  if (url.pathname === '/auth/admin/telegram-challenge/confirm') {
-    const suppliedSecret = request.headers.get('X-OTYA-Internal-Secret')?.trim() ?? ''
-    if (!env.INTERNAL_SECRET || !suppliedSecret || !timingSafeEqual(suppliedSecret, env.INTERNAL_SECRET)) {
-      return json({ error: 'Unauthorized' }, 401)
-    }
-    const body = await request.json().catch(() => ({})) as {
-      challenge?: string
-      telegram_user_id?: string | number
-    }
-    const ok = await confirmAdminTelegramChallenge(
-      env,
-      String(body.challenge ?? ''),
-      String(body.telegram_user_id ?? ''),
-    )
-    return ok
-      ? json({ ok: true, owner_verified: true })
-      : json({ error: 'This Next enrollment challenge is invalid, expired, or belongs to another Telegram account.', code: 'TELEGRAM_CHALLENGE_INVALID' }, 401)
-  }
 
   const user = await requireAllowedAdmin(request, env)
   if (!user) return json({ error: 'Additional verification is required.' }, 403)
@@ -271,23 +209,39 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
 
     const otp = generateOtp()
     await env.AUTH_KV.put(`admin_mfa_otp:${user.id}`, await otpDigest(user.id, otp), { expirationTtl: OTP_TTL })
-    await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'OTYA <noreply@petersmartlink.com>',
-      to: [user.email!],
-      subject: 'Trust this phone for Next',
-      text: [
-        'A request was made to enroll a trusted owner phone for Next.',
-        '',
-        `Verification code: ${otp}`,
-        '',
-        'This code expires in 10 minutes. Telegram confirmation is also required for first-time device enrollment.',
-        '',
-        'After enrollment, Next stays signed in on this phone until you sign out, revoke it, replace the trusted phone, or a security event requires re-verification.',
-        '',
-        'If you did not request this, do not share the code and review your OTYA account security.',
-      ].join('\n'),
+    try {
+      await sendResendEmail(env.RESEND_API_KEY, {
+        from: `Otya <${noReplyEmail(env)}>`,
+        to: [user.email!],
+        replyTo: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+        supportEmail: env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site',
+        logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
+        subject: 'Trust this phone for Next',
+        text: [
+          'A request was made to enroll a trusted owner phone for Next.',
+          '',
+          `Verification code: ${otp}`,
+          '',
+          'This code expires in 10 minutes. If Telegram is linked to your Otya Account and you have started the Otya bot, a copy is sent there as well.',
+          '',
+          'After enrollment, Next stays signed in on this phone until you sign out, revoke it, replace the trusted phone, or a security event requires re-verification.',
+          '',
+          'If you did not request this, do not share the code and review your Otya Account security.',
+        ].join('\\n'),
+      })
+    } catch (error) {
+      await env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`)
+      console.error('[admin-mfa] verification email delivery failed:', error instanceof Error ? error.name : 'UnknownError')
+      return json({ error: 'Admin verification email is temporarily unavailable.' }, 503)
+    }
+
+    const telegramDelivered = await sendLinkedTelegramOtp(env, user.id, otp, 'Next owner device enrollment').catch(() => false)
+    return json({
+      ok: true,
+      next: 'otp',
+      channels: telegramDelivered ? ['email', 'telegram'] : ['email'],
+      telegram_delivery: telegramDelivered ? 'sent' : 'not_available',
     })
-    return json({ ok: true, next: 'otp' })
   }
 
   if (url.pathname === '/auth/admin/verify-otp') {
@@ -306,32 +260,22 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
 
     await env.AUTH_KV.delete(`admin_mfa_otp:${user.id}`)
     await env.AUTH_KV.delete(`admin_mfa_attempt:${user.id}`)
-
-    const oldChallengeHash = await env.AUTH_KV.get(`admin_mfa_telegram:${user.id}`)
-    if (oldChallengeHash) await env.AUTH_KV.delete(`${TELEGRAM_CHALLENGE_PREFIX}${oldChallengeHash}`)
-
-    const telegramChallenge = randomToken(18)
-    const challengeHash = await telegramChallengeDigest(telegramChallenge)
-    await env.AUTH_KV.put(`admin_mfa_telegram:${user.id}`, challengeHash, { expirationTtl: TELEGRAM_WINDOW_TTL })
-    await env.AUTH_KV.put(`${TELEGRAM_CHALLENGE_PREFIX}${challengeHash}`, user.id, { expirationTtl: TELEGRAM_WINDOW_TTL })
-    return json({
-      ok: true,
-      next: 'telegram',
-      telegram_challenge: telegramChallenge,
-      expires_in: TELEGRAM_WINDOW_TTL,
-    })
+    // Email OTP is the owner step-up proof. Telegram, when linked, is a
+    // secondary delivery channel only and never establishes an Otya session.
+    await env.AUTH_KV.put(`admin_mfa_complete:${user.id}`, randomToken(), { expirationTtl: COMPLETE_TTL })
+    return json({ ok: true, next: 'complete' })
   }
 
   if (url.pathname === '/auth/admin/consume') {
     const marker = await env.AUTH_KV.get(`admin_mfa_complete:${user.id}`)
-    if (!marker) return json({ error: 'Complete Telegram verification first.' }, 401)
+    if (!marker) return json({ error: 'Complete email verification first.' }, 401)
     await env.AUTH_KV.delete(`admin_mfa_complete:${user.id}`)
     return json({ ok: true, email: user.email!.toLowerCase() })
   }
 
   if (url.pathname === '/auth/admin/mobile-grant') {
     const marker = await env.AUTH_KV.get(`admin_mfa_complete:${user.id}`)
-    if (!marker) return json({ error: 'Complete Telegram verification first.' }, 401)
+    if (!marker) return json({ error: 'Complete email verification first.' }, 401)
     const deviceId = deviceIdFrom(request)
     if (!deviceId) return json({ error: 'A valid Next device identity is required.' }, 400)
     await env.AUTH_KV.delete(`admin_mfa_complete:${user.id}`)

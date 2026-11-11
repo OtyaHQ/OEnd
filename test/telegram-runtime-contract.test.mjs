@@ -9,7 +9,7 @@ test('Telegram runtime self-heals the canonical webhook and exposes dependency r
 
   assert.match(entry, /getTelegramWebhookInfo/)
   assert.match(entry, /setTelegramWebhook/)
-  assert.match(entry, /TELEGRAM_WEBHOOK_URL = 'https:\/\/petersmartlink\.com\/api\/telegram\/webhook'/)
+  assert.ok(entry.includes('function webhookUrl(env)'))
   assert.match(entry, /telegram:webhook:fingerprint:v1/)
   assert.match(entry, /\/api\/telegram\/status/)
   assert.match(entry, /webhook_configured/)
@@ -27,7 +27,7 @@ test('Telegram runtime self-heals the canonical webhook and exposes dependency r
 test('Next owner Telegram actions use the core gateway rather than a second bot token', () => {
   const actions = read('ai-worker/src/owner-actions.mjs')
 
-  assert.match(actions, /https:\/\/petersmartlink\.com/)
+  assert.ok(actions.includes('coreApiOrigin(env)'))
   assert.match(actions, /\/api\/admin\/telegram\/test/)
   assert.match(actions, /X-OTYA-Internal-Secret/)
   assert.match(actions, /X-OTYA-Admin-Action/)
@@ -59,7 +59,7 @@ test('Core is the sole Telegram transport credential owner in production', () =>
 test('Next console reports Telegram health from canonical Core, not local secrets', () => {
   const consoleTools = read('ai-worker/src/console-tools.mjs')
 
-  assert.match(consoleTools, /OTYA_CORE_URL = 'https:\/\/petersmartlink\.com'/)
+  assert.ok(consoleTools.includes('function otyaCoreUrl(env)'))
   assert.match(consoleTools, /\/api\/telegram\/status/)
   assert.match(consoleTools, /telegram\.connected \? 'connected'/)
   assert.match(consoleTools, /ai_service_ready/)

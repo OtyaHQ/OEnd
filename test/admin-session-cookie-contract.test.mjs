@@ -18,9 +18,11 @@ test('admin privilege remains an MFA-gated server session', () => {
 
 test('owner verification stays behind normal identity while the browser surface is retired', () => {
   assert.match(signIn, /'owner-otp'/)
-  assert.match(signIn, /'owner-telegram'/)
+  assert.doesNotMatch(signIn, /owner-telegram/)
+  assert.doesNotMatch(signIn, /Continue with Telegram|Sign in with Telegram/)
   assert.match(signIn, /action: 'verify-otp'/)
   assert.match(signIn, /action: 'complete'/)
+  assert.match(signIn, /Telegram no longer signs in to Otya/)
   assert.match(adminLayout, /Owner control is in Next/)
   assert.doesNotMatch(adminLayout, /Unlock Admin/)
 })

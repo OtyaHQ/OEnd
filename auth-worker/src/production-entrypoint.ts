@@ -25,9 +25,22 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
   GOOGLE_CLIENT_ID?: string
   GOOGLE_WEB_CLIENT_ID?: string
   RESEND_API_KEY?: string
+  OTYA_NO_REPLY_EMAIL?: string
+  OTYA_SUPPORT_EMAIL?: string
+  OTYA_EMAIL_LOGO_URL?: string
   OTYAPOINT_INVITE_SERVICE_TOKEN?: string | { get(): Promise<string> }
   OTYA_NEXT_MAIL_SERVICE_TOKEN?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
+}
+
+function noReplyEmail(env: ProductionEnv): string {
+  const value = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'noreply@otya.site'
+}
+
+function supportEmail(env: ProductionEnv): string {
+  const value = env.OTYA_SUPPORT_EMAIL?.trim() || 'support@otya.site'
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? value : 'support@otya.site'
 }
 
 let identitySchemaReady: Promise<void> | null = null
@@ -88,7 +101,10 @@ async function matchesInternalServiceSecret(provided: string, expected: string):
 
 async function handleOtyaPointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
   const url = new URL(request.url)
-  if (url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
+  // OtyaPoint is the current product identity. Keep the prior internal path as
+  // a temporary compatibility alias for already-deployed callers.
+  if (url.pathname !== '/internal/notifications/otyapoint/staff-invitation'
+    && url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
   if (request.method !== 'POST') return authError('Method not allowed', 405)
   // The service binding is the network boundary; the shared secret is a second
   // authorization boundary so another bound Worker cannot impersonate OtyaPoint.
@@ -136,9 +152,11 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   const digestHex = Array.from(tokenDigest).map(byte => byte.toString(16).padStart(2, '0')).join('')
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <noreply@petersmartlink.com>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: [email],
-      replyTo: 'support@petersmartlink.com',
+      replyTo: supportEmail(env),
+      supportEmail: supportEmail(env),
+      logoUrl: env.OTYA_EMAIL_LOGO_URL?.trim() || 'https://otya.site/otya-app-icon.webp',
       subject: 'You have been invited to OtyaPoint',
       idempotencyKey: `otyapoint/staff-invitation/${invitationId}/${digestHex}`,
       text: [
@@ -206,9 +224,9 @@ async function handleOtyaNextOpsEmail(request: Request, env: ProductionEnv): Pro
 
   try {
     const emailId = await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <noreply@petersmartlink.com>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: recipients,
-      replyTo: 'support@petersmartlink.com',
+      replyTo: supportEmail(env),
       subject,
       text: content,
       idempotencyKey,

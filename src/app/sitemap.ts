@@ -1,6 +1,7 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import type { MetadataRoute } from 'next'
 
-const BASE = 'https://petersmartlink.com'
+const BASE = PUBLIC_URLS.primary
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

@@ -73,7 +73,9 @@ interface Env {
   AUTH_JWT_SECRET:          string
   GOOGLE_CLIENT_ID?:        string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
-  CORS_ORIGIN?:             string
+  OTYA_PUBLIC_URL?:         string
+  OTYA_ALLOWED_ORIGINS?:    string
+  OTYA_NO_REPLY_EMAIL?:     string
   OTYA_STORE_INTERNAL_URL?: string
   INTERNAL_SECRET?:         string
 }
@@ -117,35 +119,50 @@ const GOOGLE_VERIFY_TIMEOUT_MS = 8000
 // ── CORS helpers ──────────────────────────────────────────────────────────────
 
 /**
- * Allowed origins for CORS.
- * Mobile apps (OTYA Player, SmartPOS, GR App) send no Origin header when
- * making native HTTP requests — those are allowed by returning the primary
- * origin so the browser-side fetch polyfill (if any) still works.
+ * Domain-independent origin policy.
+ * Native mobile clients normally send no Origin header and do not need CORS.
+ * Browser origins must match an explicit, comma-separated allowlist. Unknown
+ * origins receive no Access-Control-Allow-Origin header.
  */
-const ALLOWED_ORIGINS = new Set([
-  'https://petersmartlink.com',
-  'https://www.petersmartlink.com',
-])
+function configuredPublicOrigin(env: Env): string {
+  try {
+    const candidate = new URL(env.OTYA_PUBLIC_URL || 'https://otya.site')
+    return candidate.protocol === 'https:' && !candidate.username && !candidate.password
+      ? candidate.origin
+      : 'https://otya.site'
+  } catch {
+    return 'https://otya.site'
+  }
+}
 
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
+function allowedBrowserOrigins(env: Env): Set<string> {
+  const configured = (env.OTYA_ALLOWED_ORIGINS || configuredPublicOrigin(env))
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+  const origins = new Set<string>()
+  for (const value of configured) {
+    try {
+      const parsed = new URL(value)
+      if (parsed.protocol === 'https:' && !parsed.username && !parsed.password) origins.add(parsed.origin)
+    } catch {}
+  }
+  return origins
+}
 
-/**
- * Return CORS headers for the given request.
- *
- * - If the request Origin is in the allowlist → reflect it back.
- * - If Origin is absent (native mobile HTTP) → return the primary origin.
- * - If Origin is present but NOT in the allowlist → still return the primary
- *   origin (the browser will block the response; we don't expose a wildcard).
- */
+function noReplyEmail(env: Env): string {
+  const value = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? value : 'noreply@otya.site'
+}
+
 function corsHeaders(env: Env, req?: Request): Record<string, string> {
-  const requestOrigin = req?.headers.get('Origin') ?? null
-  const allowedOrigin =
-    requestOrigin && ALLOWED_ORIGINS.has(requestOrigin)
-      ? requestOrigin
-      : (env.CORS_ORIGIN ?? PRIMARY_ORIGIN)
+  const requestOrigin = req?.headers.get('Origin') ?? ''
+  const allowedOrigin = requestOrigin && allowedBrowserOrigins(env).has(requestOrigin)
+    ? requestOrigin
+    : ''
 
   return {
-    'Access-Control-Allow-Origin':  allowedOrigin,
+    ...(allowedOrigin ? { 'Access-Control-Allow-Origin': allowedOrigin } : {}),
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Otya-Drive-Token',
     'Vary': 'Origin',
@@ -294,13 +311,13 @@ async function checkAndAlertNewDeviceLogin(
     if (storedIp && storedIp !== currentIp && env.EMAIL) {
       const now = new Date().toUTCString()
       env.EMAIL.send({
-        from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player Security' },
+        from:    { email: noReplyEmail(env), name: 'Otya Account Security' },
         to:      [{ email }],
-        subject: 'New login to your OTYA Player account',
+        subject: 'New login to your Otya Account account',
         text: [
           'Hi there,',
           '',
-          'We detected a new login to your OTYA Player account from a different location.',
+          'We detected a new login to your Otya Account account from a different location.',
           '',
           `IP address : ${currentIp}`,
           `Time       : ${now}`,
@@ -308,9 +325,9 @@ async function checkAndAlertNewDeviceLogin(
           'If this was you, no action is needed.',
           '',
           'If you did NOT log in, please change your password immediately at:',
-          'https://petersmartlink.com',
+          configuredPublicOrigin(env),
           '',
-          '— The OTYA Player Security Team',
+          '— The Otya Account Security Team',
         ].join('\n'),
       }).catch(e => console.error('[auth] New device alert email failed:', (e as Error)?.message))
     }
@@ -400,11 +417,11 @@ async function sendVerificationOtp(env: Env, userId: string, email: string): Pro
 
   if (env.EMAIL) {
     await env.EMAIL.send({
-      from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player' },
+      from:    { email: noReplyEmail(env), name: 'Otya Account' },
       to:      [{ email }],
-      subject: 'Your OTYA Player verification code',
+      subject: 'Your Otya Account verification code',
       text: [
-        'Please verify your email address to complete your OTYA Player account setup.',
+        'Please verify your email address to complete your Otya Account account setup.',
         '',
         'Your verification code is:',
         '',
@@ -413,7 +430,7 @@ async function sendVerificationOtp(env: Env, userId: string, email: string): Pro
         'This code expires in 10 minutes.',
         '',
         'If you did not create an account, please ignore this email.',
-        '— The OTYA Team',
+        '— The Otya Team',
       ].join('\n'),
     })
   }
@@ -467,16 +484,16 @@ async function handleRegister(req: Request, env: Env): Promise<Response> {
   if (env.EMAIL) {
     try {
       await env.EMAIL.send({
-        from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player' },
+        from:    { email: noReplyEmail(env), name: 'Otya Account' },
         to:      [{ email: normalizedEmail }],
-        subject: 'Welcome to OTYA Player!',
+        subject: 'Welcome to Otya Account!',
         text: [
           `Hi ${name ?? 'there'}!`,
           '',
-          'Welcome to OTYA Player. Your account has been created successfully.',
+          'Welcome to Otya Account. Your account has been created successfully.',
           '',
           'Enjoy your music!',
-          '— The OTYA Team',
+          '— The Otya Team',
         ].join('\n'),
       })
     } catch (e) {
@@ -700,11 +717,11 @@ async function handleForgotPassword(req: Request, env: Env): Promise<Response> {
   if (env.EMAIL) {
     try {
       await env.EMAIL.send({
-        from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player' },
+        from:    { email: noReplyEmail(env), name: 'Otya Account' },
         to:      [{ email: normalizedEmail }],
-        subject: 'Your OTYA Player password reset code',
+        subject: 'Your Otya Account password reset code',
         text: [
-          'You requested a password reset for your OTYA Player account.',
+          'You requested a password reset for your Otya Account account.',
           '',
           'Your reset code is:',
           '',
@@ -715,7 +732,7 @@ async function handleForgotPassword(req: Request, env: Env): Promise<Response> {
           'This code expires in 10 minutes.',
           '',
           'If you did not request this, please ignore this email.',
-          '— The OTYA Team',
+          '— The Otya Team',
         ].join('\n'),
       })
     } catch (e) {

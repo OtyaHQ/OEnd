@@ -168,7 +168,7 @@ export default function SignInMethodsPage() {
     <div className="mb-7">
       <div className="text-[11px] font-black uppercase tracking-[.16em] otya-muted">Otya Space</div>
       <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Sign-in methods</h1>
-      <p className="mt-2 text-sm sm:text-base otya-muted">Telegram, Google and email can all belong to one OTYA ID. Connecting another method does not create another account.</p>
+      <p className="mt-2 text-sm sm:text-base otya-muted">Email and Google are Otya sign-in methods. Telegram is an optional linked delivery and notification channel; it does not sign you in.</p>
       <div className="mt-3 text-xs font-mono otya-muted">OTYA ID: {user.otya_id || 'Being assigned'}</div>
     </div>
 

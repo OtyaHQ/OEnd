@@ -3,6 +3,11 @@ import { appendMessage, getOrCreateConversation, hashIdentity, listConversations
 import { providerRequest } from './provider-request.mjs'
 
 const TELEGRAM_API='https://api.telegram.org'
+const safeOrigin=(value,fallback)=>{try{const u=new URL(typeof value==='string'?value:fallback);return u.protocol==='https:'&&!u.username&&!u.password?u.origin:fallback}catch{return fallback}}
+const publicOrigin=env=>safeOrigin(env.OTYA_PUBLIC_URL||env.WEBSITE_URL,'https://otya.site')
+const apiOrigin=env=>safeOrigin(env.OTYA_API_URL,'https://api.otya.site')
+const supportEmail=env=>env.OTYA_SUPPORT_EMAIL||'support@otya.site'
+const noReplyEmail=env=>env.OTYA_NO_REPLY_EMAIL||'noreply@otya.site'
 const FALLBACK_GUEST_MODEL='llama-fast'
 const FALLBACK_SIGNED_DEFAULT='otya-smart'
 const MODELS={
@@ -67,13 +72,15 @@ async function runAi(env,messages,selection){
 }
 
 async function publicOtyaContext(env){
-  const base=(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')
+  const base=publicOrigin(env)
+  const api=apiOrigin(env)
+  const space=safeOrigin(env.OTYA_SPACE_URL,'https://space.otya.site')
   const facts=[
     'Otya Media is an offline-first Android media app in the Otya ecosystem.',
     'Otya has three permanent top-level destinations: Video, Music and Me. Advanced utilities should appear contextually or under organized Tools/Settings rather than as duplicate top-level screens.',
     'Next is the friendly general assistant inside Otya. It can answer ordinary questions and has extra Otya product context when needed.',
     `Official website: ${base}.`,
-    `Official Next page: ${base}/ask.`,
+    `Official Next page: ${space}/ask.`,
     `Official download page: ${base}/download/otya-player.`,
     `Official support page: ${base}/apps/otya-player/support.`,
     `Official Telegram: ${env.TELEGRAM_CHANNEL_URL||'https://t.me/otyaplayer'}.`,
@@ -86,7 +93,7 @@ async function publicOtyaContext(env){
   ]
   try{
     const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),3500)
-    const r=await fetch(`${base}/latest`,{headers:{Accept:'application/json'},signal:controller.signal})
+    const r=await fetch(`${api}/latest`,{headers:{Accept:'application/json'},signal:controller.signal})
     clearTimeout(timeout)
     if(r.ok){
       const v=await r.json().catch(()=>null)
@@ -172,9 +179,9 @@ async function sendAdminHandoff(env,{message,email,name,source,userId}){
     method:'POST',
     headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},
     body:JSON.stringify({
-      from:'Otya Support <noreply@petersmartlink.com>',
+      from:`Otya Support <${noReplyEmail(env)}>`,
       to:[admin],
-      reply_to:clean(email,180)||'support@petersmartlink.com',
+      reply_to:clean(email,180)||supportEmail(env),
       subject:`Otya support handoff · ${ticket}`,
       text:lines.join('\n'),
     }),
@@ -202,12 +209,12 @@ export async function handleSharedTelegram(request,env){
   const selection=resolveModel(env,null,false)
   let answer
   if(text==='/start')answer='Welcome to Next by Otya. Ask me a general question or ask about Otya playback, local music, files, Transfer, account, updates and troubleshooting.'
-  else if(text==='/download')answer=`Official Otya download: ${(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')}/download/otya-player`
+  else if(text==='/download')answer=`Official Otya download: ${publicOrigin(env)}/download/otya-player`
   else if(text==='/privacy')answer='Never send passwords, OTPs, payment details or secret keys here.'
   else{
     try{
       const result=await temporaryReply(env,{message:text,selection})
-      answer=result.handoff_available?`${result.answer}\n\nFor human Otya help, use the official support page: ${(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')}/apps/otya-player/support`:result.answer
+      answer=result.handoff_available?`${result.answer}\n\nFor human Otya help, use the official support page: ${publicOrigin(env)}/apps/otya-player/support`:result.answer
     }catch(e){console.error('[telegram-shared]',e?.message);answer='Next is unavailable right now. Please try again shortly.'}
   }
   await telegram(env,'sendMessage',{chat_id:chatId,text:clean(answer,3500),disable_web_page_preview:true})
@@ -247,7 +254,7 @@ export async function handlePublicChat(request,env){
       return json({ok:true,handoff_sent:true,ticket,message:'Otya support has been notified.'})
     }catch(e){
       console.error('[support-handoff]',e?.message)
-      return json({error:'Could not notify support right now. Please use support@petersmartlink.com.',code:'HANDOFF_FAILED'},503)
+      return json({error:`Could not notify support right now. Please use ${supportEmail(env)}.`,code:'HANDOFF_FAILED'},503)
     }
   }
 

@@ -7,6 +7,7 @@ import { NextRequest } from 'next/server'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { secureJson, errorJson } from '@/lib/response'
 import { getDB } from '@/lib/d1'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export async function GET(
   _req: NextRequest,
@@ -32,13 +33,14 @@ export async function GET(
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin':  'https://petersmartlink.com',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('Origin') ?? ''
+  const allowed = new Set([PUBLIC_URLS.primary, PUBLIC_URLS.api, PUBLIC_URLS.docs].map(value => new URL(value).origin))
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Vary': 'Origin',
   })
+  if (origin && allowed.has(origin)) headers.set('Access-Control-Allow-Origin', origin)
+  return new Response(null, { status: 204, headers })
 }
