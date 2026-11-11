@@ -9,8 +9,6 @@ workers_dev = false
 routes = [
   { pattern = "otya.site", custom_domain = true },
   { pattern = "www.otya.site", custom_domain = true },
-  { pattern = "docs.otya.site", custom_domain = true },
-  { pattern = "status.otya.site", custom_domain = true },
   { pattern = "api.otya.site", custom_domain = true },
   { pattern = "docs.otya.site", custom_domain = true },
   { pattern = "status.otya.site", custom_domain = true },
