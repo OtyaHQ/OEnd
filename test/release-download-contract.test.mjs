@@ -59,7 +59,7 @@ test('missing immutable APKs fail closed instead of redirecting an updater to HT
   assert.match(route, /'X-Content-Type-Options': 'nosniff'/)
 
   const exactFailure = route.indexOf('if (tag || version)')
-  const humanFallback = route.indexOf('PUBLIC_URLS.primary');
+  const humanFallback = route.indexOf('PUBLIC_URLS.primary', exactFailure);
   assert.ok(exactFailure >= 0, 'exact missing-release guard must exist')
   assert.ok(humanFallback > exactFailure, 'HTML redirect must only remain after exact-release failure handling')
 })
