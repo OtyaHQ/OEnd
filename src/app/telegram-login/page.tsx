@@ -3,14 +3,14 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
-function validWidgetAuthUrl(raw: string, expectedOrigin: string): string | null {
+function validWidgetAuthUrl(raw: string): string | null {
   try {
     const url = new URL(raw)
-    const expected = new URL(expectedOrigin)
     if (
       url.protocol !== 'https:'
-      || url.origin !== expected.origin
+      || !PUBLIC_URLS.allowedOrigins.includes(url.origin)
       || url.pathname !== '/api/auth/telegram/widget/callback'
       || !url.searchParams.get('state')
     ) return null
@@ -27,7 +27,7 @@ export default function TelegramAccountLinkPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const bot = params.get('bot') || ''
-    const authUrl = validWidgetAuthUrl(params.get('auth') || '', window.location.origin)
+    const authUrl = validWidgetAuthUrl(params.get('auth') || '')
     if (!/^[A-Za-z0-9_]{5,32}$/.test(bot) || !authUrl || !widgetRef.current) {
       setError('Telegram linking could not be prepared safely. Return to your Otya Account and try again.')
       return
