@@ -1,6 +1,4 @@
-const PUBLIC_URL = process.env.NEXT_PUBLIC_OTYA_PUBLIC_URL
-  || process.env.WEBSITE_URL
-  || 'https://otya.site'
+import { PUBLIC_URLS } from './public-urls'
 
 export const OTYA = {
   name: 'Otya',
