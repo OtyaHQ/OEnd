@@ -89,12 +89,6 @@ export default function SignInPage() {
       if (response.ok && data.authenticated) await routeAuthenticatedSession()
     }).catch(() => undefined)
 
-    const telegram = params.get('telegram')
-    if (telegram === 'signed-in') void verifySessionAndOpen()
-    else if (telegram === 'not-linked') setNotice('That Telegram account is not linked yet. Sign in with your Otya account first, then connect Telegram from Space.')
-    else if (telegram === 'expired') setError('Telegram sign-in expired. Please try again.')
-    else if (telegram === 'error') setError('Telegram sign-in could not be completed.')
-    else if (telegram === 'cancelled') setNotice('Telegram sign-in was cancelled.')
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -262,25 +256,6 @@ export default function SignInPage() {
     finally { resetSecurityChallenge(); setBusy(false) }
   }
 
-  async function startTelegram() {
-    if (busy) return
-    if (!turnstileToken) return setError('Complete the Cloudflare security check before continuing with Telegram.')
-    const securityToken = turnstileToken
-    setBusy(true); setError(''); setNotice('')
-    try {
-      const response = await fetch('/api/auth/telegram/start?mode=login', {
-        method: 'POST',
-        headers: { 'X-Otya-Turnstile': securityToken },
-        credentials: 'same-origin',
-        cache: 'no-store',
-      })
-      const data = await response.json().catch(() => ({})) as Json
-      if (!response.ok || !data.authorization_url) throw new Error(data.error || 'Telegram Sign-In is temporarily unavailable.')
-      window.location.assign(data.authorization_url)
-    } catch (cause) { setError((cause as Error).message); setBusy(false) }
-    finally { resetSecurityChallenge() }
-  }
-
   async function resendVerification() {
     if (busy) return
     setBusy(true); setError(''); setNotice('')
@@ -374,7 +349,7 @@ export default function SignInPage() {
 
   return <main className="otya-auth-page min-h-screen text-[color:var(--cosmos-text-primary)] grid place-items-center px-4 py-8 sm:py-12">
     <section className="w-full max-w-[460px]">
-      <Link href="https://petersmartlink.com" aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
+      <Link href="https://otya.site" aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
       <div className="otya-auth-card rounded-[30px] border p-5 sm:p-7">
         <div className="mb-5"><OtyaBrandMark size={46}/></div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">{title}</h1>
@@ -408,14 +383,13 @@ export default function SignInPage() {
         </div>}
         {providerMode && <div className="mt-7 border-t border-white/[.08] pt-5">
           <p className="mb-2 text-center text-[11px] font-bold tracking-wide otya-muted">OTHER WAYS TO CONTINUE</p>
-          <p className="mx-auto mb-4 max-w-sm text-center text-xs leading-5 otya-muted">Use the method you chose when creating your account. Google or Telegram accounts may not have an Otya password yet.</p>
+          <p className="mx-auto mb-4 max-w-sm text-center text-xs leading-5 otya-muted">Continue with Google or sign in with your Otya email and password.</p>
           <div className={`space-y-3 ${busy || !turnstileToken ? 'pointer-events-none opacity-55' : ''}`}>
             <div ref={googleButtonRef} className="min-h-11 w-full flex items-center justify-center overflow-hidden rounded-full" aria-label="Continue with Google" title="Continue with Google" />
-            <button type="button" onClick={() => void startTelegram()} disabled={busy || !turnstileToken} aria-label="Continue with Telegram" title="Continue with Telegram" className="w-full min-h-11 inline-flex items-center justify-center gap-2.5 rounded-full border border-white/[.10] bg-transparent px-5 text-sm font-bold disabled:opacity-35"><svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current"><path d="M21.6 3.5 18.7 20c-.2 1.2-.8 1.5-1.7.9l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.8.4l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L7.2 14.2 2.7 12.8c-1-.3-1-1 .2-1.5L20.4 4.5c.8-.3 1.5.2 1.2-1z"/></svg><span>Continue with Telegram</span></button>
           </div>
         </div>}
       </div>
-      <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs otya-muted"><Link href="https://petersmartlink.com/terms">Terms</Link><Link href="https://petersmartlink.com/privacy">Privacy</Link><Link href="https://docs.petersmartlink.com">Help & Docs</Link></div>
+      <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs otya-muted"><Link href="https://otya.site/terms">Terms</Link><Link href="https://otya.site/privacy">Privacy</Link><Link href="https://docs.otya.site">Help & Docs</Link></div>
     </section>
   </main>
 }
