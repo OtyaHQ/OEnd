@@ -11,9 +11,10 @@ test('public Otya surfaces and Android download naming stay canonical', () => {
   const legacyDownload = read('src/app/download/otya/page.tsx')
   const spaceShell = read('src/components/OtyaSpaceChrome.tsx')
 
-  assert.match(apkRoute, /Otya-arm64\.apk/)
-  assert.match(apkRoute, /Otya-arm32\.apk/)
-  assert.doesNotMatch(apkRoute, /OtyaPlayer/)
+  assert.match(apkRoute, /OmyPlay-/)
+  assert.match(apkRoute, /Omy Play release/)
+  assert.match(apkRoute, /com\.otya\.omyplay/)
+  assert.doesNotMatch(apkRoute, /Otya-arm64\.apk|Otya-arm32\.apk/)
 
   assert.doesNotMatch(canonicalDownload, /redirect\(/)
   assert.match(canonicalDownload, /title: 'Download Omy Play for Android'/)
