@@ -6,7 +6,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const staging = read('wrangler.otya-id-staging.toml')
 const production = read('wrangler.toml')
 const migration = read('migrations-staging/0001_otyid_staging_baseline.sql')
-const workflow = read('../../.github/workflows/deploy-otyid-staging.yml')
+const workflow = read('../.github/workflows/deploy-otyid-staging.yml')
 
 test('Otya ID staging is private and uses isolated resources', () => {
   assert.match(staging, /^name = "otya-id-staging"$/m)
