@@ -56,11 +56,23 @@ const FEATURES = [
 ]
 
 export default async function OtyaPlayerPage() {
-  let appVersion = '1.0.0'
+  let appVersion: string | null = null
   try {
     const { env } = await getCloudflareContext()
     const raw = await getKV(env as Record<string, unknown>).get('LATEST_BUILD_INFO')
-    if (raw) appVersion = (JSON.parse(raw) as { version?: string }).version || appVersion
+    if (raw) {
+      const release = JSON.parse(raw) as {
+        productCode?: string
+        applicationId?: string
+        version?: string
+      }
+      if (
+        release.productCode === 'OMY_PLAY'
+        && release.applicationId === 'com.otya.omyplay'
+        && typeof release.version === 'string'
+        && /^\\d+\\.\\d+\\.\\d+$/.test(release.version)
+      ) appVersion = release.version
+    }
   } catch {}
 
   return <div className="min-h-screen flex flex-col otya-ambient" style={{ color: 'var(--cosmos-text-primary)' }}>
@@ -68,7 +80,7 @@ export default async function OtyaPlayerPage() {
     <main className="flex-1 pb-24 md:pb-0">
       <section className="otya-shell py-11 sm:py-18 grid lg:grid-cols-[.9fr_1.1fr] gap-9 lg:gap-14 items-center">
         <div>
-          <div className="otya-kicker mb-4">Otya · Omy Play · Android · v{appVersion}</div>
+          <div className="otya-kicker mb-4">Otya · Omy Play · Android{appVersion ? ` · v${appVersion}` : ''}</div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Omy Play.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
           <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Otya is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
@@ -97,7 +109,7 @@ export default async function OtyaPlayerPage() {
         </div>
         <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t pt-6" style={{ borderColor: 'var(--cosmos-divider)' }}>
           <div><div className="font-extrabold">The internet is an enhancement, not a requirement.</div><div className="mt-1 text-sm otya-muted">Local playback, library access and nearby sending remain at the center of Omy Play.</div></div>
-          <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3 text-sm font-extrabold text-center shrink-0">Download Omy Play v{appVersion}</Link>
+          <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3 text-sm font-extrabold text-center shrink-0">{appVersion ? `Download Omy Play v${appVersion}` : 'Download Omy Play'}</Link>
         </div>
       </section>
     </main>
