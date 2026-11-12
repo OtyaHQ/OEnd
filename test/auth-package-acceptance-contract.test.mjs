@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const read = path => readFileSync(new URL(\`../\${path}\`, import.meta.url), 'utf8')
+const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8')
 
 test('browser auth defaults to Otya Space and only accepts safe same-site return paths', () => {
   const signIn = read('src/app/sign-in/page.tsx')
