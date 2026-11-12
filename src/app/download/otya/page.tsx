@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
 export default function LegacyDownloadPage() {
-  redirect('/download/otya-player')
+  redirect('/download/omy-play')
 }
