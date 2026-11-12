@@ -218,7 +218,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
             page: `${release.workerUrl}/download/omy-play`,
           },
         }
-        const body = JSON.stringify(value, null, 2) + '\n'
+        const body = JSON.stringify(value, null, 2) + String.fromCharCode(10)
         await this.env.R2.put('version.json', body, {
           httpMetadata: {
             contentType: 'application/json; charset=utf-8',
