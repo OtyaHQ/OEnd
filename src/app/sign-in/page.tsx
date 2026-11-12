@@ -13,7 +13,7 @@ const DEFAULT_AFTER_AUTH = 'https://space.otya.site/'
 
 type Mode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset' | 'twofactor' | 'owner' | 'owner-otp' | 'owner-telegram'
 type Json = { error?: string; code?: string; message?: string; authenticated?: boolean; authorization_url?: string }
-type AdminState = { configured?: boolean; authenticated?: boolean; accountAdmin?: boolean; error?: string }
+type AdminState = { configured?: boolean; authenticated?: boolean; accountAdmin?: boolean; error?: string; telegram_challenge?: string; expires_in?: number }
 type GoogleCredentialResponse = { credential?: string }
 type GoogleApi = { accounts: { id: { initialize(input: { client_id: string; callback: (response: GoogleCredentialResponse) => void; auto_select?: boolean }): void; renderButton(element: HTMLElement, options: Record<string, unknown>): void } } }
 declare global { interface Window { google?: GoogleApi } }
@@ -65,6 +65,7 @@ export default function SignInPage() {
   const [privacy, setPrivacy] = useState(false)
   const [marketing, setMarketing] = useState(false)
   const [ownerEligible, setOwnerEligible] = useState(false)
+  const [ownerTelegramLink, setOwnerTelegramLink] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -202,36 +203,18 @@ export default function SignInPage() {
   }
 
   async function completeOwnerVerification() {
-    setMode('owner-telegram')
     setOwnerEligible(true)
-    setBusy(true); setError(''); setNotice('Completing owner verification…')
+    setBusy(true); setError(''); setNotice('Checking the Telegram confirmation…')
     try {
       const response = await adminFetch({ method: 'POST', body: JSON.stringify({ action: 'complete' }) })
       const data = await response.json().catch(() => ({})) as AdminState
-      if (!response.ok) throw new Error(data.error || 'Owner verification could not be completed.')
+      if (!response.ok) throw new Error(data.error || 'Telegram confirmation has not been received yet.')
       setNotice('Owner verified. Opening your Otya Space…')
       openDestination()
     } catch (cause) {
       setError((cause as Error).message)
-      setNotice('Telegram returned to Otya, but the owner session was not completed.')
+      setNotice('Open the Telegram confirmation link, send the start command to the Otya bot, then try again.')
     } finally { setBusy(false) }
-  }
-
-  async function startOwnerTelegram() {
-    setBusy(true); setError('')
-    try {
-      const query = new URLSearchParams({ mode: 'admin', return_to: 'sign-in' })
-      const destination = afterAuthDestination()
-      if (isAdminDestination(destination)) query.set('next', destination)
-      const response = await fetch(`/api/auth/telegram/start?${query.toString()}`, { method: 'POST', credentials: 'same-origin', cache: 'no-store' })
-      const data = await response.json().catch(() => ({})) as Json
-      if (!response.ok || !data.authorization_url) throw new Error(data.error || 'Telegram owner verification could not start.')
-      setMode('owner-telegram')
-      window.location.assign(data.authorization_url)
-    } catch (cause) {
-      setError((cause as Error).message)
-      setBusy(false)
-    }
   }
 
   async function completeGoogle(response: GoogleCredentialResponse) {
@@ -288,10 +271,14 @@ export default function SignInPage() {
         const response = await adminFetch({ method: 'POST', body: JSON.stringify({ action: 'verify-otp', otp: otp.trim().toUpperCase() }) })
         const data = await response.json().catch(() => ({})) as AdminState
         if (!response.ok) throw new Error(data.error || 'The owner verification code is invalid or expired.')
+        const challenge = String(data.telegram_challenge ?? '').trim()
+        if (!/^[A-Za-z0-9_-]{16,80}$/.test(challenge)) {
+          throw new Error('The one-time Telegram confirmation could not be created. Request a new owner code.')
+        }
+        setOwnerTelegramLink(`https://t.me/OtyaPlayerBot?start=owner_${encodeURIComponent(challenge)}`)
         setOtp('')
-        setNotice('Email verification passed. Continue with the Telegram identity linked to this same Otya account.')
-        setBusy(false)
-        await startOwnerTelegram()
+        setMode('owner-telegram')
+        setNotice('Email verified. Open the Otya Telegram bot with your own Telegram account to link it and confirm owner access.')
         return
       }
       if (mode === 'verify') {
@@ -345,7 +332,7 @@ export default function SignInPage() {
   }
 
   const title = mode === 'register' ? 'Create your Otya account' : mode === 'verify' ? 'Verify your email' : mode === 'twofactor' ? 'Confirm it’s you' : mode === 'forgot' ? 'Reset your password' : mode === 'reset' ? 'Choose a new password' : mode === 'owner-otp' ? 'Confirm owner access' : mode === 'owner-telegram' ? 'Confirm owner identity' : mode === 'owner' ? 'Owner access' : 'Sign in to Otya'
-  const subtitle = mode === 'verify' ? `Enter the 5-character code sent to ${email || 'your email'}.` : mode === 'twofactor' ? 'Use your authenticator or a recovery code.' : mode === 'forgot' ? 'Enter your email to request a reset code.' : mode === 'reset' ? 'Enter the code from your email and choose a new password.' : mode === 'owner-otp' ? 'This is the same Otya account. Enter the fresh code sent to its verified owner email.' : mode === 'owner-telegram' ? 'Finish the owner check with the Telegram identity linked to this same Otya account.' : mode === 'owner' ? 'Admin is a role inside this Otya account, not a second account.' : registration ? 'Create one account for Otya.' : 'One account opens your Otya Space.'
+  const subtitle = mode === 'verify' ? `Enter the 5-character code sent to ${email || 'your email'}.` : mode === 'twofactor' ? 'Use your authenticator or a recovery code.' : mode === 'forgot' ? 'Enter your email to request a reset code.' : mode === 'reset' ? 'Enter the code from your email and choose a new password.' : mode === 'owner-otp' ? 'This is the same Otya account. Enter the fresh code sent to its verified owner email.' : mode === 'owner-telegram' ? 'Confirm your own Telegram account to finish linking it and protect owner access.' : mode === 'owner' ? 'Admin is a role inside this Otya account, not a second account.' : registration ? 'Create one account for Otya.' : 'One account opens your Otya Space.'
 
   return <main className="otya-auth-page min-h-screen text-[color:var(--cosmos-text-primary)] grid place-items-center px-4 py-8 sm:py-12">
     <section className="w-full max-w-[460px]">
@@ -361,7 +348,9 @@ export default function SignInPage() {
           {ownerEligible && <button type="button" disabled={busy} onClick={() => void beginOwnerVerification()} className="cosmos-button w-full rounded-full min-h-12 px-5 font-black disabled:opacity-55">{busy ? 'Checking…' : 'Retry owner verification'}</button>}
           <button type="button" onClick={() => window.location.replace(DEFAULT_AFTER_AUTH)} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10]">Open Space</button>
         </div> : mode === 'owner-telegram' ? <div className="space-y-3">
-          <button type="button" disabled={busy} onClick={() => void startOwnerTelegram()} className="cosmos-button w-full rounded-full min-h-12 px-5 font-black disabled:opacity-55">{busy ? 'Completing verification…' : 'Continue with Telegram'}</button>
+          <p className="text-sm leading-6 otya-muted">This is a one-time link confirmation, not Telegram sign-in. Use the Telegram account you want connected to this Otya account.</p>
+          <a href={ownerTelegramLink} target="_blank" rel="noopener noreferrer" className="cosmos-button w-full rounded-full min-h-12 px-5 font-black inline-flex items-center justify-center">Open Otya Telegram bot</a>
+          <button type="button" disabled={busy} onClick={() => void completeOwnerVerification()} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10] disabled:opacity-55">{busy ? 'Checking…' : 'I have confirmed in Telegram'}</button>
           <button type="button" onClick={() => window.location.replace(DEFAULT_AFTER_AUTH)} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10]">Open Space</button>
         </div> : <form onSubmit={submit} className="space-y-3">
           {registration && <Field value={name} onChange={setName} placeholder="Name" autoComplete="name" />}
