@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE = 'https://petersmartlink.com'
+const BASE = 'https://otya.site'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -8,10 +8,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/company`,              changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/apps`,                 changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/otyapoint`,             changeFrequency: 'monthly', priority: 0.85 },
-    { url: `${BASE}/otya-player`,          changeFrequency: 'weekly',  priority: 0.95 },
+    { url: `${BASE}/omy-play`,          changeFrequency: 'weekly',  priority: 0.95 },
     { url: `${BASE}/music`,                changeFrequency: 'daily',   priority: 0.9 },
     { url: `${BASE}/ask`,                  changeFrequency: 'weekly',  priority: 0.85 },
-    { url: `${BASE}/download/otya-player`, changeFrequency: 'weekly',  priority: 0.85 },
+    { url: `${BASE}/download/omy-play`, changeFrequency: 'weekly',  priority: 0.85 },
     { url: `${BASE}/official`,             changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/press`,                changeFrequency: 'monthly', priority: 0.75 },
     { url: `${BASE}/help`,                 changeFrequency: 'monthly', priority: 0.65 },
