@@ -34,6 +34,11 @@ ADMIN_REPORT_EMAIL = "petersmartlink@gmail.com"
 FIREBASE_PROJECT_ID = "otya-player"
 FIREBASE_PROJECT_NUMBER = "82776565585"
 FIREBASE_ANDROID_APP_ID = "1:82776565585:android:085cf9b4eecb76e9535570"
+# Omy Play has a separate Firebase project and app identity.
+# The service account is a separate secret and is deliberately not reused.
+OMY_PLAY_FIREBASE_PROJECT_ID = "omyplay-otya-prod"
+OMY_PLAY_FIREBASE_PROJECT_NUMBER = "181484175543"
+OMY_PLAY_FIREBASE_ANDROID_APP_ID = "1:181484175543:android:b7eae0234df6eb7e370d32"
 ANDROID_PACKAGE_NAME = "com.otyaplayer.app"
 FIREBASE_APP_CHECK_MODE = "monitor"
 ADMIN_EMAILS = "petersmartlink@gmail.com"
