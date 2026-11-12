@@ -133,7 +133,7 @@ async function sendErrorAlert(env, subject, body) {
   try {
     if (!env.EMAIL?.send) throw new Error('Resend email adapter unavailable')
     await env.EMAIL.send({
-      from: { email: 'noreply@petersmartlink.com', name: 'Otya' },
+      from: { email: 'noreply@otya.site', name: 'Otya' },
       to: [{ email: to }],
       subject,
       text: body,
