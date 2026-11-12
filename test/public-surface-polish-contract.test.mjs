@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('visitor-facing pages use the canonical Otya Player download path', () => {
+test('visitor-facing pages use the canonical Omy Play download path', () => {
   const music = read('src/app/music/page.tsx')
   assert.match(music, /href="\/download\/otya-player"/)
   assert.doesNotMatch(music, /href="\/download\/otya"/)
