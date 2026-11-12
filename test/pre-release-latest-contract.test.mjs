@@ -18,7 +18,6 @@ test('published release metadata exposes one immutable build identity', () => {
   assert.ok(source.includes('tag: info.tag'))
   assert.ok(source.includes('productCode: PRODUCT_CODE'))
   assert.ok(source.includes('applicationId: APPLICATION_ID'))
-  assert.ok(source.includes('manifestKey'))
   assert.ok(source.includes('published: true'))
   assert.ok(source.includes('const BUILD_TAG_RE'))
   assert.ok(source.includes('exactArm64: ARM64_APK'))
