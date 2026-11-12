@@ -73,7 +73,7 @@ interface ResendEnv extends Record<string, unknown> {
 const GOOGLE_RATE_LIMIT = 20
 const GOOGLE_RATE_TTL = 15 * 60
 const GOOGLE_VERIFY_TIMEOUT_MS = 8000
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
+const PRIMARY_ORIGIN = 'https://otya.site'
 const OTYA_NOREPLY_EMAIL = 'noreply@petersmartlink.com'
 const OTYA_SUPPORT_EMAIL = 'support@petersmartlink.com'
 const OTYA_NOREPLY_FROM = `OTYA <${OTYA_NOREPLY_EMAIL}>`
