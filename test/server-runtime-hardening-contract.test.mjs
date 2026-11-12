@@ -7,7 +7,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 test('live APK routes enforce active abuse controls and cache latest builds briefly', () => {
   const route = read('src/app/apk/[file]/route.ts')
   assert.match(route, /RATE_LIMITER/)
-  assert.match(route, /blocked:\$\{ip\}/)
+  assert.match(route, /blocked:' \+ ip/)
   assert.match(route, /Retry-After/)
   assert.match(route, /public, max-age=300, must-revalidate/)
   assert.match(route, /public, max-age=31536000, immutable/)
