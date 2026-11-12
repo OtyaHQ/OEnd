@@ -33,7 +33,7 @@ test('Telegram is not an account sign-in provider and remains only an owner step
 
 test('provider-created accounts receive clear email and Google sign-in guidance', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /If you created this account with Google/)
+  assert.match(signIn, /Continue with Google or sign in with your Otya email and password/)
   assert.match(signIn, /Forgot password/)
   assert.match(signIn, /type: 'standard'/)
   assert.match(signIn, /shape: 'pill'/)
