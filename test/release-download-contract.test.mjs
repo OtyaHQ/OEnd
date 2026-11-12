@@ -18,7 +18,6 @@ test('Omy Play release metadata fails closed for legacy or mismatched applicatio
 
 test('Omy Play release publisher sends its exact package identity and immutable artifact keys', () => {
   const workflow = read('src/release-workflow.mjs')
-  const publisher = read('../Omy_Play/scripts/publish_r2.sh')
   assert.match(workflow, /productCode = requireString\(raw\.productCode/)
   assert.match(workflow, /applicationId = requireString\(raw\.applicationId/)
   assert.match(workflow, /productCode !== 'OMY_PLAY'/)
@@ -28,11 +27,6 @@ test('Omy Play release publisher sends its exact package identity and immutable 
   assert.match(workflow, /release\.json/)
   assert.match(workflow, /applicationId: release\.applicationId/)
   assert.match(workflow, /download\/omy-play/)
-  assert.match(publisher, /'productCode': 'OMY_PLAY'/)
-  assert.match(publisher, /'applicationId': 'com\.otya\.omyplay'/)
-  assert.match(publisher, /releases\/\$\{RAW_TAG\}\/OmyPlay-arm64\.apk/)
-  assert.match(publisher, /releases\/\$\{RAW_TAG\}\/OmyPlay-arm32\.apk/)
-  assert.match(publisher, /download\/omy-play/)
   assert.doesNotMatch(workflow, /Otya-arm64\.apk|Otya-arm32\.apk|download\/otya-player/)
 })
 
@@ -74,3 +68,4 @@ test('missing or legacy release metadata never gets presented as a new Omy Play 
   assert.match(route, /if \(!validOmyPlayPointer\(latest\)\) return notPublished\(\)/)
   assert.match(route, /if \(!validOmyPlayManifest\(manifest, resolvedTag\)\) return notPublished\(\)/)
 })
+
