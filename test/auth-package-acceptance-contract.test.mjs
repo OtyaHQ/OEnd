@@ -19,11 +19,16 @@ test('Telegram is not an account sign-in provider and remains only an owner step
   const adminMfa = read('auth-worker/src/admin-mfa.ts')
   assert.doesNotMatch(signIn, /api\/auth\/telegram\/start\?mode=login/)
   assert.match(signIn, /mode === 'owner-telegram'/)
+  assert.match(signIn, /https:\/\/t\.me\/OtyaPlayerBot\?start=owner_/)
+  assert.match(signIn, /Open Otya Telegram bot/)
+  assert.match(signIn, /I have confirmed in Telegram/)
+  assert.doesNotMatch(signIn, /api\/auth\/telegram\/start/)
   assert.match(signIn, /action: 'complete'/)
   assert.match(secure, /telegramSignInDisabled/)
   assert.match(secure, /status: 410/)
   assert.match(adminMfa, /confirmAdminTelegramChallenge/)
   assert.match(adminMfa, /linked\.user_id !== userId/)
+  assert.match(adminMfa, /INSERT INTO linked_identities/)
 })
 
 test('provider-created accounts receive clear email and Google sign-in guidance', () => {
