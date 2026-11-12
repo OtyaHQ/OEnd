@@ -188,9 +188,6 @@ jobs:
           AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          TELEGRAM_LOGIN_CLIENT_ID: ${{ secrets.TELEGRAM_LOGIN_CLIENT_ID }}
-          TELEGRAM_LOGIN_CLIENT_SECRET: ${{ secrets.TELEGRAM_LOGIN_CLIENT_SECRET }}
-          TELEGRAM_GATEWAY_TOKEN: ${{ secrets.TELEGRAM_GATEWAY_TOKEN }}
           ACCOUNT_ENCRYPTION_KEY: ${{ secrets.ACCOUNT_ENCRYPTION_KEY }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
           OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
@@ -203,9 +200,6 @@ jobs:
           printf '%s' "$AUTH_JWT_SECRET" | npx wrangler secret put AUTH_JWT_SECRET
           printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY
           if [ -n "${FIREBASE_API_KEY:-}" ]; then printf '%s' "$FIREBASE_API_KEY" | npx wrangler secret put FIREBASE_API_KEY; fi
-          if [ -n "${TELEGRAM_LOGIN_CLIENT_ID:-}" ]; then printf '%s' "$TELEGRAM_LOGIN_CLIENT_ID" | npx wrangler secret put TELEGRAM_LOGIN_CLIENT_ID; fi
-          if [ -n "${TELEGRAM_LOGIN_CLIENT_SECRET:-}" ]; then printf '%s' "$TELEGRAM_LOGIN_CLIENT_SECRET" | npx wrangler secret put TELEGRAM_LOGIN_CLIENT_SECRET; fi
-          if [ -n "${TELEGRAM_GATEWAY_TOKEN:-}" ]; then printf '%s' "$TELEGRAM_GATEWAY_TOKEN" | npx wrangler secret put TELEGRAM_GATEWAY_TOKEN; fi
           if [ -n "${ACCOUNT_ENCRYPTION_KEY:-}" ]; then printf '%s' "$ACCOUNT_ENCRYPTION_KEY" | npx wrangler secret put ACCOUNT_ENCRYPTION_KEY; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
           if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
