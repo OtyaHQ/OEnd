@@ -1,7 +1,6 @@
 import authWorker from './entrypoint'
 import { assertSchemaReady } from './db'
 import { handleAdminMfa, type AdminMfaEnv } from './admin-mfa'
-import { handleTelegramLogin, type TelegramLoginEnv } from './telegram-login'
 import { handleGoogleLink } from './google-link'
 import { deliverNewDeviceAlert, deliverRegistrationEmails } from './production-email'
 import { handleSecureOtpRoute, type SecureOtpEnv } from './secure-otp'
@@ -21,7 +20,7 @@ interface GoogleTokenPayload {
   picture?: string
 }
 
-type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & SecureOtpEnv & SecureAccountEnv & {
+type ProductionEnv = Record<string, unknown> & AdminMfaEnv & SecureOtpEnv & SecureAccountEnv & {
   GOOGLE_CLIENT_ID?: string
   GOOGLE_WEB_CLIENT_ID?: string
   RESEND_API_KEY?: string
@@ -359,11 +358,6 @@ export default {
 
     if (url.pathname.startsWith('/auth/admin/')) {
       const response = await handleAdminMfa(request, env)
-      if (response) return audited(request, response, env)
-    }
-
-    if (url.pathname.startsWith('/auth/telegram/')) {
-      const response = await handleTelegramLogin(request, env)
       if (response) return audited(request, response, env)
     }
 
