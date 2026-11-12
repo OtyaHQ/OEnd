@@ -8,10 +8,10 @@ It provides reusable server-side identity, product-scoped APIs, integrations, de
 
 - **Otya OS** — the unified platform and shared experience.
 - **Otya End** — shared backend and integration layer.
-- **OtyaPoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
-- **Otya Media** — local-first music and video. Core playback must remain available without the backend.
-- **OtyaHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
-- **Leo / Otya Next** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
+- **OPoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
+- **Omy Play** — local-first music and video. Core playback must remain available without the backend.
+- **OHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
+- **O / Otya Next** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
 
 Legacy repository slugs, Worker names, API paths, and database identifiers may remain where required for compatibility. Do not rename or delete a deployed resource solely to make its name match the product label.
 
@@ -20,7 +20,7 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 - Otya identity, session and account-security services.
 - Server-side authorization and product-scoped service contracts.
 - Transactional email through the existing Resend integration.
-- Otya Media release delivery and supporting APIs.
+- Omy Play release delivery and supporting APIs.
 - Otya Next owner intelligence, support, incidents and approved actions.
 - Secure recovery, audit trails, monitoring and operational readiness.
 - Private service-to-service integration between ecosystem products.
@@ -44,7 +44,7 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 | `otya-auth` | Shared identity, account security and Resend transport |
 | `otya-core` | Shared product APIs, release/notification transport and backend routing |
 | `otya-next` | Owner intelligence, scheduled operations and AI workflows |
-| OtyaPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
+| OPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
 
 These names describe separate runtime responsibilities; they are not duplicate backends. Do not add another Worker or database for a capability already owned by one of these services without a concrete isolation or scaling reason.
 
@@ -56,9 +56,9 @@ Merging source code is not a production deployment. The production deployment wo
 
 ## Public information
 
-- Otya: https://petersmartlink.com
-- Documentation: https://petersmartlink.com/docs
-- OtyaHub: https://github.com/PeterSmartLink/OtyaHub
+- Otya: https://otya.site
+- Developer documentation: https://github.com/OtyaHQ/OHub
+- OHub: https://github.com/OtyaHQ/OHub
 
 Keep customer-facing product documentation on the official public surfaces. Do not publish secrets, private endpoints, internal infrastructure inventories, customer records, recovery material, signing keys or administrative procedures here.
 
