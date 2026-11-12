@@ -27,9 +27,11 @@ test('the public legacy Telegram auth proxy is a no-cookie 410 tombstone', () =>
   assert.doesNotMatch(proxy, /cookies\.set|access_token|refresh_token|\.AUTH as AuthService/)
 })
 
-test('Telegram admin confirmation remains a separate linked-account step-up', () => {
+test('Telegram admin confirmation links only an unclaimed identity through the private bot challenge', () => {
   assert.match(mfa, /confirmAdminTelegramChallenge/)
   assert.match(mfa, /linked\.user_id !== userId/)
+  assert.match(mfa, /INSERT INTO linked_identities/)
+  assert.match(mfa, /currentForUser/)
   assert.match(mfa, /markAdminTelegramComplete/)
   assert.match(core, /auth\/admin\/telegram-challenge\/confirm/)
   assert.doesNotMatch(mfa, /issueBrowserTokens|issueSession/)
