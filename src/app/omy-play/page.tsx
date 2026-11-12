@@ -9,7 +9,7 @@ import { getKV } from '@/lib/d1'
 export const metadata: Metadata = {
   title: 'Omy Play — Offline Music & Video for Android',
   description:
-    'Omy Play by Omy Play is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
+    'Omy Play by Otya is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
   keywords: [
     'Otya',
     'Omy Play',
@@ -69,7 +69,7 @@ export default async function OtyaPlayerPage() {
         release.productCode === 'OMY_PLAY'
         && release.applicationId === 'com.otya.omyplay'
         && typeof release.version === 'string'
-        && /^\\d+\\.\\d+\\.\\d+$/.test(release.version)
+        && /^\d+\.\d+\.\d+$/.test(release.version)
       ) appVersion = release.version
     }
   } catch {}
