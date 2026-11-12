@@ -26,7 +26,7 @@ test('public brand uses Otya and Omy Play with Send language', () => {
   assert.match(product, /\['Send'/)
   assert.match(product, />Help & support</)
   assert.match(help, /Send is not connecting/)
-  assert.match(help, />Otya ID</>)
+  assert.match(help, />Otya ID</)
 })
 
 test('consumer surfaces do not expose Next or public AI entry points', () => {
