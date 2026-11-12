@@ -6,7 +6,8 @@ const read = path => readFileSync(path, 'utf8')
 
 test('public Otya surfaces and Android download naming stay canonical', () => {
   const apkRoute = read('src/app/apk/[file]/route.ts')
-  const canonicalDownload = read('src/app/download/otya-player/page.tsx')
+  const canonicalDownload = read('src/app/download/omy-play/page.tsx')
+  const legacyCanonicalDownload = read('src/app/download/otya-player/page.tsx')
   const legacyDownload = read('src/app/download/otya/page.tsx')
   const spaceShell = read('src/components/OtyaSpaceChrome.tsx')
 
@@ -20,7 +21,7 @@ test('public Otya surfaces and Android download naming stay canonical', () => {
     canonicalDownload,
     /canonical: 'https:\/\/petersmartlink\.com\/download\/otya-player'/,
   )
-  assert.match(legacyDownload, /redirect\('\/download\/otya-player'\)/)
+  assert.match(legacyDownload, /redirect\('\/download\/omy-play'\)/)
 
   assert.doesNotMatch(spaceShell, /label: 'Next'/)
   assert.match(spaceShell, />Otya<\/div><div className="text-sm otya-muted">Space<\/div>/)
