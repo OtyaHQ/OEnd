@@ -9,7 +9,7 @@ test('production Auth blocks retired Telegram sign-in and wraps the worker in re
   assert.match(entry, /createRefreshSafeKv/)
   assert.match(entry, /AUTH_KV: createRefreshSafeKv\(env\.AUTH_KV\)/)
   assert.match(entry, /telegramSignInDisabled/)
-  assert.match(entry, /return worker\.fetch\(request, safeEnv, ctx\)/)
+  assert.match(entry, /return worker\.fetch\(request, safeEnv\)/)
   assert.doesNotMatch(entry, /handleTelegramMiniApp|handleTelegramPrimaryLogin/)
 })
 test('new refresh-token KV indexes contain only one-way versioned digests', () => {
