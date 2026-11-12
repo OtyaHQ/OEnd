@@ -123,11 +123,15 @@ const GOOGLE_VERIFY_TIMEOUT_MS = 8000
  * origin so the browser-side fetch polyfill (if any) still works.
  */
 const ALLOWED_ORIGINS = new Set([
+  'https://otya.site',
+  'https://www.otya.site',
+  'https://space.otya.site',
+  // Keep legacy web origins during the domain transition.
   'https://petersmartlink.com',
   'https://www.petersmartlink.com',
 ])
 
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
+const PRIMARY_ORIGIN = 'https://otya.site'
 
 /**
  * Return CORS headers for the given request.
