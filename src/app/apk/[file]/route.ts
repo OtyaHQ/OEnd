@@ -58,7 +58,7 @@ async function enforceDownloadAbuseControls(
   const kv = env.KV as DownloadKV | undefined
   if (kv?.get) {
     try {
-      if (await kv.get(\`blocked:\${ip}\`) !== null) {
+      if (await kv.get('blocked:' + ip) !== null) {
         return new NextResponse('Forbidden', {
           status: 403,
           headers: { 'Cache-Control': 'no-store' },
@@ -72,7 +72,7 @@ async function enforceDownloadAbuseControls(
   const limiter = env.RATE_LIMITER as DownloadRateLimiter | undefined
   if (limiter?.limit) {
     try {
-      const result = await limiter.limit({ key: \`download:\${ip}\` })
+      const result = await limiter.limit({ key: 'download:' + ip })
       if (!result.success) {
         return new NextResponse('Too many download requests. Please try again shortly.', {
           status: 429,
@@ -123,8 +123,8 @@ function validOmyPlayManifest(value: unknown, tag: string): value is ReleaseMani
   if (separator <= 0 || identity.slice(0, separator) !== manifest.version) return false
   const tagBuild = Number(identity.slice(separator + 1))
   if (!Number.isSafeInteger(tagBuild) || tagBuild <= 0 || Number(manifest.versionCode) !== tagBuild) return false
-  if (manifest.arm64Key !== \`releases/\${tag}/OmyPlay-arm64.apk\') return false
-  if (manifest.arm32Key !== \`releases/\${tag}/OmyPlay-arm32.apk\') return false
+  if (manifest.arm64Key !== 'releases/' + tag + '/OmyPlay-arm64.apk') return false
+  if (manifest.arm32Key !== 'releases/' + tag + '/OmyPlay-arm32.apk') return false
   return true
 }
 
@@ -151,10 +151,10 @@ export async function GET(
     if (!kv?.get) return notPublished()
 
     // The current publication pointer must identify the Omy Play Android app.
-    // This blocks the old Otya Player LATEST_BUILD_INFO key from authorizing
-    // downloads on the renamed product page.
+    // The older Otya Player LATEST_BUILD_INFO key cannot authorize these downloads.
     const latestRaw = await kv.get('LATEST_BUILD_INFO')
     if (!latestRaw) return notPublished()
+
     let latest: unknown
     try {
       latest = JSON.parse(latestRaw)
@@ -178,8 +178,8 @@ export async function GET(
     if (!r2) return new NextResponse('Storage is not available.', { status: 503 })
 
     // Every download, including "latest", resolves through an immutable
-    // manifest that binds the exact tag and ABI objects to Omy Play's package.
-    const manifestObject = await r2.get(\`releases/\${resolvedTag}/release.json\`)
+    // manifest that binds the exact tag and ABI objects to Omy Play's package ID.
+    const manifestObject = await r2.get('releases/' + resolvedTag + '/release.json')
     if (!manifestObject) return notPublished()
 
     let manifest: unknown
@@ -206,11 +206,11 @@ export async function GET(
       ).run()
     } catch { /* download telemetry is non-fatal */ }
 
-    const filename = \`OmyPlay-\${file}.apk\`
+    const filename = 'OmyPlay-' + file + '.apk'
     const headers = new Headers()
     headers.set('Content-Type', APK_CONTENT_TYPE)
     headers.set('X-Content-Type-Options', 'nosniff')
-    headers.set('Content-Disposition', \`attachment; filename="\${filename}"\`)
+    headers.set('Content-Disposition', 'attachment; filename="' + filename + '"')
     headers.set('Content-Length', String(object.size))
     headers.set('Cache-Control', 'public, max-age=31536000, immutable')
     headers.set('Access-Control-Allow-Origin', '*')
