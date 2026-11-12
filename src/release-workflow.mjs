@@ -181,7 +181,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
           publishedAt: new Date().toISOString(),
         }
         const key = `releases/${release.tag}/release.json`
-        await this.env.R2.put(key, JSON.stringify(value, null, 2) + '\\n', {
+        await this.env.R2.put(key, JSON.stringify(value, null, 2) + String.fromCharCode(10), {
           httpMetadata: {
             contentType: 'application/json; charset=utf-8',
             cacheControl: 'public, max-age=31536000, immutable',
@@ -214,8 +214,8 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
             arm32: `${release.workerUrl}/apk/arm32`,
             exactArm64: immutableApkUrl(release.workerUrl, 'arm64', release.tag),
             exactArm32: immutableApkUrl(release.workerUrl, 'arm32', release.tag),
-            auto: `${release.workerUrl}/download/otya-player`,
-            page: `${release.workerUrl}/download/otya-player`,
+            auto: `${release.workerUrl}/download/omy-play`,
+            page: `${release.workerUrl}/download/omy-play`,
           },
         }
         const body = JSON.stringify(value, null, 2) + '\n'
@@ -253,7 +253,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
       const notification = await step.do('queue update notification once', async () => {
         try {
           const markerKey = `release:push:${release.tag}`
-          const url = `${release.workerUrl}/download/otya-player`
+          const url = `${release.workerUrl}/download/omy-play`
           return await queueReleaseOnce(this.env, release.tag, {
             title: `Omy Play ${release.version} is ready`,
             body: 'New features and improvements are ready. Tap to see what’s new.',
