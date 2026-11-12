@@ -7,7 +7,7 @@ export const OTYA = {
   backend: 'Otya Backend',
   website: 'https://petersmartlink.com',
   supportEmail: 'support@petersmartlink.com',
-  noReplyEmail: 'noreply@petersmartlink.com',
+  noReplyEmail: 'noreply@otya.site',
   telegramChannel: 'https://t.me/otyaplayer',
   telegramSupport: 'https://t.me/OtyaPlayerBot',
   description: 'Otya brings together local video and music, nearby Send, Private media, practical tools and one secure account. Core playback and nearby sharing remain local-first.',
