@@ -234,11 +234,20 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
         try {
           const apk = await this.env.R2.get(release.arm64Key)
           if (!apk?.body) return { configured: false, mirrored: false, reason: 'arm64-apk-missing' }
+          // Never fall back to the legacy Otya Player Firebase account.
+          // Without the dedicated Omy Play service-account secret this mirror
+          // reports configured:false and leaves the authoritative R2 release intact.
+          const distributionConfig = this.env as unknown as {
+            OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON?: string
+            OMY_PLAY_FIREBASE_PROJECT_NUMBER?: string
+            OMY_PLAY_FIREBASE_ANDROID_APP_ID?: string
+            OMY_PLAY_FIREBASE_APP_DISTRIBUTION_TESTERS?: string
+          }
           const omyPlayFirebaseEnv = {
-            FCM_SERVICE_ACCOUNT_JSON: this.env.OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON,
-            FIREBASE_PROJECT_NUMBER: this.env.OMY_PLAY_FIREBASE_PROJECT_NUMBER,
-            FIREBASE_ANDROID_APP_ID: this.env.OMY_PLAY_FIREBASE_ANDROID_APP_ID,
-            FIREBASE_APP_DISTRIBUTION_TESTERS: this.env.OMY_PLAY_FIREBASE_APP_DISTRIBUTION_TESTERS,
+            FCM_SERVICE_ACCOUNT_JSON: distributionConfig.OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON,
+            FIREBASE_PROJECT_NUMBER: distributionConfig.OMY_PLAY_FIREBASE_PROJECT_NUMBER,
+            FIREBASE_ANDROID_APP_ID: distributionConfig.OMY_PLAY_FIREBASE_ANDROID_APP_ID,
+            FIREBASE_APP_DISTRIBUTION_TESTERS: distributionConfig.OMY_PLAY_FIREBASE_APP_DISTRIBUTION_TESTERS,
           }
           return await mirrorApkToFirebaseAppDistribution(
             omyPlayFirebaseEnv,
