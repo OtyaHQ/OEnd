@@ -107,7 +107,7 @@ const schemaOrg = {
       '@id': `${SITE_URL}/#omy-play`,
       name: 'Omy Play',
       alternateName: 'Omy Play',
-      identifier: 'com.otyaplayer.app',
+      identifier: 'com.otya.omyplay',
       operatingSystem: 'Android',
       applicationCategory: 'MultimediaApplication',
       isAccessibleForFree: true,
