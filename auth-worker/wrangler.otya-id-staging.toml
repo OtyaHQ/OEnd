@@ -18,7 +18,7 @@ CORS_ORIGIN = "https://otya.site"
 binding = "AUTH_DB"
 database_name = "otya-id-staging-db"
 database_id = "575e42b8-fa87-4161-a0df-e7bba50b3df8"
-migrations_dir = "migrations"
+migrations_dir = "migrations-staging"
 
 [[kv_namespaces]]
 binding = "AUTH_KV"
@@ -42,3 +42,6 @@ head_sampling_rate = 0.1
 # Optional Google sign-in and owner-only service integrations remain disabled
 # until separately configured and reviewed for this staging environment.
 # Telegram bot credentials are owned by Otya Core and must never be bound here.
+
+[secrets]
+required = ["AUTH_JWT_SECRET", "RESEND_API_KEY"]
