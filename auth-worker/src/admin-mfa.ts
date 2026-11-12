@@ -295,7 +295,7 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
     const otp = generateOtp()
     await env.AUTH_KV.put(`admin_mfa_otp:${user.id}`, await otpDigest(user.id, otp), { expirationTtl: OTP_TTL })
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'OTYA <noreply@petersmartlink.com>',
+      from: 'OTYA <noreply@otya.site>',
       to: [user.email!],
       subject: 'Trust this phone for Next',
       text: [
