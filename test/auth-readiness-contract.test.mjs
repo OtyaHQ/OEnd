@@ -29,7 +29,7 @@ test('security and provider handlers run before schema readiness', () => {
 
 test('legacy Telegram sign-in is rejected before the Auth worker or schema can run', () => {
   const denyIndex = secure.indexOf('if (telegramSignInPath) return telegramSignInDisabled()')
-  const dispatchIndex = secure.indexOf('return worker.fetch(request, safeEnv, ctx)')
+  const dispatchIndex = secure.indexOf('return worker.fetch(request, safeEnv)')
   assert.ok(denyIndex >= 0 && dispatchIndex > denyIndex)
   assert.match(secure, /status: 410/)
 })
