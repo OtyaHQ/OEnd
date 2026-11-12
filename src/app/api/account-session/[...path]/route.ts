@@ -7,7 +7,12 @@ export const dynamic = 'force-dynamic'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
-const COOKIE_DOMAIN = '.petersmartlink.com'
+function cookieDomainForRequest(request: NextRequest): string | undefined {
+  const hostname = new URL(request.url).hostname.toLowerCase()
+  if (hostname === 'otya.site' || hostname.endsWith('.otya.site')) return '.otya.site'
+  if (hostname === 'petersmartlink.com' || hostname.endsWith('.petersmartlink.com')) return '.petersmartlink.com'
+  return undefined
+}
 const ACCESS_MAX_AGE = 15 * 60
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const TURNSTILE_PROTECTED_AUTH = new Set([
@@ -29,25 +34,26 @@ function safePath(parts: string[]): string {
   return parts.filter(Boolean).map(part => encodeURIComponent(part)).join('/')
 }
 
-function cookieOptions(maxAge: number) {
+function cookieOptions(maxAge: number, request: NextRequest) {
+  const domain = cookieDomainForRequest(request)
   return {
     httpOnly: true,
     secure: true,
     sameSite: 'lax' as const,
-    domain: COOKIE_DOMAIN,
+    ...(domain ? { domain } : {}),
     path: '/',
     maxAge,
   }
 }
 
-function clearSessionCookies(response: NextResponse) {
-  response.cookies.set(ACCESS_COOKIE, '', { ...cookieOptions(0), expires: new Date(0) })
-  response.cookies.set(REFRESH_COOKIE, '', { ...cookieOptions(0), expires: new Date(0) })
+function clearSessionCookies(response: NextResponse, request: NextRequest) {
+  response.cookies.set(ACCESS_COOKIE, '', { ...cookieOptions(0, request), expires: new Date(0) })
+  response.cookies.set(REFRESH_COOKIE, '', { ...cookieOptions(0, request), expires: new Date(0) })
 }
 
-function setSessionCookies(response: NextResponse, accessToken: string, refreshToken?: string) {
-  response.cookies.set(ACCESS_COOKIE, accessToken, cookieOptions(ACCESS_MAX_AGE))
-  if (refreshToken) response.cookies.set(REFRESH_COOKIE, refreshToken, cookieOptions(REFRESH_MAX_AGE))
+function setSessionCookies(response: NextResponse, accessToken: string, refreshToken: string | undefined, request: NextRequest) {
+  response.cookies.set(ACCESS_COOKIE, accessToken, cookieOptions(ACCESS_MAX_AGE, request))
+  if (refreshToken) response.cookies.set(REFRESH_COOKIE, refreshToken, cookieOptions(REFRESH_MAX_AGE, request))
 }
 
 async function getAuthBinding() {
@@ -159,7 +165,7 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
     }
     if (!accessToken) {
       const response = NextResponse.json({ ok: true, authenticated: false })
-      clearSessionCookies(response)
+      clearSessionCookies(response, request)
       return response
     }
     let upstream = await auth.fetch(new Request('https://auth/auth/account', { headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' } }))
@@ -167,7 +173,7 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
       refreshed = await refreshBrowserSession(auth, request)
       if (!refreshed) {
         const response = NextResponse.json({ ok: true, authenticated: false })
-        clearSessionCookies(response)
+        clearSessionCookies(response, request)
         return response
       }
       accessToken = refreshed.accessToken
@@ -179,7 +185,7 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
     }
     const data = await decode(upstream)
     const response = NextResponse.json({ ok: true, authenticated: true, ...data })
-    setSessionCookies(response, accessToken, refreshed?.refreshToken)
+    setSessionCookies(response, accessToken, refreshed?.refreshToken, request)
     return response
   }
 
@@ -202,7 +208,7 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
     const refreshToken = typeof data.refresh_token === 'string' ? data.refresh_token : ''
     if (!accessToken || !refreshToken) return NextResponse.json({ error: 'Authentication service did not create a complete session' }, { status: 502, headers: { 'Cache-Control': 'no-store' } })
     const response = NextResponse.json(sanitizedAuthPayload(data), { status: upstream.status })
-    setSessionCookies(response, accessToken, refreshToken)
+    setSessionCookies(response, accessToken, refreshToken, request)
     response.headers.set('Cache-Control', 'no-store')
     return response
   }
@@ -215,7 +221,7 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
       } catch {}
     }
     const response = NextResponse.json({ ok: true })
-    clearSessionCookies(response)
+    clearSessionCookies(response, request)
     return response
   }
 
@@ -227,7 +233,7 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
   }
   if (!accessToken) {
     const response = NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    clearSessionCookies(response)
+    clearSessionCookies(response, request)
     return response
   }
 
@@ -242,8 +248,8 @@ async function proxyBrowserAccount(request: NextRequest, context: { params: Prom
   const data = await decode(upstream)
   const response = NextResponse.json(data, { status: upstream.status })
   if (refreshed) setSessionCookies(response, accessToken, refreshed.refreshToken)
-  if (data.sign_in_again === true) clearSessionCookies(response)
-  if (upstream.status === 401 || upstream.status === 403) clearSessionCookies(response)
+  if (data.sign_in_again === true) clearSessionCookies(response, request)
+  if (upstream.status === 401 || upstream.status === 403) clearSessionCookies(response, request)
   response.headers.set('Cache-Control', 'no-store')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   return response
