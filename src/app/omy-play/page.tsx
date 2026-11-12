@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     'local music player Android',
     'local video player Android',
     'Android media player Uganda',
-    'Otya Otya',
   ],
   alternates: { canonical: 'https://otya.site/omy-play' },
   openGraph: {
@@ -82,7 +81,7 @@ export default async function OtyaPlayerPage() {
         <div>
           <div className="otya-kicker mb-4">Otya · Omy Play · Android{appVersion ? ` · v${appVersion}` : ''}</div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Omy Play.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
-          <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Otya is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
+          <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Omy Play is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
             <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3.5 text-sm font-extrabold text-center">Download Omy Play</Link>
             <Link href="/help" className="otya-quiet-button rounded-full px-6 py-3.5 text-sm font-bold text-center">Help & support</Link>
