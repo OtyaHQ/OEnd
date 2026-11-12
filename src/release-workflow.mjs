@@ -230,12 +230,18 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
         return value
       })
 
-      const firebaseDistribution = await step.do('mirror test build to Firebase App Distribution', async () => {
+      const firebaseDistribution = await step.do('mirror approved Omy Play release to its dedicated Firebase project', async () => {
         try {
           const apk = await this.env.R2.get(release.arm64Key)
           if (!apk?.body) return { configured: false, mirrored: false, reason: 'arm64-apk-missing' }
+          const omyPlayFirebaseEnv = {
+            FCM_SERVICE_ACCOUNT_JSON: this.env.OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON,
+            FIREBASE_PROJECT_NUMBER: this.env.OMY_PLAY_FIREBASE_PROJECT_NUMBER,
+            FIREBASE_ANDROID_APP_ID: this.env.OMY_PLAY_FIREBASE_ANDROID_APP_ID,
+            FIREBASE_APP_DISTRIBUTION_TESTERS: this.env.OMY_PLAY_FIREBASE_APP_DISTRIBUTION_TESTERS,
+          }
           return await mirrorApkToFirebaseAppDistribution(
-            this.env,
+            omyPlayFirebaseEnv,
             apk.body,
             `OmyPlay-${release.tag}-arm64.apk`,
             metadata.changelog,
