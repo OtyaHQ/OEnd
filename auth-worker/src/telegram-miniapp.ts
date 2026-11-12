@@ -1,11 +1,5 @@
-import { generateRefreshToken, signJwt, verifyJwt } from './crypto'
-import { assertSchemaReady, getUserById, type D1Database, type UserRow } from './db'
-import { createOrGetTelegramUser } from './telegram-account'
-
-interface KVNamespaceLike {
-  get(key: string): Promise<string | null>
-  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>
-}
+import { verifyJwt } from './crypto'
+import { assertSchemaReady, getUserById, type D1Database } from './db'
 
 interface SecretsStoreSecret {
   get(): Promise<string>
@@ -13,7 +7,6 @@ interface SecretsStoreSecret {
 
 export interface TelegramMiniAppEnv {
   AUTH_DB: D1Database
-  AUTH_KV: KVNamespaceLike
   AUTH_JWT_SECRET: string
   TELEGRAM_BOT_TOKEN?: SecretsStoreSecret
 }
@@ -35,8 +28,6 @@ type VerifiedMiniApp = {
 }
 
 const MAX_AGE_SECONDS = 10 * 60
-const ACCESS_TOKEN_TTL_SECS = 15 * 60
-const REFRESH_TOKEN_TTL_SECS = 30 * 24 * 60 * 60
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -118,15 +109,6 @@ async function currentUserId(request: Request, env: TelegramMiniAppEnv): Promise
   return payload?.sub ?? null
 }
 
-async function issueSession(user: UserRow, env: TelegramMiniAppEnv) {
-  const now = Math.floor(Date.now() / 1000)
-  const accessToken = await signJwt({ sub: user.id, email: user.email, iat: now, exp: now + ACCESS_TOKEN_TTL_SECS }, env.AUTH_JWT_SECRET)
-  const refreshToken = generateRefreshToken()
-  await env.AUTH_KV.put(`rt:${refreshToken}`, user.id, { expirationTtl: REFRESH_TOKEN_TTL_SECS })
-  await env.AUTH_KV.put(`rt_user:${user.id}:${refreshToken}`, '1', { expirationTtl: REFRESH_TOKEN_TTL_SECS })
-  return { accessToken, refreshToken }
-}
-
 function providerUsername(user: TelegramWebAppUser): string | null {
   const username = String(user.username ?? '').trim()
   return /^[A-Za-z0-9_]{1,64}$/.test(username) ? username : null
@@ -148,69 +130,49 @@ export async function handleTelegramMiniApp(request: Request, env: TelegramMiniA
   }
 
   await assertSchemaReady(env.AUTH_DB)
+
+  // Telegram is never an Otya sign-in provider. A user must first authenticate
+  // with their existing Otya account, then link Telegram from Account settings.
+  const userId = await currentUserId(request, env)
+  if (!userId) {
+    return json({ error: 'Sign in with your Otya email or Google account before connecting Telegram.', code: 'OTYA_SESSION_REQUIRED' }, 401)
+  }
+
+  const user = await getUserById(env.AUTH_DB, userId)
+  if (!user) return json({ error: 'Otya account could not be found.', code: 'OTYA_ACCOUNT_MISSING' }, 401)
+
   const providerSubject = String(verified.user.id)
   const identity = await env.AUTH_DB.prepare(
     "SELECT user_id FROM linked_identities WHERE provider = 'telegram' AND provider_subject = ? LIMIT 1",
   ).bind(providerSubject).first<{ user_id?: string }>()
 
-  if (identity?.user_id) {
-    const user = await getUserById(env.AUTH_DB, identity.user_id)
-    if (!user) return json({ error: 'Linked OTYA Account could not be found', code: 'OTYA_ACCOUNT_MISSING' }, 409)
-    await env.AUTH_DB.prepare(
-      "UPDATE linked_identities SET provider_username = ?, last_used_at = datetime('now') WHERE provider = 'telegram' AND provider_subject = ?",
-    ).bind(providerUsername(verified.user), providerSubject).run()
-    const session = await issueSession(user, env)
-    return json({
-      ok: true,
-      authenticated: true,
-      telegram_user_id: providerSubject,
-      access_token: session.accessToken,
-      refresh_token: session.refreshToken,
-      user: { id: user.id, otya_id: user.otya_id, email: user.email, name: user.name, avatar_url: user.avatar_url },
-    })
+  if (identity?.user_id && identity.user_id !== userId) {
+    return json({ error: 'This Telegram account is already connected to another Otya account.', code: 'TELEGRAM_ALREADY_LINKED' }, 409)
   }
 
-  const userId = await currentUserId(request, env)
-  if (!userId) {
-    const name = [verified.user.first_name, verified.user.last_name].filter(Boolean).join(' ').trim()
-    const user = await createOrGetTelegramUser(env, providerSubject, providerUsername(verified.user), name)
-    const session = await issueSession(user, env)
-    return json({
-      ok: true,
-      authenticated: true,
-      created_or_logged_in: true,
-      telegram_user_id: providerSubject,
-      access_token: session.accessToken,
-      refresh_token: session.refreshToken,
-      user: { id: user.id, otya_id: user.otya_id, email: user.email, name: user.name, avatar_url: user.avatar_url },
-    })
-  }
-
-  const conflicting = await env.AUTH_DB.prepare(
+  const existingForUser = await env.AUTH_DB.prepare(
     "SELECT provider_subject FROM linked_identities WHERE provider = 'telegram' AND user_id = ? LIMIT 1",
   ).bind(userId).first<{ provider_subject?: string }>()
-  if (conflicting?.provider_subject && conflicting.provider_subject !== providerSubject) {
-    return json({ error: 'This OTYA Account is already connected to another Telegram account.', code: 'TELEGRAM_ALREADY_LINKED' }, 409)
+
+  if (existingForUser?.provider_subject && existingForUser.provider_subject !== providerSubject) {
+    return json({ error: 'This Otya account is already connected to another Telegram account.', code: 'TELEGRAM_ALREADY_LINKED' }, 409)
   }
 
   await env.AUTH_DB.prepare(`
     INSERT INTO linked_identities (user_id, provider, provider_subject, provider_username)
     VALUES (?, 'telegram', ?, ?)
-    ON CONFLICT(provider, provider_subject) DO UPDATE SET
+    ON CONFLICT(user_id, provider) DO UPDATE SET
+      provider_subject = excluded.provider_subject,
       provider_username = excluded.provider_username,
       last_used_at = datetime('now')
   `).bind(userId, providerSubject, providerUsername(verified.user)).run()
 
-  const user = await getUserById(env.AUTH_DB, userId)
-  if (!user) return json({ error: 'OTYA Account could not be found', code: 'OTYA_ACCOUNT_MISSING' }, 409)
-  const session = await issueSession(user, env)
   return json({
     ok: true,
-    authenticated: true,
+    authenticated: false,
     linked: true,
     telegram_user_id: providerSubject,
-    access_token: session.accessToken,
-    refresh_token: session.refreshToken,
+    otp_delivery_channel: 'linked_telegram',
     user: { id: user.id, otya_id: user.otya_id, email: user.email, name: user.name, avatar_url: user.avatar_url },
   })
 }

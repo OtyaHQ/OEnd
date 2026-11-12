@@ -5,24 +5,19 @@ import { verifyTurnstileToken } from '@/lib/turnstile'
 
 export const dynamic = 'force-dynamic'
 
+const ACCESS_COOKIE = '__Secure-otya_access'
 const PUBLIC_PREFIX = '/api/auth/telegram/'
 const AUTH_PREFIX = '/auth/telegram/'
-const ACCESS_COOKIE = '__Secure-otya_access'
-const REFRESH_COOKIE = '__Secure-otya_refresh'
 const ADMIN_RETURN_COOKIE = 'otya_admin_return'
 const COOKIE_DOMAIN = '.petersmartlink.com'
 const SPACE_URL = 'https://space.petersmartlink.com/'
-const ACCESS_MAX_AGE = 15 * 60
-const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const ADMIN_RETURN_MAX_AGE = 10 * 60
 
 type AuthService = { fetch(request: Request): Promise<Response> }
 type Payload = Record<string, unknown> & {
-  telegram_login?: boolean
+  telegram_step_up?: boolean
   admin_mfa?: boolean
   authenticated?: boolean
-  access_token?: string
-  refresh_token?: string
   provider_mode?: 'oidc' | 'widget'
   bot_username?: string
   widget_auth_url?: string
@@ -109,15 +104,12 @@ async function forward(request: NextRequest): Promise<Response> {
     const data = contentType.includes('application/json') ? await upstream.clone().json().catch(() => ({})) as Payload : null
 
     if (publicUrl.pathname.endsWith('/miniapp') && data) {
-      if (!upstream.ok) return NextResponse.json(data, { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
-      if (data.authenticated === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.json(withoutTokens(data), { status: upstream.status })
-        response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
-        response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
-      return NextResponse.json(withoutTokens(data), { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
+      // Mini App identity can only link an already authenticated Otya account.
+      // This route never sets cookies or creates a browser session.
+      return NextResponse.json(withoutTokens(data), {
+        status: upstream.status,
+        headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
+      })
     }
 
     if (publicUrl.pathname.endsWith('/start') && upstream.ok && data) {
@@ -131,16 +123,9 @@ async function forward(request: NextRequest): Promise<Response> {
     }
 
     if (publicUrl.pathname.endsWith('/callback') && upstream.ok && data) {
-      if (data.telegram_login === true && data.admin_mfa === true) {
+      if (data.telegram_step_up === true && data.admin_mfa === true) {
         const response = NextResponse.redirect(new URL(callbackAdminReturn(request), SPACE_URL), 302)
         clearAdminReturn(response)
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
-      if (data.telegram_login === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.redirect(SPACE_URL, 302)
-        response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
-        response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
         response.headers.set('Cache-Control', 'no-store')
         return response
       }
@@ -148,7 +133,7 @@ async function forward(request: NextRequest): Promise<Response> {
     return upstream
   } catch (error) {
     console.error('[telegram-auth-proxy]', (error as Error)?.message)
-    return NextResponse.json({ error: 'Telegram Sign-In is temporarily unavailable', code: 'TELEGRAM_LOGIN_UNAVAILABLE' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json({ error: 'Telegram account linking is temporarily unavailable', code: 'TELEGRAM_LINK_UNAVAILABLE' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
   }
 }
 

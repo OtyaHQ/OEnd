@@ -1,6 +1,6 @@
 # OTYA Auth — Cloudflare Worker
 
-Authentication service for **OTYA**. It powers registration, login, Google sign-in, email verification, password recovery, optional phone verification, linked identities, JWT issuance, consent and account security.
+Authentication service for **OTYA**. It powers registration, email/password and Google sign-in, email verification, password recovery, linked verification channels, JWT issuance, consent and account security.
 
 ## Architecture
 
@@ -28,28 +28,11 @@ wrangler secret put RESEND_API_KEY
 
 Google identity uses the configured `GOOGLE_CLIENT_ID` variable. Sensitive values must remain server-side.
 
-### Optional Telegram account verification
+### Optional Telegram-linked verification
 
-OTYA supports two Telegram verification paths:
+Telegram is not an account sign-in provider. It cannot create an Otya account, issue an Otya session or replace email/password or Google sign-in. A user must authenticate to Otya first, then link a Telegram identity to that same account. Linking may support separately approved verification and message-delivery features.
 
-1. **Telegram Login / OIDC** — a signed-in user can link a Telegram identity.
-2. **Telegram Gateway** — an optional code fallback for phone verification.
-
-Configure the callback:
-
-```text
-https://petersmartlink.com/auth/telegram/callback
-```
-
-Optional secrets:
-
-```sh
-wrangler secret put TELEGRAM_LOGIN_CLIENT_ID
-wrangler secret put TELEGRAM_LOGIN_CLIENT_SECRET
-wrangler secret put TELEGRAM_GATEWAY_TOKEN
-```
-
-Never put Telegram client secrets or Gateway tokens in Flutter or browser code.
+The Telegram Mini App binding uses a Cloudflare Secrets Store alias to verify signed Mini App data. Telegram OAuth client credentials are retained only for the existing account-linking flow; they are not accepted as a sign-in method. Never put Telegram client secrets or bot tokens in Flutter or browser code.
 
 ## Email provider
 
