@@ -135,6 +135,7 @@ export default function SignInPage() {
   }
 
   async function beginOwnerVerification() {
+    setOwnerTelegramLink('')
     setOwnerEligible(true)
     setBusy(true); setError(''); setNotice('')
     try {
@@ -351,6 +352,7 @@ export default function SignInPage() {
           <p className="text-sm leading-6 otya-muted">This is a one-time link confirmation, not Telegram sign-in. Use the Telegram account you want connected to this Otya account.</p>
           <a href={ownerTelegramLink} target="_blank" rel="noopener noreferrer" className="cosmos-button w-full rounded-full min-h-12 px-5 font-black inline-flex items-center justify-center">Open Otya Telegram bot</a>
           <button type="button" disabled={busy} onClick={() => void completeOwnerVerification()} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10] disabled:opacity-55">{busy ? 'Checking…' : 'I have confirmed in Telegram'}</button>
+          <button type="button" disabled={busy} onClick={() => void beginOwnerVerification()} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10] disabled:opacity-55">Request a new owner code</button>
           <button type="button" onClick={() => window.location.replace(DEFAULT_AFTER_AUTH)} className="w-full rounded-full min-h-12 px-5 font-black border border-white/[.10]">Open Space</button>
         </div> : <form onSubmit={submit} className="space-y-3">
           {registration && <Field value={name} onChange={setName} placeholder="Name" autoComplete="name" />}
