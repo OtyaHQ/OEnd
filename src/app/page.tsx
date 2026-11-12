@@ -6,14 +6,14 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { HomeStart } from '@/components/HomeStart'
 
 export const metadata: Metadata = {
-  title: 'Otya — Digital products and real-world services',
+  title: 'Otya — Connected products and services',
   description: 'Explore the Otya ecosystem: digital products, account services and OtyaPoint shop services in Mbirizi, Lwengo, Uganda.',
   keywords: ['Otya', 'OtyaPoint', 'Omy Play', 'Otya ecosystem', 'Mbirizi electronics shop', 'mobile money agency Mbirizi', 'Uganda technology'],
   alternates: { canonical: 'https://otya.site' },
   openGraph: {
     type: 'website',
     url: 'https://otya.site',
-    title: 'Otya — Digital products and real-world services',
+    title: 'Otya — Connected products and services',
     description: 'Explore Otya products and services, including OtyaPoint physical shop services in Mbirizi, Uganda.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Otya ecosystem' }],
   },
@@ -51,7 +51,7 @@ export default function HomePage() {
       <HomeStart />
 
       <section className="otya-shell py-10 sm:py-14">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="otya-kicker">Omy Play</div><h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">A real player, not a concept.</h2><p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Listen, organize your media and move it between nearby phones. These are screens from Omy Play on Android.</p></div><Link href="/omy-play" className="text-sm font-black">Explore Otya →</Link></div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="otya-kicker">Omy Play</div><h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">A real player, not a concept.</h2><p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Listen, organize your media and move it between nearby phones. These are screens from Omy Play on Android.</p></div><Link href="/omy-play" className="text-sm font-black">Explore Omy Play →</Link></div>
         <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {[['now-playing.svg','Now playing'],['music.svg','Music library'],['transfer.svg','Otya Transfer'],['me.svg','Your media']].map(([screen,label]) => <div key={screen} className="overflow-hidden rounded-[24px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-2 sm:p-3"><Image src={`/product/otya/${screen}`} alt={`Omy Play ${label} screen`} width={540} height={960} className="w-full h-auto rounded-[17px]" /><div className="px-2 pt-3 pb-2 text-sm font-black">{label}</div></div>)}
         </div>
