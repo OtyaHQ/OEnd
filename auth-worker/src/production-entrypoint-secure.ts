@@ -19,7 +19,7 @@ function telegramSignInDisabled(): Response {
 
 export default {
   ...worker,
-  async fetch(request: Request, env: AuthEnv, ctx: ExecutionContext) {
+  async fetch(request: Request, env: AuthEnv) {
     const pathname = new URL(request.url).pathname.toLowerCase();
     const telegramSignInPath =
       pathname.startsWith("/auth/telegram") ||
@@ -31,6 +31,6 @@ export default {
       ...env,
       AUTH_KV: createRefreshSafeKv(env.AUTH_KV),
     } as AuthEnv;
-    return worker.fetch(request, safeEnv, ctx);
+    return worker.fetch(request, safeEnv);
   },
 };
