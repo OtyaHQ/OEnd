@@ -69,3 +69,15 @@ test('missing or legacy release metadata never gets presented as a new Omy Play 
   assert.match(route, /if \(!validOmyPlayManifest\(manifest, resolvedTag\)\) return notPublished\(\)/)
 })
 
+test('Omy Play App Distribution never reuses the legacy Otya Player Firebase project', () => {
+  const workflow = read('src/release-workflow.mjs')
+  const wrangler = read('wrangler.toml')
+  assert.match(wrangler, /OMY_PLAY_FIREBASE_PROJECT_ID = "omyplay-otya-prod"/)
+  assert.match(wrangler, /OMY_PLAY_FIREBASE_PROJECT_NUMBER = "181484175543"/)
+  assert.match(wrangler, /OMY_PLAY_FIREBASE_ANDROID_APP_ID = "1:181484175543:android:b7eae0234df6eb7e370d32"/)
+  assert.match(workflow, /OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON/)
+  assert.match(workflow, /OMY_PLAY_FIREBASE_PROJECT_NUMBER/)
+  assert.match(workflow, /OMY_PLAY_FIREBASE_ANDROID_APP_ID/)
+  assert.match(workflow, /mirror approved Omy Play release to its dedicated Firebase project/)
+  assert.doesNotMatch(workflow, /mirrorApkToFirebaseAppDistribution\(\s*this\.env/)
+})
