@@ -9,7 +9,7 @@ import { getKV } from '@/lib/d1'
 export const metadata: Metadata = {
   title: 'Omy Play — Offline Music & Video for Android',
   description:
-    'Omy Play by Otya is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
+    'Omy Play by Omy Play is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
   keywords: [
     'Otya',
     'Omy Play',
@@ -72,7 +72,7 @@ export default async function OtyaPlayerPage() {
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Omy Play.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
           <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Otya is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3.5 text-sm font-extrabold text-center">Download Otya</Link>
+            <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3.5 text-sm font-extrabold text-center">Download Omy Play</Link>
             <Link href="/help" className="otya-quiet-button rounded-full px-6 py-3.5 text-sm font-bold text-center">Help & support</Link>
           </div>
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Offline-first</span><span>Local music & video</span><span>Nearby Send</span><span>Sign-in optional</span></div>
@@ -96,8 +96,8 @@ export default async function OtyaPlayerPage() {
           {FEATURES.map(([title,text]) => <div key={title} className="modern-card p-5"><h3 className="font-extrabold">{title}</h3><p className="mt-2 text-sm leading-relaxed otya-muted">{text}</p></div>)}
         </div>
         <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t pt-6" style={{ borderColor: 'var(--cosmos-divider)' }}>
-          <div><div className="font-extrabold">The internet is an enhancement, not a requirement.</div><div className="mt-1 text-sm otya-muted">Local playback, library access and nearby sending remain at the center of Otya.</div></div>
-          <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3 text-sm font-extrabold text-center shrink-0">Download Otya v{appVersion}</Link>
+          <div><div className="font-extrabold">The internet is an enhancement, not a requirement.</div><div className="mt-1 text-sm otya-muted">Local playback, library access and nearby sending remain at the center of Omy Play.</div></div>
+          <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3 text-sm font-extrabold text-center shrink-0">Download Omy Play v{appVersion}</Link>
         </div>
       </section>
     </main>
