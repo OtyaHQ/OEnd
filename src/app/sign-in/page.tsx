@@ -9,7 +9,7 @@ const API = '/api/account-session'
 const GOOGLE_WEB_CLIENT_ID = '82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com'
 const TERMS_VERSION = '2026-11-10'
 const PRIVACY_VERSION = '2026-11-10'
-const DEFAULT_AFTER_AUTH = 'https://space.petersmartlink.com/'
+const DEFAULT_AFTER_AUTH = 'https://space.otya.site/'
 
 type Mode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset' | 'twofactor' | 'owner' | 'owner-otp' | 'owner-telegram'
 type Json = { error?: string; code?: string; message?: string; authenticated?: boolean; authorization_url?: string }
@@ -20,7 +20,7 @@ declare global { interface Window { google?: GoogleApi } }
 
 function accountError(data: Json, registration: boolean): string {
   if (!registration && data.error === 'Invalid email or password') {
-    return 'Email/password sign-in failed. If you created this account with Google or Telegram, use that same method below. You can also choose Forgot password to add or reset a password.'
+    return 'Email/password sign-in failed. Use Google below if that is how you created your account, or choose Forgot password to set or reset an email password.'
   }
   return data.error || (registration ? 'Account creation failed.' : 'Sign in failed.')
 }
