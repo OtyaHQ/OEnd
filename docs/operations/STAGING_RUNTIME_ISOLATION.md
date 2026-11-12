@@ -36,7 +36,7 @@ Two unused/unbound D1 databases were verified before replacement:
 
 Those two D1 resources were deleted. Their replacement schemas are version-controlled in:
 
-- `auth-worker/migrations/20261111_otyid_staging_baseline.sql`
+- `auth-worker/migrations-staging/0001_otyid_staging_baseline.sql`
 - `ai-worker/migrations/20261111_o_ai_staging_baseline.sql`
 
 No user/account/conversation/memory rows were copied. Existing production `otya-auth-db`, `otya-store-db`, `otyapoint-db`, the restore-verification databases, old production Workers and existing backups were preserved.
@@ -46,19 +46,19 @@ No user/account/conversation/memory rows were copied. Existing production `otya-
 - `auth-worker/wrangler.otya-id-staging.toml` defines a private Otya ID staging Worker.
 - `ai-worker/wrangler.o-ai-staging.toml` defines a private O staging Worker with its own D1, KV, R2 and Queue.
 - Neither staging Worker is publicly routed or deployed until the staged auth flow and secret bindings are verified.
-- OPoint and Omy Play staging Worker service bindings still target the old `otya-auth` Worker at the time of this record. They must be switched only after `otya-id-staging` is deployed and smoke-tested.
+- The OPoint and Omy Play Wrangler staging manifests now target `otya-id-staging`; however, the deployed Cloudflare Worker settings still target the production `otya-auth` service until the two product staging Workers are redeployed after Auth staging exists.
 - The old `otya-next` Worker remains a compatibility runtime. New O development must use `o-ai-staging`; do not connect O to the shared `otya-store-db`.
 
 ## Required gates before staging deploy
 
 1. Finish Otya ID OTP-only policy and provider delivery implementation.
-2. Set unique staging secrets; do not reuse production JWT, Resend or Telegram provider credentials.
-3. Deploy `otya-id-staging` with no public route and verify rate limits, OTP expiry, replay protection and session revocation.
+2. Add these GitHub Actions secrets to the OEnd repository: `CLOUDFLARE_ACCOUNT_ID`, a dedicated least-privilege `CLOUDFLARE_API_TOKEN_STAGING`, a fresh random `AUTH_JWT_SECRET_STAGING` (at least 32 characters), and a sending-only `RESEND_API_KEY_STAGING` restricted to the verified `otya.site` sender domain. Never reuse production credentials.
+3. Manually run `.github/workflows/deploy-otyid-staging.yml` from `identity-ai-separation` and enter the exact confirmation `DEPLOY-STAGING`. The workflow runs tests, applies only the idempotent staging baseline migration and deploys the Worker with `workers_dev=false` and no public route. Then verify rate limits, OTP expiry, replay protection and session revocation.
 4. Deploy `o-ai-staging`; ensure owner-only access, no public chat, separate memory namespace and no direct product D1 access.
 5. Change OPoint and Omy Play staging service bindings to `otya-id-staging`.
-6. Verify each product can only access its own data and that failed/missing identity service calls fail closed.
+6. Redeploy OPoint and Omy Play staging from their isolated manifests; verify each product can only access its own data and that failed/missing identity service calls fail closed.
 7. Run smoke tests and recovery checks; do not merge or activate production resources until all gates pass.
 
 ## Production safety
 
-This record describes staging preparation only. It does not certify either Worker for production, enable live payments, enable account sign-in, or authorize a public release.
+This record describes staging preparation only. The Auth staging Worker is not yet deployed; its manual workflow remains blocked until all four dedicated GitHub secrets are configured. It does not certify either Worker for production, enable live payments, enable account sign-in, or authorize a public release.
