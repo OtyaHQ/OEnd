@@ -135,7 +135,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   const digestHex = Array.from(tokenDigest).map(byte => byte.toString(16).padStart(2, '0')).join('')
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <noreply@petersmartlink.com>',
+      from: 'Otya <noreply@otya.site>',
       to: [email],
       replyTo: 'support@petersmartlink.com',
       subject: 'You have been invited to OtyaPoint',
@@ -205,7 +205,7 @@ async function handleOtyaNextOpsEmail(request: Request, env: ProductionEnv): Pro
 
   try {
     const emailId = await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <noreply@petersmartlink.com>',
+      from: 'Otya <noreply@otya.site>',
       to: recipients,
       replyTo: 'support@petersmartlink.com',
       subject,
