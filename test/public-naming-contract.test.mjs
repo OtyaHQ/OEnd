@@ -19,7 +19,7 @@ test('public brand uses Otya and Omy Play with separate backend and identity nam
   assert.match(constants, /auth: 'Otya ID'/)
   assert.match(constants, /website: 'https:\/\/otya\.site'/)
   assert.match(constants, /connected family of digital products and services/)
-  assert.match(product, /nearby Transfer/)
+  assert.match(product, /Nearby Send/)
   assert.match(product, /Omy Play/)
   assert.match(product, /https:\/\/otya\.site\/omy-play/)
   assert.match(legacyProduct, /redirect\('\/omy-play'\)/)
