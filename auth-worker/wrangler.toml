@@ -37,7 +37,7 @@ binding = "ANALYTICS"
 dataset = "otya-auth-analytics"
 
 [vars]
-CORS_ORIGIN = "https://petersmartlink.com"
+CORS_ORIGIN = "https://otya.site"
 GOOGLE_CLIENT_ID = "82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv.apps.googleusercontent.com"
 GOOGLE_WEB_CLIENT_ID = "82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com"
 FIREBASE_PROJECT_ID = "otya-player"
