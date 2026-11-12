@@ -51,7 +51,7 @@ test('public latest metadata and Android package schema agree on Omy Play', () =
   const canonicalPage = read('src/app/download/omy-play/page.tsx')
   assert.match(layout, /identifier: 'com\.otya\.omyplay'/)
   assert.match(canonicalPage, /canonical: 'https:\/\/otya\.site\/download\/omy-play'/)
-  assert.match(downloadPage, /release\.published === false/)
+  assert.match(downloadPage, /release\.published===false/)
   assert.match(downloadPage, /No public Android release is available yet/)
   assert.match(downloadPage, /Choose your Android build/)
   assert.match(downloadPage, /Omy Play will not guess/)
