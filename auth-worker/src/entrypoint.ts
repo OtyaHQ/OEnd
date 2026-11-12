@@ -1,14 +1,13 @@
 /**
  * OTYA Auth production entrypoint.
  *
- * Production wrapper for Resend, Google verification, Telegram account linking,
- * account profile controls, phone verification, two-step verification, session
+ * Production wrapper for Resend, Google verification, account profile controls,
+ * phone verification, two-step verification, session
  * controls, Drive backup and explicit legal/marketing consent.
  */
 
 import legacyWorker from './index'
 import { handleBackupRoute } from './backup_route'
-import { handleTelegramLogin } from './telegram-login'
 import { handleAccountProfile } from './account-profile'
 import { handlePhoneVerification } from './phone-verification'
 import {
@@ -64,10 +63,6 @@ interface ResendEnv extends Record<string, unknown> {
   RESEND_API_KEY?: string
   GOOGLE_CLIENT_ID?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
-  TELEGRAM_LOGIN_CLIENT_ID?: string
-  TELEGRAM_LOGIN_CLIENT_SECRET?: string
-  TELEGRAM_LOGIN_REDIRECT_URI?: string
-  TELEGRAM_GATEWAY_TOKEN?: string
   ACCOUNT_ENCRYPTION_KEY?: string
   AUTH_JWT_SECRET: string
   AUTH_KV: KVNamespace
@@ -78,8 +73,8 @@ interface ResendEnv extends Record<string, unknown> {
 const GOOGLE_RATE_LIMIT = 20
 const GOOGLE_RATE_TTL = 15 * 60
 const GOOGLE_VERIFY_TIMEOUT_MS = 8000
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
-const OTYA_NOREPLY_EMAIL = 'noreply@petersmartlink.com'
+const PRIMARY_ORIGIN = 'https://otya.site'
+const OTYA_NOREPLY_EMAIL = 'noreply@otya.site'
 const OTYA_SUPPORT_EMAIL = 'support@petersmartlink.com'
 const OTYA_NOREPLY_FROM = `OTYA <${OTYA_NOREPLY_EMAIL}>`
 const LEGAL_ACCEPTANCE_REQUIRED = 428
@@ -312,11 +307,6 @@ export default {
     if (url.pathname === '/auth/account' && request.method !== 'OPTIONS') {
       const accountResponse = await handleAccountProfile(request, env)
       if (accountResponse) return accountResponse
-    }
-
-    if (url.pathname.startsWith('/auth/telegram/') && request.method !== 'OPTIONS') {
-      const telegramResponse = await handleTelegramLogin(request, env)
-      if (telegramResponse) return telegramResponse
     }
 
     if (url.pathname.startsWith('/auth/phone/') && request.method !== 'OPTIONS') {

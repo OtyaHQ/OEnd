@@ -1,76 +1,38 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 
-const wrapper = readFileSync(new URL('../auth-worker/src/production-entrypoint-miniapp.ts', import.meta.url), 'utf8')
-const primaryLogin = readFileSync(new URL('../auth-worker/src/telegram-primary-login.ts', import.meta.url), 'utf8')
-const telegramAccount = readFileSync(new URL('../auth-worker/src/telegram-account.ts', import.meta.url), 'utf8')
-const miniAuth = readFileSync(new URL('../auth-worker/src/telegram-miniapp.ts', import.meta.url), 'utf8')
-const proxy = readFileSync(new URL('../src/app/api/auth/telegram/[...path]/route.ts', import.meta.url), 'utf8')
-const config = readFileSync(new URL('../next.config.mjs', import.meta.url), 'utf8')
-const router = readFileSync(new URL('../src/production-router.mjs', import.meta.url), 'utf8')
-const wrangler = readFileSync(new URL('../auth-worker/wrangler.toml', import.meta.url), 'utf8')
-const secretWorkflowUrl = new URL('../.github/workflows/telegram-auth-secret.yml', import.meta.url)
+const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+const secure = read('auth-worker/src/production-entrypoint-secure.ts')
+const base = read('auth-worker/src/entrypoint.ts')
+const proxy = read('src/app/api/auth/telegram/[...path]/route.ts')
+const mfa = read('auth-worker/src/admin-mfa.ts')
+const core = read('src/telegram-entrypoint.mjs')
 
-test('Telegram browser Sign-In is first-class OIDC while Mini App uses Secrets Store HMAC', () => {
-  assert.match(wrapper, /TELEGRAM_MINIAPP_BOT_TOKEN/)
-  assert.match(wrapper, /handleTelegramPrimaryLogin/)
-  assert.match(wrapper, /createRefreshSafeKv/)
-  assert.match(wrapper, /AUTH_KV:\s*createRefreshSafeKv\(rawEnv\.AUTH_KV\)/)
-  assert.match(wrapper, /handleTelegramPrimaryLogin\(request, authEnv\)/)
-  assert.match(wrapper, /return worker\.fetch\(request, authEnv\)/)
-  assert.doesNotMatch(wrapper, /return worker\.fetch\(request, env\)/)
-  assert.match(primaryLogin, /STATE_PREFIX = 'telegram_primary_oidc:'/)
-  assert.match(primaryLogin, /code_challenge_method', 'S256'/)
-  assert.match(primaryLogin, /claims\.nonce !== nonce/)
-  assert.match(telegramAccount, /provider_subject = \?/)
-  assert.match(primaryLogin, /createOrGetTelegramUser/)
-  assert.match(telegramAccount, /INSERT INTO linked_identities/)
-  assert.match(primaryLogin, /createOrGetTelegramUser/)
-  assert.doesNotMatch(primaryLogin, /identity\.invalid/)
-  assert.match(miniAuth, /WebAppData/)
-  assert.match(miniAuth, /TELEGRAM_BOT_TOKEN\?\.get/)
-  assert.match(miniAuth, /constantTimeHexEqual/)
-  assert.match(miniAuth, /authDate < now - MAX_AGE_SECONDS/)
-  assert.match(miniAuth, /createOrGetTelegramUser/)
-  assert.match(miniAuth, /created_or_logged_in/)
-  assert.doesNotMatch(miniAuth, /OTYA_ACCOUNT_REQUIRED/)
+test('Auth rejects legacy Telegram sign-in and Mini App session-creation routes', () => {
+  assert.match(secure, /telegramSignInDisabled/)
+  assert.match(secure, /pathname\.startsWith\("\/auth\/telegram"\)/)
+  assert.match(secure, /pathname\.includes\("\/telegram\/miniapp"\)/)
+  assert.match(secure, /status: 410/)
 })
 
-test('Telegram OIDC login-start persists PKCE state in KV without D1 access', () => {
-  const startBlock = primaryLogin.slice(primaryLogin.indexOf('async function start'), primaryLogin.indexOf('async function callback'))
-  assert.match(startBlock, /AUTH_KV\.put/)
-  assert.match(startBlock, /code_challenge_method', 'S256'/)
-  assert.doesNotMatch(startBlock, /AUTH_DB|ensureSchema/)
+test('the underlying Auth entrypoint has no Telegram login dispatch or session issuer', () => {
+  assert.doesNotMatch(base, /handleTelegramLogin|TelegramLoginEnv|telegram-primary-login|telegram-miniapp/)
+  assert.doesNotMatch(base, /url\.pathname\.startsWith\('\/auth\/telegram\/'\)/)
 })
 
-test('Telegram web session is shared securely with Space and tokens stay out of JSON', () => {
-  assert.match(proxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
-  assert.match(proxy, /\.AUTH as AuthService/)
-  assert.match(proxy, /__Secure-otya_access/)
-  assert.match(proxy, /__Secure-otya_refresh/)
-  assert.match(proxy, /COOKIE_DOMAIN = '\.petersmartlink\.com'/)
-  assert.match(proxy, /SPACE_URL = 'https:\/\/space\.petersmartlink\.com\/'/)
-  assert.match(proxy, /delete safe\.access_token/)
-  assert.match(proxy, /delete safe\.refresh_token/)
+test('the public legacy Telegram auth proxy is a no-cookie 410 tombstone', () => {
+  assert.match(proxy, /telegram_sign_in_disabled/)
+  assert.match(proxy, /status:\s*410/)
+  assert.doesNotMatch(proxy, /cookies\.set|access_token|refresh_token|\.AUTH as AuthService/)
 })
 
-test('Google and Telegram browser origins are enforced around the generated OpenNext worker', () => {
-  assert.match(config, /https:\/\/accounts\.google\.com/)
-  assert.match(config, /https:\/\/telegram\.org/)
-  assert.match(config, /frame-ancestors 'none'/)
-  assert.match(router, /CANONICAL_CSP/)
-  assert.match(router, /import openNextWorker from '\.\.\/\.open-next\/worker\.js'/)
-  assert.match(router, /script-src[^\n]*accounts\.google\.com/)
-  assert.match(router, /connect-src[^\n]*accounts\.google\.com/)
-  assert.match(router, /space\.petersmartlink\.com/)
-  assert.match(router, /headers\.set\('Content-Security-Policy', CANONICAL_CSP\)/)
-  assert.doesNotMatch(router, /unsafe-eval/)
-})
-
-test('auth reads Telegram bot credential from Cloudflare Secrets Store without GitHub duplication', () => {
-  assert.match(wrangler, /\[\[secrets_store_secrets\]\]/)
-  assert.match(wrangler, /binding\s*=\s*"TELEGRAM_MINIAPP_BOT_TOKEN"/)
-  assert.match(wrangler, /secret_name\s*=\s*"TELEGRAM_BOT_TOKEN"/)
-  assert.equal(existsSync(secretWorkflowUrl), false)
+test('Telegram admin confirmation links only an unclaimed identity through the private bot challenge', () => {
+  assert.match(mfa, /confirmAdminTelegramChallenge/)
+  assert.match(mfa, /linked\.user_id !== userId/)
+  assert.match(mfa, /INSERT INTO linked_identities/)
+  assert.match(mfa, /currentForUser/)
+  assert.match(mfa, /markAdminTelegramComplete/)
+  assert.match(core, /auth\/admin\/telegram-challenge\/confirm/)
+  assert.doesNotMatch(mfa, /issueBrowserTokens|issueSession/)
 })

@@ -1,5 +1,5 @@
 name = "otya-auth"
-main = "src/production-entrypoint-miniapp.ts"
+main = "src/production-entrypoint-secure.ts"
 compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
@@ -17,11 +17,6 @@ head_sampling_rate = 0.05
 
 [observability.issues]
 enabled = true
-
-[[secrets_store_secrets]]
-binding = "TELEGRAM_MINIAPP_BOT_TOKEN"
-store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
-secret_name = "TELEGRAM_BOT_TOKEN"
 
 [[secrets_store_secrets]]
 binding = "OTYAPOINT_INVITE_SERVICE_TOKEN"
@@ -42,15 +37,11 @@ binding = "ANALYTICS"
 dataset = "otya-auth-analytics"
 
 [vars]
-CORS_ORIGIN = "https://petersmartlink.com"
+CORS_ORIGIN = "https://otya.site"
 GOOGLE_CLIENT_ID = "82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv.apps.googleusercontent.com"
 GOOGLE_WEB_CLIENT_ID = "82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com"
 FIREBASE_PROJECT_ID = "otya-player"
-TELEGRAM_LOGIN_REDIRECT_URI = "https://petersmartlink.com/api/auth/telegram/callback"
-TELEGRAM_LOGIN_BOT_USERNAME = "OtyaPlayerBot"
 ADMIN_EMAILS = "petersmartlink@gmail.com"
 
-# Telegram browser sign-in stays OIDC + PKCE. Mini App signature verification
-# reads the same centralized Secrets Store entry through a purpose-specific
-# local binding so the legacy Login Widget path cannot mistake the binding
-# object for a raw token. No secret value is duplicated in GitHub.
+# Telegram is not an Otya Auth sign-in provider. The Telegram bot credential
+# belongs only to Otya Core for its separately approved message-delivery duties.

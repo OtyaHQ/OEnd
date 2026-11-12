@@ -1,0 +1,47 @@
+# Isolated Otya ID staging Worker.
+# This is a private staging manifest, not the production otya-auth manifest.
+# Deploy only after unique staging AUTH_JWT_SECRET and RESEND_API_KEY secrets
+# have been provisioned. Never reuse production authentication or email secrets.
+
+name = "otya-id-staging"
+main = "src/production-entrypoint-secure.ts"
+compatibility_date = "2026-11-11"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+keep_vars = false
+
+[vars]
+ENVIRONMENT = "staging"
+CORS_ORIGIN = "https://otya.site"
+
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "otya-id-staging-db"
+database_id = "575e42b8-fa87-4161-a0df-e7bba50b3df8"
+migrations_dir = "migrations-staging"
+
+[[kv_namespaces]]
+binding = "AUTH_KV"
+id = "9bcd68a2cc014b68bdebac9ef6183314"
+
+[observability]
+enabled = true
+redact_query_string = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 0.1
+
+# Required secrets are installed separately and must be unique to this Worker:
+# - AUTH_JWT_SECRET
+# - RESEND_API_KEY
+# Optional Google sign-in and owner-only service integrations remain disabled
+# until separately configured and reviewed for this staging environment.
+# Telegram bot credentials are owned by Otya Core and must never be bound here.
+
+[secrets]
+required = ["AUTH_JWT_SECRET", "RESEND_API_KEY"]

@@ -2,12 +2,17 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8')
 
-test('visitor-facing pages use the canonical Otya Player download path', () => {
+test('visitor-facing pages use the canonical Omy Play download path', () => {
   const music = read('src/app/music/page.tsx')
-  assert.match(music, /href="\/download\/otya-player"/)
-  assert.doesNotMatch(music, /href="\/download\/otya"/)
+  const home = read('src/app/page.tsx')
+  const apps = read('src/app/apps/page.tsx')
+  assert.match(music, /href="\/download\/omy-play"/)
+  assert.match(home, /href="\/omy-play"/)
+  assert.match(apps, /href="\/omy-play"/)
+  assert.doesNotMatch(music, /href="\/download\/otya-player"/)
+  assert.doesNotMatch(home, /href="\/otya-player"/)
 })
 
 test('generic website loading stays quiet and does not impersonate Next thinking', () => {

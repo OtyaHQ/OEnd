@@ -17,27 +17,30 @@ test('production auth accepts only configured Android and Web Google audiences',
   assert.match(wrapper, /email_verified/)
 })
 
-test('production auth remains on hardened Firebase and Resend path behind Mini App wrapper', () => {
+test('production auth uses the secure wrapper around hardened Firebase and Resend handlers', () => {
   const config = read('wrangler.toml')
-  const miniWrapper = read('src/production-entrypoint-miniapp.ts')
+  const secureWrapper = read('src/production-entrypoint-secure.ts')
   const hardenedWrapper = read('src/production-entrypoint.ts')
   const entrypoint = read('src/entrypoint.ts')
   const resend = read('src/resend.ts')
 
-  assert.match(config, /^main = "src\/production-entrypoint-miniapp\.ts"$/m)
-  assert.match(miniWrapper, /import worker from '\.\/production-entrypoint'/)
-  assert.match(miniWrapper, /createRefreshSafeKv/)
-  assert.match(miniWrapper, /AUTH_KV:\s*createRefreshSafeKv\(rawEnv\.AUTH_KV\)/)
-  assert.match(miniWrapper, /return worker\.fetch\(request, authEnv\)/)
-  assert.doesNotMatch(miniWrapper, /return worker\.fetch\(request, env\)/)
-  assert.match(miniWrapper, /TELEGRAM_MINIAPP_BOT_TOKEN/)
-  assert.match(hardenedWrapper, /handleSecureOtpRoute/)
-  assert.match(hardenedWrapper, /handleSecureAccountRoute/)
-  assert.match(config, /^FIREBASE_PROJECT_ID = "otya-player"$/m)
-  assert.doesNotMatch(config, /binding\s*=\s*"EMAIL"|\[\[send_email\]\]/i)
-  assert.match(entrypoint, /createEmailAdapter\(env\.RESEND_API_KEY\)/)
-  assert.match(resend, /https:\/\/api\.resend\.com\/emails/)
-  assert.match(resend, /if\(!apiKey\)throw new Error\('RESEND_API_KEY is not configured'\)/)
+  assert.ok(config.includes('main = "src/production-entrypoint-secure.ts"'))
+  assert.ok(secureWrapper.includes('import worker from "./production-entrypoint"'))
+  assert.ok(secureWrapper.includes('createRefreshSafeKv'))
+  assert.ok(secureWrapper.includes('AUTH_KV: createRefreshSafeKv(env.AUTH_KV)'))
+  assert.ok(secureWrapper.includes('telegramSignInDisabled'))
+  assert.ok(secureWrapper.includes('status: 410'))
+  assert.ok(!secureWrapper.includes('production-entrypoint-miniapp'))
+  assert.ok(!secureWrapper.includes('handleTelegramLogin'))
+  assert.ok(!secureWrapper.includes('handleTelegramMiniApp'))
+  assert.ok(hardenedWrapper.includes('handleSecureOtpRoute'))
+  assert.ok(hardenedWrapper.includes('handleSecureAccountRoute'))
+  assert.ok(config.includes('FIREBASE_PROJECT_ID = "otya-player"'))
+  assert.ok(!config.includes('binding = "EMAIL"'))
+  assert.ok(!config.includes('[[send_email]]'))
+  assert.ok(entrypoint.includes('createEmailAdapter(env.RESEND_API_KEY)'))
+  assert.ok(resend.includes('https://api.resend.com/emails'))
+  assert.ok(resend.includes("RESEND_API_KEY is not configured"))
 })
 
 test('JWT verification is fail-closed for metadata, identity and expiry', () => {
@@ -76,7 +79,7 @@ test('password reset stays generic, single-use, expiring and revokes existing se
 test('server credentials are never configured as source values', () => {
   const files = [
     read('wrangler.toml'),
-    read('src/production-entrypoint-miniapp.ts'),
+    read('src/production-entrypoint-secure.ts'),
     read('src/production-entrypoint.ts'),
     read('src/entrypoint.ts'),
     read('src/resend.ts'),

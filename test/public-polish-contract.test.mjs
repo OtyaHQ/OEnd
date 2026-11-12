@@ -26,12 +26,13 @@ test('public Status uses canonical Otya naming and exposes only safe public mean
 test('public Help teaches the current one-account and verification flow', () => {
   const help = read('src/app/help/page.tsx')
 
-  assert.match(help, /title: 'Help | Otya Media'| Otya Player'/)
-  assert.match(help, /Email, Google and Telegram are sign-in methods for the same Otya account/)
+  assert.match(help, /title: 'Help \| Omy Play'/)
+  assert.match(help, /Telegram is not an account sign-in method/)
+  assert.match(help, /optional verification channel where supported/)
   assert.match(help, /Registration sends one verification code automatically/)
   assert.match(help, /request a new code only if you still need one/)
   assert.match(help, /Ordinary product or marketing notification permission is separate from starting local playback/)
-  assert.match(help, /Otya Account/)
+  assert.match(help, /Otya ID/)
   assert.match(help, /Contact Otya/)
   assert.doesNotMatch(help, /use Resend only/i)
   assert.doesNotMatch(help, /Telegram sign-in is not shown until/i)

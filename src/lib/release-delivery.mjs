@@ -39,7 +39,7 @@ export async function sendReleaseReport(env, subject, text, request = fetch) {
   const token = typeof binding === 'string' ? binding : await binding.get()
   if (!token) return { sent: false, reason: 'not-configured' }
   const body = JSON.stringify({
-    from: 'Otya Releases <noreply@petersmartlink.com>',
+    from: 'Otya Releases <noreply@otya.site>',
     to: [env.ADMIN_REPORT_EMAIL], subject, text,
   })
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(body))

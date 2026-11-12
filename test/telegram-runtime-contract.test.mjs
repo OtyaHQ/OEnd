@@ -9,7 +9,7 @@ test('Telegram runtime self-heals the canonical webhook and exposes dependency r
 
   assert.match(entry, /getTelegramWebhookInfo/)
   assert.match(entry, /setTelegramWebhook/)
-  assert.match(entry, /TELEGRAM_WEBHOOK_URL = 'https:\/\/petersmartlink\.com\/api\/telegram\/webhook'/)
+  assert.match(entry, /TELEGRAM_WEBHOOK_URL = 'https:\/\/otya\.site\/api\/telegram\/webhook'/)
   assert.match(entry, /telegram:webhook:fingerprint:v1/)
   assert.match(entry, /\/api\/telegram\/status/)
   assert.match(entry, /webhook_configured/)

@@ -54,23 +54,21 @@ test('Admin MFA OTPs are format-checked, single-use, and hashed at rest', () => 
   assert.doesNotMatch(source, /put\(`admin_mfa_otp:\$\{user\.id\}`, otp,/)
 })
 
-test('Admin Telegram step-up preserves the existing normal browser session', () => {
-  const worker = read('auth-worker/src/telegram-login.ts')
-  const callback = read('src/app/api/auth/telegram/[...path]/route.ts')
-  const helper = worker.match(/async function completeTelegramIdentity\([\s\S]*?\n}\n\nexport async function handleTelegramLogin/)?.[0] ?? ''
-  const adminStart = helper.indexOf("if (stored.mode === 'admin')")
-  const adminEnd = helper.indexOf("await env.AUTH_DB.prepare(`\n    INSERT INTO linked_identities", adminStart)
-  const adminBlock = adminStart >= 0 && adminEnd > adminStart ? helper.slice(adminStart, adminEnd) : ''
-
-  assert.match(adminBlock, /existingIdentity\.user_id !== userId/)
-  assert.match(adminBlock, /markAdminTelegramComplete/)
-  assert.match(adminBlock, /admin_mfa:\s*true/)
-  assert.doesNotMatch(adminBlock, /issueBrowserTokens/)
-  assert.doesNotMatch(adminBlock, /refresh_token/)
-  assert.match(callback, /data\.admin_mfa === true/)
-  assert.match(callback, /\/admin\?telegram=verified/)
+test('Telegram owner confirmation is a second factor for an existing Otya account, not a login provider', () => {
+  const mfa = read('auth-worker/src/admin-mfa.ts')
+  const auth = read('auth-worker/src/production-entrypoint.ts')
+  const secure = read('auth-worker/src/production-entrypoint-secure.ts')
+  const core = read('src/telegram-entrypoint.mjs')
+  assert.match(mfa, /confirmAdminTelegramChallenge/)
+  assert.match(mfa, /linked\.user_id !== userId/)
+  assert.match(mfa, /markAdminTelegramComplete/)
+  assert.match(mfa, /admin_mfa_complete/)
+  assert.doesNotMatch(mfa, /issueBrowserTokens|access_token|refresh_token/)
+  assert.match(auth, /handleAdminMfa\(request, env\)/)
+  assert.match(core, /auth\/admin\/telegram-challenge\/confirm/)
+  assert.match(core, /telegram_user_id: enrollment\.telegramUserId/)
+  assert.match(secure, /telegramSignInDisabled/)
 })
-
 test('Production account OTPs are purpose-bound, protected at rest, and single-use', () => {
   const source = read('auth-worker/src/secure-otp.ts')
   const entry = read('auth-worker/src/production-entrypoint.ts')
