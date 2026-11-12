@@ -9,16 +9,18 @@ const statusClient = readFileSync(new URL('../src/app/status/StatusClient.tsx', 
 
 test('documentation product links and help preserve their destinations', () => {
   assert.ok(router.includes('publicDestinations.has(publicPath)'))
-  assert.match(router, /'\/otyapoint'/)
+  assert.ok(router.includes("'/otyapoint'"))
   assert.ok(router.includes('redirectToHost(url, APP_HOST, url.pathname)'))
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/help/')"))
 })
 
 test('custom domains are canonical public entry points', () => {
-  assert.ok(router.includes("const APP_HOST = 'petersmartlink.com'"))
-  assert.ok(router.includes("const DOCS_HOST = 'docs.petersmartlink.com'"))
-  assert.ok(router.includes("const STATUS_HOST = 'status.petersmartlink.com'"))
-  assert.ok(router.includes("const SPACE_HOST = 'space.petersmartlink.com'"))
+  for (const [name, host] of [
+    ['APP_HOST', 'otya.site'],
+    ['DOCS_HOST', 'docs.otya.site'],
+    ['STATUS_HOST', 'status.otya.site'],
+    ['SPACE_HOST', 'space.otya.site'],
+  ]) assert.ok(router.includes(`const ${name} = '${host}'`), `${name} must use ${host}`)
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, STATUS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/')"))
@@ -45,11 +47,11 @@ test('Space allows approved signed-in product routes instead of redirecting them
 })
 
 test('Docs root is real documentation while Help and Status stay distinct surfaces', () => {
-  assert.ok(router.includes("host === DOCS_HOST"))
+  assert.ok(router.includes('host === DOCS_HOST'))
   assert.ok(router.includes("url.pathname === '/' || url.pathname === '/docs'"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/docs/')"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/help/')"))
-  assert.ok(router.includes("host === STATUS_HOST"))
+  assert.ok(router.includes('host === STATUS_HOST'))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/status/')"))
   assert.ok(!router.includes("redirectToHost(url, APP_HOST, '/help')"))
   assert.ok(!router.includes("redirectToHost(url, APP_HOST, '/status')"))
@@ -59,7 +61,7 @@ test('surface rewrites preserve browser hostname and Next trailing slash policy'
   assert.ok(nextConfig.includes('trailingSlash: true'))
   assert.ok(router.includes('async function dispatchSurface'))
   assert.ok(router.includes("headers.set('X-Forwarded-Host', url.hostname)"))
-  assert.ok(router.includes("target.pathname = pathname"))
+  assert.ok(router.includes('target.pathname = pathname'))
   assert.ok(!router.includes('target.hostname = APP_HOST'))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/space/')"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/account/')"))
@@ -68,15 +70,13 @@ test('surface rewrites preserve browser hostname and Next trailing slash policy'
 })
 
 test('legacy apex paths converge to clean subdomains without losing intent', () => {
-  assert.ok(router.includes("url.pathname === '/docs'"))
-  assert.ok(router.includes("url.pathname === '/help'"))
-  assert.ok(router.includes("url.pathname === '/status'"))
-  assert.ok(router.includes("url.pathname === '/account'"))
-  assert.ok(router.includes("url.pathname === '/admin'"))
+  for (const pathname of ['/docs', '/help', '/status', '/account', '/admin']) {
+    assert.ok(router.includes(`url.pathname === '${pathname}'`), `legacy route ${pathname} must remain supported`)
+  }
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, STATUS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/account/')"))
-  assert.ok(router.includes("redirectToHost(url, SPACE_HOST, url.pathname)"))
+  assert.ok(router.includes('redirectToHost(url, SPACE_HOST, url.pathname)'))
 })
 
 test('custom surfaces keep HTTPS and generated OpenNext routing explicit', () => {
