@@ -168,7 +168,7 @@ export async function GET(
       if (version !== latest.version) return notPublished()
       resolvedTag = latest.tag ?? null
     } else if (!resolvedTag) {
-      resolvedTag = latest.tag
+      resolvedTag = latest.tag ?? null
     }
     if (!resolvedTag) return notPublished()
 
