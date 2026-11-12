@@ -12,6 +12,7 @@ const deploy = read('.github/workflows/deploy.yml')
 const fcm = read('src/lib/fcm.ts')
 const appCheck = read('src/lib/firebase_app_check.ts')
 const googleWrapper = read('auth-worker/src/production-entrypoint.ts')
+const baseAuth = read('auth-worker/src/entrypoint.ts')
 const secureAuth = read('auth-worker/src/production-entrypoint-secure.ts')
 const appConfig = read('src/app/api/app-config/route.ts')
 const clientConfig = read('src/lib/client_config.ts')
@@ -65,9 +66,10 @@ requireMatch('otya-auth live analytics dataset', auth, /^dataset\s*=\s*"otya-aut
 requireMatch('Android Google client id must be verified', auth, /^GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 requireMatch('Web Google client id must be verified', auth, /^GOOGLE_WEB_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
 requireMatch('otya-auth Firebase project id', auth, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
-requireMatch('Telegram public callback must proxy to private auth service', telegramProxy, /PUBLIC_PREFIX\s*=\s*'\/api\/auth\/telegram\/'/)
-requireMatch('Telegram public callback must preserve private auth route', telegramProxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
-requireMatch('Telegram public callback must use AUTH binding', telegramProxy, /\.AUTH as AuthService/)
+requireMatch('legacy public Telegram auth endpoint is retired with an explicit disabled response', telegramProxy, /telegram_sign_in_disabled/)
+requireMatch('legacy public Telegram auth endpoint returns HTTP 410', telegramProxy, /status:\s*410/)
+forbidMatch('legacy public Telegram auth endpoint must not issue browser sessions', telegramProxy, /cookies\.set|access_token|refresh_token|AuthService|AUTH_PREFIX|PUBLIC_PREFIX/)
+forbidMatch('base Auth entrypoint must not dispatch Telegram Login', baseAuth, /handleTelegramLogin|TelegramLoginEnv|TELEGRAM_LOGIN_CLIENT_ID|TELEGRAM_LOGIN_CLIENT_SECRET|TELEGRAM_GATEWAY_TOKEN/)
 forbidMatch('Cloudflare EMAIL binding must not return to auth Wrangler', auth, /\[\[send_email\]\]|binding\s*=\s*"EMAIL"/i)
 requireMatch('production Google wrapper must support web audience', googleWrapper, /GOOGLE_WEB_CLIENT_ID/)
 requireMatch('production Google wrapper must reject unconfigured audiences', googleWrapper, /configuredGoogleAudiences/)
@@ -111,6 +113,7 @@ const scanned = [
   clientConfig,
   musicPage,
   telegramProxy,
+  baseAuth,
   telegramCore,
   telegramReceiptMigration,
 ].join('\n')
