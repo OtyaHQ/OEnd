@@ -41,8 +41,8 @@ function validOmyPlayRelease(value: unknown): value is ReleaseMetadata {
 
   if (tagVersion !== info.version) return false
   if (!Number.isSafeInteger(tagBuild) || tagBuild <= 0 || versionCode !== tagBuild) return false
-  if (info.arm64 !== \`releases/\${info.tag}/OmyPlay-arm64.apk\') return false
-  if (info.arm32 !== \`releases/\${info.tag}/OmyPlay-arm32.apk\') return false
+  if (info.arm64 !== 'releases/' + info.tag + '/OmyPlay-arm64.apk') return false
+  if (info.arm32 !== 'releases/' + info.tag + '/OmyPlay-arm32.apk') return false
   return true
 }
 
@@ -52,8 +52,8 @@ function releaseDownloads(tag: string) {
     arm32: ARM32_APK,
     auto: DOWNLOAD_PAGE,
     page: DOWNLOAD_PAGE,
-    exactArm64: \`\${ARM64_APK}?tag=\${encodeURIComponent(tag)}\`,
-    exactArm32: \`\${ARM32_APK}?tag=\${encodeURIComponent(tag)}\`,
+    exactArm64: ARM64_APK + '?tag=' + encodeURIComponent(tag),
+    exactArm32: ARM32_APK + '?tag=' + encodeURIComponent(tag),
   }
 }
 
@@ -74,7 +74,7 @@ function publishedResponse(info: ReleaseMetadata, source: string, cache = false)
   return new NextResponse(JSON.stringify(data), {
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': cache ? \`public, max-age=\${KV_TTL}\` : 'no-store',
+      'Cache-Control': cache ? 'public, max-age=' + KV_TTL : 'no-store',
       'Access-Control-Allow-Origin': '*',
       'X-Source': source,
       'X-OTYA-Release-State': 'published',
@@ -163,7 +163,7 @@ export async function GET(_req: NextRequest) {
     return new NextResponse(body, {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': \`public, max-age=\${KV_TTL}\`,
+        'Cache-Control': 'public, max-age=' + KV_TTL,
         'Access-Control-Allow-Origin': '*',
         'X-Cache': 'MISS',
         'X-OTYA-Release-State': 'published',
