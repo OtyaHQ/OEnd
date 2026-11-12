@@ -11,7 +11,7 @@ const OTYA_MARK = '/otya-app-icon.webp'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Otya — Digital products and real-world services',
+    default: 'Otya — Connected products and services',
     template: '%s | Otya',
   },
   description:
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'Otya — Connected products and services',
     description: 'Explore connected Otya products and services.',
     images: [OTYA_MARK],
   },
@@ -105,7 +105,7 @@ const schemaOrg = {
     {
       '@type': 'SoftwareApplication',
       '@id': `${SITE_URL}/#omy-play`,
-      name: 'Otya',
+      name: 'Omy Play',
       alternateName: 'Omy Play',
       identifier: 'com.otyaplayer.app',
       operatingSystem: 'Android',
