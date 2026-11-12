@@ -12,13 +12,13 @@ const deploy = read('.github/workflows/deploy.yml')
 const fcm = read('src/lib/fcm.ts')
 const appCheck = read('src/lib/firebase_app_check.ts')
 const googleWrapper = read('auth-worker/src/production-entrypoint.ts')
+const secureAuth = read('auth-worker/src/production-entrypoint-secure.ts')
 const appConfig = read('src/app/api/app-config/route.ts')
 const clientConfig = read('src/lib/client_config.ts')
 const musicPage = read('src/app/music/page.tsx')
 const telegramProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
 const telegramCore = read('src/lib/telegram-bot.mjs')
 const telegramReceiptMigration = read('migrations/0010_telegram_update_receipts.sql')
-const telegramMini = read('auth-worker/src/telegram-miniapp.ts')
 
 requireMatch('public Worker must be otya-core', core, /^name\s*=\s*"otya-core"$/m)
 requireMatch('otya-core workers.dev must be disabled', core, /^workers_dev\s*=\s*false$/m)
@@ -52,8 +52,12 @@ requireMatch('Telegram webhook receipt migration owns update_id primary key', te
 forbidMatch('Telegram webhook must not regress to racy KV GET then PUT dedupe', telegramCore, /telegram:update:/)
 forbidMatch('Telegram bot token must not be treated as a raw committed string', telegramCore, /env\.TELEGRAM_BOT_TOKEN\s*\)/)
 
+requireMatch('otya-auth must use the secure production wrapper', auth, /^main\s*=\s*"src\/production-entrypoint-secure\.ts"$/m)
+requireMatch('secure Auth wrapper denies legacy Telegram routes', secureAuth, /pathname\.startsWith\("\/auth\/telegram"\)/)
+requireMatch('secure Auth wrapper returns HTTP 410 for legacy Telegram sign-in', secureAuth, /status:\s*410/)
+requireMatch('secure Auth wrapper directs users to email OTP', secureAuth, /Sign in with email OTP/)
+forbidMatch('Auth Worker must not receive the Telegram bot credential or Telegram Login client secrets', auth, /TELEGRAM_BOT_TOKEN|TELEGRAM_LOGIN_CLIENT_ID|TELEGRAM_LOGIN_CLIENT_SECRET/)
 requireMatch('otya-auth Worker name', auth, /^name\s*=\s*"otya-auth"$/m)
-requireMatch('otya-auth must use Mini App production wrapper', auth, /^main\s*=\s*"src\/production-entrypoint-miniapp\.ts"$/m)
 requireMatch('otya-auth workers.dev must be disabled', auth, /^workers_dev\s*=\s*false$/m)
 requireMatch('otya-auth must redact query strings', auth, /^redact_query_string\s*=\s*true$/m)
 requireMatch('otya-auth live analytics binding', auth, /^binding\s*=\s*"ANALYTICS"$/m)
@@ -61,11 +65,6 @@ requireMatch('otya-auth live analytics dataset', auth, /^dataset\s*=\s*"otya-aut
 requireMatch('Android Google client id must be verified', auth, /^GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 requireMatch('Web Google client id must be verified', auth, /^GOOGLE_WEB_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
 requireMatch('otya-auth Firebase project id', auth, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
-requireMatch('Telegram redirect must match live canonical API callback', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=\s*"https:\/\/petersmartlink\.com\/api\/auth\/telegram\/callback"$/m)
-requireMatch('Telegram Mini App auth uses purpose-specific Secrets Store alias', auth, /binding\s*=\s*"TELEGRAM_MINIAPP_BOT_TOKEN"[\s\S]*?secret_name\s*=\s*"TELEGRAM_BOT_TOKEN"/m)
-requireMatch('Telegram Mini App derives WebAppData HMAC', telegramMini, /WebAppData/)
-requireMatch('Telegram Mini App validates auth_date freshness', telegramMini, /MAX_AGE_SECONDS/)
-requireMatch('Telegram Mini App uses numeric Telegram ID', telegramMini, /Number\.isSafeInteger\(user\.id\)/)
 requireMatch('Telegram public callback must proxy to private auth service', telegramProxy, /PUBLIC_PREFIX\s*=\s*'\/api\/auth\/telegram\/'/)
 requireMatch('Telegram public callback must preserve private auth route', telegramProxy, /AUTH_PREFIX\s*=\s*'\/auth\/telegram\/'/)
 requireMatch('Telegram public callback must use AUTH binding', telegramProxy, /\.AUTH as AuthService/)
@@ -114,7 +113,6 @@ const scanned = [
   telegramProxy,
   telegramCore,
   telegramReceiptMigration,
-  telegramMini,
 ].join('\n')
 forbidMatch('Firebase Admin private key material must not be committed', scanned, /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/)
 forbidMatch('Resend API key values must not be committed', scanned, /\bre_[A-Za-z0-9_-]{20,}\b/)
