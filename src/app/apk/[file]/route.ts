@@ -166,7 +166,7 @@ export async function GET(
     let resolvedTag = tag
     if (version) {
       if (version !== latest.version) return notPublished()
-      resolvedTag = latest.tag
+      resolvedTag = latest.tag ?? null
     } else if (!resolvedTag) {
       resolvedTag = latest.tag
     }
