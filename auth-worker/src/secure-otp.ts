@@ -131,7 +131,7 @@ async function revokeRefreshTokens(env: SecureOtpEnv, userId: string): Promise<v
 
 async function sendCode(env: SecureOtpEnv, to: string, subject: string, intro: string, code: string): Promise<void> {
   await sendResendEmail(env.RESEND_API_KEY, {
-    from: 'OTYA <noreply@petersmartlink.com>',
+    from: 'OTYA <noreply@otya.site>',
     to: [to],
     subject,
     text: [
