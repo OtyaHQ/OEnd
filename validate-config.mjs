@@ -33,7 +33,7 @@ requireMatch('otya-core OtyaPoint bootstrap secret store binding', core, /bindin
 requireMatch('otya-core Analytics Engine dataset', core, /^dataset\s*=\s*"otya-core-analytics"$/m)
 requireMatch('compatibility OTYA Analytics Engine dataset remains bound during migration', core, /^dataset\s*=\s*"otya_system_analytics"$/m)
 requireMatch('otya-core AI service must target otya-next', core, /binding\s*=\s*"AI_SUPPORT"[\s\S]*?service\s*=\s*"otya-next"/m)
-requireMatch('otya-core Omy Play service must target the dedicated production Worker', core, /binding\\s*=\\s*\"OMY_PLAY\"[\\s\\S]*?service\\s*=\\s*\"omy-play-api\"/m)
+requireMatch('otya-core Omy Play service must target the dedicated production Worker', core, /binding\s*=\s*"OMY_PLAY"[\s\S]*?service\s*=\s*"omy-play-api"/m)
 requireMatch('otya-core Next queue must use canonical name', core, /binding\s*=\s*"AI_QUEUE"[\s\S]*?queue\s*=\s*"otya-next-jobs"/m)
 requireMatch('otya-core push queue must use canonical name', core, /binding\s*=\s*"PUSH_QUEUE"[\s\S]*?queue\s*=\s*"otya-push"/m)
 requireMatch('release workflow must use canonical name', core, /name\s*=\s*"otya-release"[\s\S]*?binding\s*=\s*"OTYA_RELEASE_WORKFLOW"/m)
