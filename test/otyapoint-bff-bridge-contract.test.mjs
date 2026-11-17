@@ -36,7 +36,7 @@ test('the staff navigation is shown only after OtyaPoint verifies an active staf
   assert.match(gate, /setBusinessAccess\(pointAccess\?\.ok === true\)/)
   assert.match(chrome, /businessAccess = false/)
   assert.match(chrome, /OtyaPoint operations/)
-  assert.match(chrome, /businessAccess \? \[\.\.\.GROUPS/)
+  assert.match(chrome, /const groups = businessAccess[\\s\\S]*?\\[\\.\\.\\.GROUPS/)
 })
 
 test('the OtyaPoint dashboard consumes branch-scoped API data and hides unauthorized work areas', () => {
