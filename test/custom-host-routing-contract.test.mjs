@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8')
 const router = read('src/production-router.mjs')
+const coreConfig = read('wrangler.toml')
 const nextConfig = read('next.config.mjs')
 const status = read('src/app/status/page.tsx')
 const statusClient = read('src/app/status/StatusClient.tsx')
@@ -82,6 +83,8 @@ test('Omy Play API is proxied only on the configured API hostname and drops brow
   assert.ok(router.includes('async function proxyOmyPlayApi(request, url, env)'))
   assert.ok(router.includes("if (!isApiHost(url.hostname.toLowerCase(), env))"))
   assert.ok(router.includes("headers.delete('cookie')"))
+  assert.ok(router.includes("if (!env.OMY_PLAY?.fetch) return json({ error: 'omy_play_service_unavailable' }, 503)"))
+  assert.doesNotMatch(coreConfig, /binding\\s*=\\s*"OMY_PLAY"/)
   assert.ok(router.includes('env.OMY_PLAY.fetch(new Request(upstreamUrl.toString(), init))'))
   assert.ok(router.includes('const omyPlayResponse = await proxyOmyPlayApi(request, url, env)'))
 })
