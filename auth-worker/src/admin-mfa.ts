@@ -1,6 +1,6 @@
 import { generateOtp, verifyJwt } from './crypto'
 import { sendResendEmail } from './resend'
-import { assertSchemaReady, getUserById, type D1Database } from './db'
+import { assertSchemaReady, getUserById } from './db'
 import { sendLinkedTelegramOtp, type TelegramOtpEnv } from './telegram-otp'
 
 interface KVNamespaceLike {
