@@ -370,6 +370,32 @@ async function bootstrapOtyaPointOwner(request, url, env) {
   return env.OTYAPOINT.fetch(upstream)
 }
 
+async function proxyOmyPlayApi(request, url, env) {
+  const prefix = '/omy-play'
+  if (url.pathname !== prefix && !url.pathname.startsWith(prefix + '/')) return null
+  if (!isApiHost(url.hostname.toLowerCase(), env)) return json({ error: 'not_found' }, 404)
+  if (!env.OMY_PLAY?.fetch) return json({ error: 'omy_play_service_unavailable' }, 503)
+
+  const allowedMethods = new Set(['GET', 'HEAD', 'POST'])
+  if (!allowedMethods.has(request.method)) {
+    return json({ error: 'method_not_allowed' }, 405)
+  }
+
+  // Product APIs authenticate bearer sessions in Omy Play itself. Do not pass
+  // the public browser's HttpOnly Otya Space cookies into the product service.
+  const suffix = url.pathname.slice(prefix.length) || '/'
+  const upstreamUrl = new URL(suffix + url.search, 'https://omy-play-internal')
+  const headers = new Headers(request.headers)
+  headers.delete('cookie')
+  headers.delete('host')
+  headers.set('X-Forwarded-Host', url.hostname)
+  headers.set('X-Forwarded-Proto', 'https')
+
+  const init = { method: request.method, headers, redirect: 'manual' }
+  if (request.method !== 'GET' && request.method !== 'HEAD') init.body = request.body
+  return env.OMY_PLAY.fetch(new Request(upstreamUrl.toString(), init))
+}
+
 async function routeOtyaRequest(request, env, ctx) {
   const url = new URL(request.url)
   const host = url.hostname.toLowerCase()
@@ -387,6 +413,9 @@ async function routeOtyaRequest(request, env, ctx) {
 
   const pointResponse = await proxyOtyaPointApi(request, url, env)
   if (pointResponse) return pointResponse
+
+  const omyPlayResponse = await proxyOmyPlayApi(request, url, env)
+  if (omyPlayResponse) return omyPlayResponse
 
   if (isCoreBackendRoute(url.pathname)) return backendWorker.fetch(request, env, ctx)
 
