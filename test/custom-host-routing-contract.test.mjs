@@ -77,3 +77,11 @@ test('public status page exposes live state without internal infrastructure deta
   assert.match(statusClient, /fetch\(['"]\/api\/status['"]/)
   assert.doesNotMatch(status + statusClient, /CLOUDFLARE_ACCOUNT_ID|INTERNAL_SECRET|D1 database|R2 bucket/)
 })
+
+test('Omy Play API is proxied only on the configured API hostname and drops browser cookies', () => {
+  assert.ok(router.includes('async function proxyOmyPlayApi(request, url, env)'))
+  assert.ok(router.includes("if (!isApiHost(url.hostname.toLowerCase(), env))"))
+  assert.ok(router.includes("headers.delete('cookie')"))
+  assert.ok(router.includes('env.OMY_PLAY.fetch(new Request(upstreamUrl.toString(), init))'))
+  assert.ok(router.includes('const omyPlayResponse = await proxyOmyPlayApi(request, url, env)'))
+})
