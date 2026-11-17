@@ -7,11 +7,18 @@ import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { verifyJwtViaService, extractBearerToken } from '@/lib/auth-service'
 import { secureJson, errorJson } from '@/lib/response'
 import { getDB } from '@/lib/d1'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  'https://petersmartlink.com',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+function corsHeaders(request?: Request) {
+  const origin = request?.headers.get('Origin') ?? ''
+  const allowed = new Set([PUBLIC_URLS.primary, PUBLIC_URLS.api, PUBLIC_URLS.space].map(value => new URL(value).origin))
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
+  })
+  if (origin && allowed.has(origin)) headers.set('Access-Control-Allow-Origin', origin)
+  return headers
 }
 
 export async function GET(req: NextRequest) {
@@ -99,6 +106,6 @@ export async function DELETE(req: NextRequest) {
   return secureJson({ ok: true, ts: Date.now() })
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request) })
 }

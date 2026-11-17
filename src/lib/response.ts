@@ -1,5 +1,10 @@
 // lib/response.ts
-// Every API response goes through here to get consistent security headers.
+// Consistent JSON responses and security headers.
+//
+// CORS is not globally enabled here. Same-origin browser calls do not need it,
+// and a fixed allow-origin header would bind the API to one brand domain.
+// Cross-origin integrations must opt in at their route boundary with a
+// validated, product-specific origin allowlist.
 
 export function secureJson(
   data: unknown,
@@ -13,18 +18,10 @@ export function secureJson(
     status: options.status ?? 200,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      // Cache
       'Cache-Control': options.cache ?? 'no-store',
-      // Security
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'no-referrer',
-      // CORS — locked to the app's origin only
-      'Access-Control-Allow-Origin': 'https://petersmartlink.com',
-      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'Content-Type, X-Otya-Timestamp, X-Otya-Signature, X-Otya-Device-Id',
-      // Diagnostics
       ...(options.source ? { 'X-Theme-Source': options.source } : {}),
     },
   })

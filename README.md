@@ -57,7 +57,10 @@ Merging source code is not a production deployment. The production deployment wo
 ## Public information
 
 - Otya: https://otya.site
-- Developer documentation: https://github.com/OtyaHQ/OHub
+- API: https://api.otya.site
+- Documentation: https://docs.otya.site
+- Status: https://status.otya.site
+- Space: https://space.otya.site
 - OHub: https://github.com/OtyaHQ/OHub
 
 Keep customer-facing product documentation on the official public surfaces. Do not publish secrets, private endpoints, internal infrastructure inventories, customer records, recovery material, signing keys or administrative procedures here.

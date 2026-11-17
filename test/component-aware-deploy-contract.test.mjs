@@ -58,9 +58,10 @@ test('multi-component deploys remain ordered and fail closed', () => {
   assert.match(workflow, /needs\.deploy-otyapoint\.result == 'success' \|\| needs\.deploy-otyapoint\.result == 'skipped'/)
 })
 
-test('live verification covers canonical and legacy Otya download paths after an authorized deploy', () => {
-  assert.match(workflow, /https:\/\/petersmartlink\.com\/download\/otya /)
+test('live verification covers canonical Otya downloads and legacy compatibility after an authorized deploy', () => {
+  assert.match(workflow, /https:\/\/otya\.site\/download\/otya-player /)
   assert.match(workflow, /https:\/\/petersmartlink\.com\/download\/otya-player /)
+  assert.match(workflow, /check_legacy_redirect https:\/\/petersmartlink\.com\/ otya\.site/)
   assert.match(workflow, /needs\.plan-deploy\.outputs\.any_runtime == 'true'/)
   assert.match(workflow, /needs\.validate\.result == 'success'/)
   assert.match(workflow, /needs\.authorize-deploy\.result == 'success'/)

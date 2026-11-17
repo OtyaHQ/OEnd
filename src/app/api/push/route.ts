@@ -4,17 +4,21 @@ import { secureJson, errorJson } from '@/lib/response'
 import { getDB } from '@/lib/d1'
 import { getFcmAccessToken, sendFcmWithToken } from '@/lib/fcm'
 import { verifyAdminSession } from '@/lib/admin_auth'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 const CHUNK_SIZE = 100
-const OTYA_DOWNLOAD_URL = 'https://petersmartlink.com/download/otya-player'
+const OTYA_DOWNLOAD_URL = `${PUBLIC_URLS.primary}/download/otya-player`
+
+function approvedPublicOrigins(): Set<string> {
+  return new Set([PUBLIC_URLS.primary, PUBLIC_URLS.docs, PUBLIC_URLS.status, PUBLIC_URLS.space]
+    .map(value => new URL(value).origin))
+}
 
 function officialNotificationUrl(value: string): string | null {
   try {
     const url = new URL(value)
-    const host = url.hostname.toLowerCase()
     if (url.protocol !== 'https:' || url.username || url.password ||
-        (url.port && url.port !== '443') ||
-        (host !== 'petersmartlink.com' && !host.endsWith('.petersmartlink.com'))) {
+        (url.port && url.port !== '443') || !approvedPublicOrigins().has(url.origin)) {
       return null
     }
     return url.toString()
@@ -23,10 +27,15 @@ function officialNotificationUrl(value: string): string | null {
   }
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://petersmartlink.com',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+function corsHeaders(request?: Request) {
+  const origin = request?.headers.get('Origin') ?? ''
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
+  })
+  if (origin && approvedPublicOrigins().has(origin)) headers.set('Access-Control-Allow-Origin', origin)
+  return headers
 }
 
 export async function POST(req: NextRequest) {
@@ -114,6 +123,6 @@ export async function POST(req: NextRequest) {
   return secureJson({ ok: true, sent: totalSent, failed: totalFailed, total: tokens.length, ts: Date.now() })
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS })
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request) })
 }

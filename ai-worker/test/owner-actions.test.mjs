@@ -35,7 +35,7 @@ test('Telegram writes require prepare then exact approval and go through Otya co
   let externalWrites = 0
   globalThis.fetch = async (url, init) => {
     externalWrites += 1
-    assert.equal(String(url), 'https://petersmartlink.com/api/admin/telegram/test')
+    assert.equal(String(url), 'https://api.otya.site/api/admin/telegram/test')
     const headers = new Headers(init.headers)
     assert.equal(headers.get('X-OTYA-Internal-Secret'), 'owner-secret')
     assert.equal(headers.get('X-OTYA-Admin-Action'), 'telegram')

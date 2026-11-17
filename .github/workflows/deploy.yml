@@ -407,29 +407,49 @@ jobs:
             head -c 1000 /tmp/otya-smoke-body 2>/dev/null || true
             exit 1
           }
-          check https://petersmartlink.com/ '^(200|301|302|307|308)$'
+          # Canonical Otya public surfaces must serve the production release.
+          check https://otya.site/ '^200$'
+          check https://otya.site/latest '^(200|301|302|307|308)$'
+          check https://otya.site/download/otya-player '^(200|301|302|307|308)$'
+          check https://api.otya.site/api/version '^(200|401)$'
+          check https://api.otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^200$'
+          check https://status.otya.site/ '^200$'
+          check https://space.otya.site/ '^(200|302|401)$'
+          # Keep API/update compatibility for installed app versions while old
+          # browser-facing hosts redirect to the Otya-branded hostnames.
           check https://petersmartlink.com/latest '^(200|301|302|307|308)$'
-          check https://petersmartlink.com/download '^(200|301|302|307|308)$'
-          check https://petersmartlink.com/download/otya '^(200|301|302|307|308)$'
-          check https://petersmartlink.com/download/otya-player '^(200|301|302|307|308)$'
           check https://petersmartlink.com/api/version '^(200|401)$'
-          check https://petersmartlink.com/api/security/turnstile/config '^200$'
-          check https://docs.petersmartlink.com/ '^(200|301|302|307|308)$'
-          check https://status.petersmartlink.com/ '^(200|301|302|307|308)$'
-          check https://space.petersmartlink.com/ '^(200|301|302|307|308)$'
+          check https://petersmartlink.com/download/otya-player '^(200|301|302|307|308)$'
+          check_legacy_redirect() {
+            local url="$1"
+            local expected="$2"
+            local result=""
+            result="$(curl --silent --show-error --output /dev/null --write-out '%{http_code} %{redirect_url}' --connect-timeout 10 --max-time 20 --max-redirs 0 "$url" || true)"
+            if ! printf '%s' "$result" | grep -Eq "^(301|302|307|308) https://${expected}/"; then
+              echo "::error::Legacy browser host did not redirect to its canonical Otya host: $url -> ${result:-network-error}"
+              exit 1
+            fi
+            echo "OK $url -> $result"
+          }
+          check_legacy_redirect https://petersmartlink.com/ otya.site
+          check_legacy_redirect https://www.petersmartlink.com/ otya.site
+          check_legacy_redirect https://docs.petersmartlink.com/ docs.otya.site
+          check_legacy_redirect https://status.petersmartlink.com/ status.otya.site
+          check_legacy_redirect https://space.petersmartlink.com/ space.otya.site
       - name: Verify core trust surfaces
         if: ${{ needs.plan-deploy.outputs.core == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
-            https://petersmartlink.com/.well-known/security.txt \
+            https://otya.site/.well-known/security.txt \
             --output /tmp/otya-security.txt
-          grep -Fxq 'Contact: mailto:support@petersmartlink.com' /tmp/otya-security.txt
-          grep -Fxq 'Canonical: https://petersmartlink.com/.well-known/security.txt' /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
 
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
-            https://status.petersmartlink.com/api/status \
+            https://status.otya.site/api/status \
             --output /tmp/otya-status.json
           python3 - <<'PY'
           import json
@@ -448,7 +468,7 @@ jobs:
           print('Core public trust surfaces are healthy and privacy-bounded')
           PY
 
-          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://petersmartlink.com/api/security/turnstile/config || true)"
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://api.otya.site/api/security/turnstile/config || true)"
           test "$turnstile_status" = "200" || {
             echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
             head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
@@ -465,7 +485,7 @@ jobs:
             exit 1
           }
           # Resend callbacks must reach the signed handler; GET is deliberately rejected.
-          check https://petersmartlink.com/webhooks/ '^405$'
-          check https://docs.petersmartlink.com/ '^(200|301|302|307|308)$'
-          check https://status.petersmartlink.com/ '^(200|301|302|307|308)$'
-          check https://space.petersmartlink.com/ '^(200|301|302|307|308)$'
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^200$'
+          check https://status.otya.site/ '^200$'
+          check https://space.otya.site/ '^(200|302|401)$'

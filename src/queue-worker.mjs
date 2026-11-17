@@ -144,7 +144,7 @@ async function sendDailyAbuseReport(env) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'OTYA Backend <noreply@petersmartlink.com>',
+        from: `Otya <${env.OTYA_NO_REPLY_EMAIL || 'noreply@otya.site'}>`,
         to: [env.ADMIN_REPORT_EMAIL || 'petersmartlink@gmail.com'],
         subject: `[OTYA Backend] Daily Abuse Report — ${new Date().toDateString()}`,
         text,
@@ -220,7 +220,7 @@ async function handlePushMessage(msg, env) {
 
   if (!title || !body) throw new Error('Missing required fields: title, body')
 
-  const link = url ?? env.WEBSITE_URL ?? 'https://petersmartlink.com/download/otya-player'
+  const link = url ?? env.OTYA_DOWNLOAD_URL ?? `${env.OTYA_PUBLIC_URL || env.WEBSITE_URL || 'https://otya.site'}/download/otya-player`
   const data = { url: String(link) }
   for (const [key, value] of Object.entries(msg?.data ?? {})) {
     if (value !== undefined && value !== null) data[String(key)] = String(value)

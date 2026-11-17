@@ -1,8 +1,9 @@
 import { OTYA } from '@/lib/constants'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import Link from 'next/link'
 
 const GROUPS = [
-  { title: 'Otya', links: [['Otya Media', '/otya-player'], ['Download for Android', '/download/otya-player'], ['Your Space', 'https://space.petersmartlink.com']] },
+  { title: 'Otya', links: [['Otya Media', '/otya-player'], ['Download for Android', '/download/otya-player'], ['Your Space', PUBLIC_URLS.space]] },
   { title: 'Visit', links: [['OtyaPoint shop', '/otyapoint'], ['Products', '/apps'], ['Company', '/company']] },
   { title: 'Support', links: [['Help', '/help'], ['Journal', '/blog'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Delete account', '/delete-account']] },
 ] as const

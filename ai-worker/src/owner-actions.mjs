@@ -1,7 +1,6 @@
 import { handleSupportEmailAdmin } from './support-email.mjs'
 
 const RESEND_API = 'https://api.resend.com/emails'
-const OTYA_CORE_URL = 'https://petersmartlink.com'
 const ACTION_TTL_SECONDS = 15 * 60
 const PROVIDER_TIMEOUT_MS = 12000
 const LATEST_ACTION_KEY = 'owner-action:latest'
@@ -19,6 +18,16 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
     'X-Content-Type-Options': 'nosniff',
   },
 })
+
+function coreApiOrigin(env) {
+  try {
+    const url = new URL(env.OTYA_API_URL || 'https://api.otya.site')
+    return url.protocol === 'https:' && !url.username && !url.password ? url.origin : 'https://api.otya.site'
+  } catch { return 'https://api.otya.site' }
+}
+
+function noReplyEmail(env) { return env.OTYA_NO_REPLY_EMAIL || 'noreply@otya.site' }
+function supportEmail(env) { return env.OTYA_SUPPORT_EMAIL || 'support@otya.site' }
 
 function authorized(request, env) {
   return Boolean(env.INTERNAL_SECRET)
@@ -86,7 +95,7 @@ function normalizeAction(type, payload, env) {
 
 async function executeTelegram(env, action) {
   if (!env.INTERNAL_SECRET) throw new Error('Otya internal Telegram gateway is not configured')
-  const response = await fetch(`${OTYA_CORE_URL}/api/admin/telegram/test`, {
+  const response = await fetch(`${coreApiOrigin(env)}/api/admin/telegram/test`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -120,9 +129,9 @@ async function executeOwnerEmail(env, action) {
       'Idempotency-Key': `otya-owner-${action.id}`,
     },
     body: JSON.stringify({
-      from: 'OTYA <noreply@petersmartlink.com>',
+      from: `Otya <${noReplyEmail(env)}>`,
       to: [to],
-      reply_to: 'support@petersmartlink.com',
+      reply_to: supportEmail(env),
       subject: action.payload.subject,
       text: action.payload.text,
     }),

@@ -12,7 +12,8 @@ test('owner factors are resolved by the authenticated Otya sign-in journey', () 
   assert.match(signIn, /async function routeAuthenticatedSession\(\)/)
   assert.match(signIn, /await beginOwnerVerification\(\)/)
   assert.match(signIn, /mode === 'owner-otp'/)
-  assert.match(signIn, /mode === 'owner-telegram'/)
+  assert.match(signIn, /mode === 'owner-otp'/)
+  assert.doesNotMatch(signIn, /owner-telegram|Telegram challenge/)
 })
 
 test('browser admin routes stay unavailable while their protected backend boundary remains', () => {

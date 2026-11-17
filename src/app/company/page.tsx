@@ -2,11 +2,12 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const metadata: Metadata = {
   title: 'Otya | Company and ecosystem',
   description: 'Discover the Otya ecosystem: Otya OS, Otya End, OtyaPoint, Otya Media, OtyaHub and Next. Built in Uganda.',
-  alternates: { canonical: 'https://petersmartlink.com/company' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/company` },
 }
 
 const principles = [
@@ -50,7 +51,7 @@ export default function CompanyPage() {
             <div className="mt-4 grid gap-3 text-sm">
               <Link href="/apps" className="font-bold">Products →</Link>
               <Link href="/developers" className="font-bold">Developer resources →</Link>
-              <Link href="https://docs.petersmartlink.com" className="font-bold">Documentation →</Link>
+              <Link href={PUBLIC_URLS.docs} className="font-bold">Documentation →</Link>
               <Link href="/contact" className="font-bold">Contact →</Link>
             </div>
           </div>

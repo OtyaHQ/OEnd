@@ -3,32 +3,29 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const auth = readFileSync(new URL('../src/admin-mfa.ts', import.meta.url), 'utf8')
+const login = readFileSync(new URL('../src/telegram-login.ts', import.meta.url), 'utf8')
 const telegram = readFileSync(new URL('../../src/telegram-entrypoint.mjs', import.meta.url), 'utf8')
+const telegramBot = readFileSync(new URL('../../src/lib/telegram-bot.mjs', import.meta.url), 'utf8')
 
-test('owner email OTP creates a short-lived single-use Telegram challenge', () => {
-  assert.match(auth, /const TELEGRAM_WINDOW_TTL = 10 \* 60/)
-  assert.match(auth, /const telegramChallenge = randomToken\(18\)/)
-  assert.match(auth, /telegramChallengeDigest\(telegramChallenge\)/)
-  assert.match(auth, /TELEGRAM_CHALLENGE_PREFIX/)
-  assert.match(auth, /telegram_challenge: telegramChallenge/)
-  assert.match(auth, /await env\.AUTH_KV\.delete\(`\$\{TELEGRAM_CHALLENGE_PREFIX\}\$\{pending\}`\)/)
+test('email OTP is the owner step-up factor and Telegram is optional delivery only', () => {
+  assert.match(auth, /const OTP_TTL = 10 \* 60/)
+  assert.match(auth, /admin_mfa_otp:/)
+  assert.match(auth, /otpDigest\(user\.id, otp\)/)
+  assert.match(auth, /sendLinkedTelegramOtp\(env, user\.id, otp, 'Next owner device enrollment'\)/)
+  assert.match(auth, /Email OTP is the owner step-up proof/)
+  assert.match(auth, /admin_mfa_complete:/)
+  assert.doesNotMatch(auth, /telegram-challenge|markAdminTelegramComplete|TELEGRAM_CHALLENGE_PREFIX/)
 })
 
-test('Telegram challenge confirmation is private and bound to the linked Telegram subject', () => {
-  assert.match(auth, /\/auth\/admin\/telegram-challenge\/confirm/)
-  assert.match(auth, /X-OTYA-Internal-Secret/)
-  assert.match(auth, /timingSafeEqual\(suppliedSecret, env\.INTERNAL_SECRET\)/)
-  assert.match(auth, /provider = 'telegram' AND provider_subject = \?/)
-  assert.match(auth, /linked\.user_id !== userId/)
-  assert.match(auth, /markAdminTelegramComplete\(env, userId\)/)
+test('Telegram linking cannot create an Otya session or confirm owner step-up', () => {
+  assert.match(login, /if \(stored\.mode !== 'link' \|\| !stored\.userId\)/)
+  assert.match(login, /TELEGRAM_LOGIN_DISABLED/)
+  assert.doesNotMatch(auth, /telegram-challenge\/confirm|markAdminTelegramComplete/)
+  assert.doesNotMatch(telegram, /auth\/admin\/telegram-challenge\/confirm/)
 })
 
-test('Otya Core handles only signed private owner deep-link starts and confirms through Auth binding', () => {
-  assert.match(telegram, /X-Telegram-Bot-Api-Secret-Token/)
-  assert.match(telegram, /chat\?\.type !== 'private'/)
-  assert.match(telegram, /owner_\(\[A-Za-z0-9_-\]\{16,80\}\)/)
+test('Otya Core keeps webhook verification and the Auth service binding', () => {
+  assert.match(telegramBot, /X-Telegram-Bot-Api-Secret-Token/)
   assert.match(telegram, /env\.AUTH\.fetch/)
-  assert.match(telegram, /auth\/admin\/telegram-challenge\/confirm/)
-  assert.match(telegram, /X-OTYA-Internal-Secret/)
-  assert.match(telegram, /telegram_user_id: enrollment\.telegramUserId/)
+  assert.match(telegram, /TELEGRAM_WEBHOOK_FINGERPRINT_KEY/)
 })

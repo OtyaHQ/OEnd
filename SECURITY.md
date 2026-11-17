@@ -4,7 +4,7 @@
 
 Do not publish production secrets, API keys, JWTs, refresh tokens, OTPs, Cloudflare credentials, Resend credentials, Google tokens, signing material, private user data, exploit details or account-recovery material in issues, pull requests, discussions, logs or screenshots.
 
-Use the repository's private GitHub Security Advisory flow when available. If that is unavailable, use the official support/contact channel published on `petersmartlink.com` and state clearly that the report is security-sensitive.
+Use the repository's private GitHub Security Advisory flow when available. If that is unavailable, use the official security contact published on the Otya website at `otya.site` and state clearly that the report is security-sensitive.
 
 A useful report should include the affected component, reproducible steps, expected and actual behavior, security impact, and sanitized evidence with all credentials and personal data removed.
 
