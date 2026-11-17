@@ -130,6 +130,9 @@ service = "otya-auth"
 [[services]]
 binding = "AI_SUPPORT"
 service = "otya-next"
+[[services]]
+binding = "OTYAPOINT"
+service = "otyapoint-api"
 
 [[workflows]]
 name = "otya-release"
