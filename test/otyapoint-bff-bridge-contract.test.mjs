@@ -39,6 +39,21 @@ test('the staff navigation is shown only after OtyaPoint verifies an active staf
   assert.match(chrome, /const groups = businessAccess[\\s\\S]*?\\[\\.\\.\\.GROUPS/)
 })
 
+test('owner bootstrap requires verified Otya identity and an allowlisted account', () => {
+  assert.match(router, /async function bootstrapOtyaPointOwner\(request, url, env\)/)
+  assert.match(router, /env\.AUTH\.fetch/)
+  assert.match(router, /env\.ADMIN_EMAILS/)
+  assert.match(router, /env\.OTYAPOINT_BOOTSTRAP_SECRET/)
+  assert.match(router, /x-otyapoint-bootstrap-key/)
+  assert.match(router, /owner_bootstrap_not_authorized/)
+  assert.match(dashboard, /mutate<[^>]+>\('\\/bootstrap-owner'/)
+  assert.match(dashboard, /branchCode: 'MBR001'/)
+  assert.match(dashboard, /district: 'Lwengo District'/)
+  assert.match(dashboard, /townCouncil: 'Mbirizi Town Council'/)
+  assert.match(dashboard, /locationLabel: 'Old Market, Mbirizi'/)
+  assert.doesNotMatch(dashboard, /OTYAPOINT_BOOTSTRAP_SECRET|x-otyapoint-bootstrap-key/)
+})
+
 test('the OtyaPoint dashboard consumes branch-scoped API data and hides unauthorized work areas', () => {
   assert.match(dashboard, /fetch\('\/api\/point' \+ path/)
   assert.match(dashboard, /X-Otya-Branch-Id/)
