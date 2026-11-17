@@ -34,6 +34,21 @@ async function call<T>(path: string, branchId?: string) {
   return { response, payload }
 }
 
+async function mutate<T>(path: string, body: unknown) {
+  const response = await fetch('/api/point' + path, {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    cache: 'no-store',
+    body: JSON.stringify(body),
+  })
+  const payload = await response.json().catch(() => ({})) as Payload<T>
+  if (response.status === 401) {
+    window.location.replace('/sign-in?next=' + encodeURIComponent('/space/otyapoint'))
+  }
+  return { response, payload }
+}
+
 function money(value: number | undefined, currency = 'UGX') {
   return new Intl.NumberFormat('en-UG', { style: 'currency', currency, maximumFractionDigits: 0 }).format(Number(value || 0))
 }
@@ -55,6 +70,15 @@ export function SpaceOtyaPointDashboard() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState('')
+  const [branchCreating, setBranchCreating] = useState(false)
+  const [branchFormError, setBranchFormError] = useState('')
+  const [branchForm, setBranchForm] = useState({
+    branchCode: 'MBR001',
+    name: 'Mbirizi Main Shop',
+    district: 'Lwengo District',
+    townCouncil: 'Mbirizi Town Council',
+    locationLabel: 'Old Market, Mbirizi',
+  })
 
   const loadBranch = useCallback(async (selected: string, identity: Me) => {
     setBranchError('')
@@ -93,11 +117,19 @@ export function SpaceOtyaPointDashboard() {
   const bootstrap = useCallback(async () => {
     setError('')
     setBranchError('')
-    const identity = await call<Me>('/api/me')
+    let identity = await call<Me>('/api/me')
     if (identity.response.status === 401) return
     if (identity.response.status === 403) {
+      // The only self-provisioning path is a one-time, server-side bootstrap
+      // restricted to the configured administrator allowlist in Otya Core.
+      const bootstrap = await mutate<{ id: string; role: string }>('/bootstrap-owner', { displayName: '' })
+      if (bootstrap.response.ok || bootstrap.response.status === 409) {
+        identity = await call<Me>('/api/me')
+      }
+    }
+    if (identity.response.status === 403) {
       setMe(null)
-      setError('This Otya account does not have an active OtyaPoint staff membership. Ask the company owner to invite you and assign your work areas.')
+      setError('This Otya account is not on the company owner allowlist and has no active OtyaPoint staff membership. Ask the owner to invite you and assign your work areas.')
       return
     }
     if (!identity.response.ok || !identity.payload.data) {
@@ -119,7 +151,11 @@ export function SpaceOtyaPointDashboard() {
       : active.find(item => Number(item.is_primary) === 1)?.id || active[0]?.id || ''
     setBranchId(preferred)
     if (preferred) await loadBranch(preferred, current)
-    else setBranchError('No active branch is available to this account. Ask the company owner to assign a branch.')
+    else if (current.role === 'SOVEREIGN') {
+      setBranchError('Create the company’s first branch to begin configuring OtyaPoint.')
+    } else {
+      setBranchError('No active branch is available to this account. Ask the company owner to assign a branch.')
+    }
   }, [loadBranch])
 
   useEffect(() => {
@@ -135,6 +171,24 @@ export function SpaceOtyaPointDashboard() {
   async function refresh() {
     setRefreshing(true)
     try { await bootstrap() } finally { setRefreshing(false) }
+  }
+
+  async function createFirstBranch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setBranchCreating(true)
+    setBranchFormError('')
+    try {
+      const created = await mutate<Branch>('/api/branches', { ...branchForm, isPrimary: true })
+      if (!created.response.ok) {
+        setBranchFormError(created.payload.error || 'The primary branch could not be created.')
+        return
+      }
+      await bootstrap()
+    } catch {
+      setBranchFormError('The primary branch could not be created. Check your connection and try again.')
+    } finally {
+      setBranchCreating(false)
+    }
   }
 
   async function selectBranch(next: string) {
@@ -174,6 +228,23 @@ export function SpaceOtyaPointDashboard() {
       {loading && <div className="mt-6 rounded-2xl border p-5 text-sm otya-muted" style={{ borderColor: 'var(--cosmos-divider)' }}>Loading your OtyaPoint access and branch records…</div>}
       {error && <div role="alert" className="mt-6 rounded-2xl border border-amber-500/30 p-5 text-sm leading-6" style={{ background: 'var(--cosmos-card)' }}>{error}</div>}
       {branchError && !error && <div role="alert" className="mt-5 rounded-2xl border border-amber-500/30 p-4 text-sm">{branchError}</div>}
+
+      {me?.role === 'SOVEREIGN' && branches.length === 0 && !loading && !error && (
+        <section className="mt-6 rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
+          <div className="text-[10px] font-black uppercase tracking-[.16em] otya-muted">First-time company setup</div>
+          <h2 className="mt-2 text-xl font-black">Create your primary branch</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 otya-muted">This creates the first operating location for OtyaPoint. Staff assignments and stock opening can be configured after the branch exists.</p>
+          <form onSubmit={event => void createFirstBranch(event)} className="mt-5 grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1 text-xs font-bold otya-muted">Branch code<input required maxLength={24} value={branchForm.branchCode} onChange={event => setBranchForm(value => ({ ...value, branchCode: event.target.value.toUpperCase() }))} className="min-h-11 rounded-xl border bg-transparent px-3 text-sm" style={{ borderColor: 'var(--cosmos-divider)', color: 'var(--cosmos-text-primary)' }} /></label>
+            <label className="grid gap-1 text-xs font-bold otya-muted">Branch name<input required maxLength={120} value={branchForm.name} onChange={event => setBranchForm(value => ({ ...value, name: event.target.value }))} className="min-h-11 rounded-xl border bg-transparent px-3 text-sm" style={{ borderColor: 'var(--cosmos-divider)', color: 'var(--cosmos-text-primary)' }} /></label>
+            <label className="grid gap-1 text-xs font-bold otya-muted">District<input required maxLength={80} value={branchForm.district} onChange={event => setBranchForm(value => ({ ...value, district: event.target.value }))} className="min-h-11 rounded-xl border bg-transparent px-3 text-sm" style={{ borderColor: 'var(--cosmos-divider)', color: 'var(--cosmos-text-primary)' }} /></label>
+            <label className="grid gap-1 text-xs font-bold otya-muted">Town council<input required maxLength={100} value={branchForm.townCouncil} onChange={event => setBranchForm(value => ({ ...value, townCouncil: event.target.value }))} className="min-h-11 rounded-xl border bg-transparent px-3 text-sm" style={{ borderColor: 'var(--cosmos-divider)', color: 'var(--cosmos-text-primary)' }} /></label>
+            <label className="grid gap-1 text-xs font-bold otya-muted sm:col-span-2">Location / trading area<input required maxLength={140} value={branchForm.locationLabel} onChange={event => setBranchForm(value => ({ ...value, locationLabel: event.target.value }))} className="min-h-11 rounded-xl border bg-transparent px-3 text-sm" style={{ borderColor: 'var(--cosmos-divider)', color: 'var(--cosmos-text-primary)' }} /></label>
+            {branchFormError && <p role="alert" className="text-sm text-amber-600 sm:col-span-2">{branchFormError}</p>}
+            <div className="sm:col-span-2"><button type="submit" disabled={branchCreating} className="min-h-11 rounded-xl px-5 text-sm font-black text-white disabled:opacity-50" style={{ background: 'var(--cosmos-accent, #315CDB)' }}>{branchCreating ? 'Creating branch…' : 'Create primary branch'}</button></div>
+          </form>
+        </section>
+      )}
 
       {me && !error && (
         <>
