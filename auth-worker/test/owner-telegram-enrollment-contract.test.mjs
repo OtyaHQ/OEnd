@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 const auth = readFileSync(new URL('../src/admin-mfa.ts', import.meta.url), 'utf8')
 const login = readFileSync(new URL('../src/telegram-login.ts', import.meta.url), 'utf8')
 const telegram = readFileSync(new URL('../../src/telegram-entrypoint.mjs', import.meta.url), 'utf8')
+const telegramBot = readFileSync(new URL('../../src/lib/telegram-bot.mjs', import.meta.url), 'utf8')
 
 test('email OTP is the owner step-up factor and Telegram is optional delivery only', () => {
   assert.match(auth, /const OTP_TTL = 10 \* 60/)
@@ -24,7 +25,7 @@ test('Telegram linking cannot create an Otya session or confirm owner step-up', 
 })
 
 test('Otya Core keeps webhook verification and the Auth service binding', () => {
-  assert.match(telegram, /X-Telegram-Bot-Api-Secret-Token/)
+  assert.match(telegramBot, /X-Telegram-Bot-Api-Secret-Token/)
   assert.match(telegram, /env\.AUTH\.fetch/)
   assert.match(telegram, /TELEGRAM_WEBHOOK_FINGERPRINT_KEY/)
 })
