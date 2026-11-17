@@ -3,7 +3,6 @@ import {
   getTelegramWebhookInfo,
   handleTelegramAdmin,
   handleTelegramWebhook,
-  sendTelegramMessage,
   setTelegramWebhook,
 } from './lib/telegram-bot.mjs'
 export { OtyaReleaseWorkflow } from './entrypoint.mjs'
