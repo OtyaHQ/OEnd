@@ -150,9 +150,24 @@ function allowedBrowserOrigins(env: Env): Set<string> {
   return origins
 }
 
+function isValidEmailAddress(value: string): boolean {
+  if (!value || value.length > 254) return false
+  const at = value.indexOf('@')
+  if (at <= 0 || at !== value.lastIndexOf('@') || at === value.length - 1) return false
+  const local = value.slice(0, at)
+  const domain = value.slice(at + 1)
+  if (local.length > 64 || domain.length > 253 || domain.startsWith('.') || domain.endsWith('.') || domain.includes('..')) return false
+  for (const character of value) {
+    const code = character.charCodeAt(0)
+    if (code <= 32 || code === 127) return false
+  }
+  const dot = domain.lastIndexOf('.')
+  return dot > 0 && dot < domain.length - 1
+}
+
 function noReplyEmail(env: Env): string {
   const value = env.OTYA_NO_REPLY_EMAIL?.trim() || 'noreply@otya.site'
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? value : 'noreply@otya.site'
+  return isValidEmailAddress(value) ? value : 'noreply@otya.site'
 }
 
 function corsHeaders(env: Env, req?: Request): Record<string, string> {
