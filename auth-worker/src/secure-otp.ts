@@ -1,5 +1,5 @@
 import { generateOtp, hashPassword, verifyJwt } from './crypto'
-import { getUserByEmail, getUserById, updatePasswordHash, type D1Database } from './db'
+import { getUserByEmail, getUserById, updatePasswordHash } from './db'
 import { sendResendEmail } from './resend'
 import { sendLinkedTelegramOtp, type TelegramOtpEnv } from './telegram-otp'
 
