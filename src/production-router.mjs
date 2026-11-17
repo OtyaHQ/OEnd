@@ -247,6 +247,64 @@ async function dispatchSurface(request, url, env, ctx, pathname = url.pathname) 
   return dispatchOpenNext(new Request(target.toString(), init), env, ctx)
 }
 
+function cookieValue(request, name) {
+  const raw = request.headers.get('cookie') || ''
+  const prefix = name + '='
+  for (const part of raw.split(';')) {
+    const value = part.trim()
+    if (value.startsWith(prefix)) return value.slice(prefix.length)
+  }
+  return ''
+}
+
+function isCanonicalSpaceHost(hostname, env) {
+  const legacy = new Set(parseHosts(env?.OTYA_LEGACY_HOSTS))
+  return configuredHosts(env, 'space').some(host => host === hostname && !legacy.has(host))
+}
+
+async function proxyOtyaPointApi(request, url, env) {
+  if (url.pathname !== '/api/point' && !url.pathname.startsWith('/api/point/')) return null
+  if (!isCanonicalSpaceHost(url.hostname.toLowerCase(), env)) {
+    return json({ error: 'not_found' }, 404)
+  }
+  if (!env.OTYAPOINT?.fetch) {
+    return json({ error: 'otyapoint_service_unavailable' }, 503)
+  }
+
+  const allowedMethods = new Set(['GET', 'HEAD', 'POST', 'PATCH', 'DELETE'])
+  if (!allowedMethods.has(request.method)) {
+    return json({ error: 'method_not_allowed' }, 405)
+  }
+
+  const accessToken = cookieValue(request, '__Secure-otya_access')
+  if (!accessToken) return json({ error: 'unauthenticated' }, 401)
+
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    const origin = request.headers.get('origin')
+    const fetchSite = request.headers.get('sec-fetch-site')
+    if (origin !== url.origin || fetchSite === 'cross-site') {
+      return json({ error: 'same_origin_required' }, 403)
+    }
+  }
+
+  const suffix = url.pathname.slice('/api/point'.length) || '/'
+  const upstreamUrl = new URL(suffix + url.search, 'https://otyapoint-internal')
+  const headers = new Headers({
+    Authorization: 'Bearer ' + accessToken,
+    Accept: request.headers.get('accept') || 'application/json',
+  })
+  const contentType = request.headers.get('content-type')
+  if (contentType) headers.set('Content-Type', contentType)
+  const branchId = request.headers.get('x-otya-branch-id')
+  if (branchId) headers.set('x-otya-branch-id', branchId)
+  const idempotencyKey = request.headers.get('idempotency-key')
+  if (idempotencyKey) headers.set('idempotency-key', idempotencyKey)
+
+  const init = { method: request.method, headers, redirect: 'manual' }
+  if (request.method !== 'GET' && request.method !== 'HEAD') init.body = request.body
+  return env.OTYAPOINT.fetch(new Request(upstreamUrl.toString(), init))
+}
+
 async function routeOtyaRequest(request, env, ctx) {
   const url = new URL(request.url)
   const host = url.hostname.toLowerCase()
@@ -258,6 +316,9 @@ async function routeOtyaRequest(request, env, ctx) {
     const user = await authenticateTogetherUser(request, env)
     return handleTogetherControl(request, env, user)
   }
+
+  const pointResponse = await proxyOtyaPointApi(request, url, env)
+  if (pointResponse) return pointResponse
 
   if (isCoreBackendRoute(url.pathname)) return backendWorker.fetch(request, env, ctx)
 
