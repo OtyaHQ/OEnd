@@ -307,6 +307,69 @@ async function proxyOtyaPointApi(request, url, env) {
   return env.OTYAPOINT.fetch(new Request(upstreamUrl.toString(), init))
 }
 
+async function bootstrapOtyaPointOwner(request, url, env) {
+  if (url.pathname !== '/api/point/bootstrap-owner') return null
+  if (!isCanonicalSpaceHost(url.hostname.toLowerCase(), env)) return json({ error: 'not_found' }, 404)
+  if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
+  if (!env.AUTH?.fetch || !env.OTYAPOINT?.fetch) return json({ error: 'otyapoint_service_unavailable' }, 503)
+
+  const origin = request.headers.get('origin')
+  const fetchSite = request.headers.get('sec-fetch-site')
+  if (origin !== url.origin || fetchSite === 'cross-site') return json({ error: 'same_origin_required' }, 403)
+
+  const accessToken = cookieValue(request, '__Secure-otya_access')
+  if (!accessToken) return json({ error: 'unauthenticated' }, 401)
+
+  let identity
+  try {
+    const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/verify', {
+      headers: { Authorization: 'Bearer ' + accessToken, Accept: 'application/json' },
+    }))
+    identity = await response.json().catch(() => ({}))
+    if (!response.ok || identity?.ok !== true || !identity?.user_id || !identity?.email) {
+      return json({ error: 'identity_verification_failed' }, 401)
+    }
+  } catch {
+    return json({ error: 'identity_verification_unavailable' }, 503)
+  }
+
+  const allowedAdmins = new Set(String(env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(value => value.trim().toLowerCase())
+    .filter(Boolean))
+  if (!allowedAdmins.has(String(identity.email).toLowerCase())) return json({ error: 'owner_bootstrap_not_authorized' }, 403)
+
+  let bootstrapSecret = ''
+  try {
+    const binding = env.OTYAPOINT_BOOTSTRAP_SECRET
+    bootstrapSecret = typeof binding === 'string'
+      ? binding
+      : binding && typeof binding.get === 'function'
+        ? await binding.get()
+        : ''
+  } catch {
+    return json({ error: 'owner_bootstrap_not_configured' }, 503)
+  }
+  if (typeof bootstrapSecret !== 'string' || bootstrapSecret.length < 32) {
+    return json({ error: 'owner_bootstrap_not_configured' }, 503)
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const displayName = typeof body?.displayName === 'string'
+    ? body.displayName.replace(/[\\u0000-\\u001f]/g, ' ').trim().slice(0, 120)
+    : ''
+  const upstream = new Request('https://otyapoint-internal/api/bootstrap/sovereign', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer ' + accessToken,
+      'Content-Type': 'application/json',
+      'x-otyapoint-bootstrap-key': bootstrapSecret,
+    },
+    body: JSON.stringify({ displayName }),
+  })
+  return env.OTYAPOINT.fetch(upstream)
+}
+
 async function routeOtyaRequest(request, env, ctx) {
   const url = new URL(request.url)
   const host = url.hostname.toLowerCase()
@@ -318,6 +381,9 @@ async function routeOtyaRequest(request, env, ctx) {
     const user = await authenticateTogetherUser(request, env)
     return handleTogetherControl(request, env, user)
   }
+
+  const bootstrapResponse = await bootstrapOtyaPointOwner(request, url, env)
+  if (bootstrapResponse) return bootstrapResponse
 
   const pointResponse = await proxyOtyaPointApi(request, url, env)
   if (pointResponse) return pointResponse
