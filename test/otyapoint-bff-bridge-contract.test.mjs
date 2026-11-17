@@ -46,7 +46,7 @@ test('owner bootstrap requires verified Otya identity and an allowlisted account
   assert.match(router, /env\.OTYAPOINT_BOOTSTRAP_SECRET/)
   assert.match(router, /x-otyapoint-bootstrap-key/)
   assert.match(router, /owner_bootstrap_not_authorized/)
-  assert.match(dashboard, /mutate<[^>]+>\('\\/bootstrap-owner'/)
+  assert.match(dashboard, /mutate<[^>]+>\('\/bootstrap-owner'/)
   assert.match(dashboard, /branchCode: 'MBR001'/)
   assert.match(dashboard, /district: 'Lwengo District'/)
   assert.match(dashboard, /townCouncil: 'Mbirizi Town Council'/)
