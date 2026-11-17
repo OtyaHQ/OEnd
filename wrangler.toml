@@ -133,9 +133,9 @@ service = "otya-next"
 [[services]]
 binding = "OTYAPOINT"
 service = "otyapoint-api"
-[[services]]
-binding = "OMY_PLAY"
-service = "omy-play-api"
+# Omy Play currently has only an isolated staging API, D1 and R2 bucket.
+# Do not bind production Core to staging. The /omy-play route fails closed (503)
+# until a separately reviewed production Omy Play backend is provisioned.
 [[secrets_store_secrets]]
 binding = "OTYAPOINT_BOOTSTRAP_SECRET"
 store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
