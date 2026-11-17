@@ -35,7 +35,7 @@ interface BackupDeleteBody {
 
 const DRIVE_FILE_ID_TTL = 365 * 24 * 60 * 60
 
-function headers(env: BackupRouteEnv): Record<string, string> {
+function headers(_env: BackupRouteEnv): Record<string, string> {
   return {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
