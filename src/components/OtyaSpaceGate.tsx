@@ -55,6 +55,7 @@ function canonicalizeSpaceLocation(publicId: string) {
 
 export function OtyaSpaceGate({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SpaceUser | null>(null)
+  const [businessAccess, setBusinessAccess] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -74,6 +75,13 @@ export function OtyaSpaceGate({ children }: { children: ReactNode }) {
       const verifiedUser = session.user ?? {}
       const publicId = verifiedUser.otya_id?.trim()
       if (publicId && canonicalizeSpaceLocation(publicId)) return
+      const pointAccess = await fetch('/api/point/api/me', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      }).catch(() => null)
+      if (cancelled) return
+      setBusinessAccess(pointAccess?.ok === true)
       setUser(verifiedUser)
     }).catch(() => {
       if (!cancelled) window.location.replace('/sign-in')
@@ -91,5 +99,5 @@ export function OtyaSpaceGate({ children }: { children: ReactNode }) {
     </div>
   }
 
-  return <OtyaSpaceChrome initialUser={user}>{children}</OtyaSpaceChrome>
+  return <OtyaSpaceChrome initialUser={user} businessAccess={businessAccess}>{children}</OtyaSpaceChrome>
 }
