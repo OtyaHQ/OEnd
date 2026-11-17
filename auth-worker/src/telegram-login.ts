@@ -1,5 +1,5 @@
 import { verifyJwt } from './crypto'
-import { assertSchemaReady, getUserById, type D1Database, type UserRow } from './db'
+import { assertSchemaReady, type D1Database } from './db'
 import type { SecretsStoreSecret } from './telegram-otp'
 
 interface KVNamespaceLike {
@@ -67,8 +67,6 @@ function publicRedirect(env: TelegramLoginEnv, path: string): Response {
   return Response.redirect(new URL(path, publicOrigin(env)).toString(), 302)
 }
 const STATE_TTL = 10 * 60
-const ACCESS_TOKEN_TTL_SECS = 15 * 60
-const REFRESH_TOKEN_TTL_SECS = 30 * 24 * 60 * 60
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
