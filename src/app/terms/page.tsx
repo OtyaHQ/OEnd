@@ -2,18 +2,19 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const metadata: Metadata = {
   title: 'Terms | Otya',
   description: 'Terms for using Otya accounts, Next and connected services.',
-  alternates: { canonical: 'https://petersmartlink.com/terms' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/terms` },
 }
 
 const SECTIONS = [
   ['Acceptance', 'By accessing or using Otya websites, accounts, applications or connected services, you agree to these Terms and applicable product-specific policies.'],
   ['Operator and legal identity', 'Otya is the public brand for the connected product family. The current individual operator/account holder for services still contracted in an individual capacity is Peter Katabira. Otya Holdings Limited is the intended parent entity and its URSB registration is in progress; it is not yet represented as an incorporated company or current merchant-account holder. Any move of merchant, settlement or provider accounts to the company will occur only after incorporation and the provider’s formal approval.'],
   ['Otya account', 'One Otya account may be used across connected Otya services. Product-specific data and permissions remain separately scoped. Core local Otya playback does not require an account.'],
-  ['Verification and sign-in', 'Otya may offer email, Google, Telegram, phone or other approved verification methods for sign-in, security and recovery. Third-party providers may apply their own terms to those integrations.'],
+  ['Verification and sign-in', 'Otya Account sign-in is based on email/password and approved Google sign-in. One-time security and recovery codes are sent to the verified account email; if you have already linked Telegram, the same code may also be delivered there as an optional copy. Telegram never creates an Otya account, establishes an identity session or signs you in.'],
   ['Services', 'Otya includes local music and video playback, nearby Transfer, Private, tools, Next, downloads, support, account services and other official Otya features made available through approved channels. The retired built-in Online Music/Jamendo catalog is not part of the current service.'],
   ['Local media', 'You are responsible for media you store, play, organize, transfer or process with Otya and for complying with applicable copyright, privacy and other laws. Otya does not obtain ownership of your local media merely because the app accesses it for a feature you choose.'],
   ['Next', 'Next may generate incorrect or incomplete information. Verify important information independently. Customer-facing Next does not receive access to private administrator systems.'],
@@ -22,7 +23,7 @@ const SECTIONS = [
   ['Third-party services', 'Optional features may interact with services such as Google, Telegram, Firebase, Resend and Cloudflare. Their terms and privacy practices may apply when you use those integrations.'],
   ['Liability', 'To the extent permitted by applicable law, Otya is not responsible for indirect, incidental or consequential losses resulting from use of the services or from third-party service availability.'],
   ['Governing law', 'These terms are governed by the applicable laws of the Republic of Uganda.'],
-  ['Contact', 'Questions about these terms can be sent to support@petersmartlink.com.'],
+  ['Contact', 'Questions about these terms can be sent to support@otya.site.'],
 ]
 
 export default function TermsPage() {

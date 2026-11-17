@@ -57,7 +57,7 @@ OTYA uses **Resend** for verification, password reset, welcome and security emai
 
 ### Private OtyaPoint staff invitations
 
-The Auth Worker also owns the private `POST /internal/notifications/omnipoint/staff-invitation` service-binding route. It sends invitation messages on behalf of OtyaPoint using the existing Resend account; OtyaPoint does not receive a Resend API key. The route rejects requests without both the expected `x-otya-service: otyapoint` marker and a high-entropy shared service secret.
+The Auth Worker also owns the private `POST /internal/notifications/otyapoint/staff-invitation` (legacy `omnipoint` alias retained temporarily) service-binding route. It sends invitation messages on behalf of OtyaPoint using the shared Otya Resend account; OtyaPoint does not receive a Resend API key. The route rejects requests without both the expected `x-otya-service: otyapoint` marker and a high-entropy shared service secret.
 
 To enable this integration after an approved isolated OtyaPoint deployment, generate a unique high-entropy value and set the exact same value as a Worker secret in both OtyaPoint and Otya Auth:
 

@@ -1,3 +1,5 @@
+import { PUBLIC_URLS } from './public-urls'
+
 export const OTYA = {
   name: 'Otya',
   player: 'Otya Media',
@@ -5,13 +7,13 @@ export const OTYA = {
   auth: 'Otya Account',
   console: 'Otya Command Center',
   backend: 'Otya Backend',
-  website: 'https://petersmartlink.com',
-  supportEmail: 'support@petersmartlink.com',
-  noReplyEmail: 'noreply@petersmartlink.com',
+  website: PUBLIC_URLS.primary,
+  supportEmail: PUBLIC_URLS.supportEmail,
+  noReplyEmail: PUBLIC_URLS.noReplyEmail,
   telegramChannel: 'https://t.me/otyaplayer',
   telegramSupport: 'https://t.me/OtyaPlayerBot',
   description: 'Otya brings together local video and music, nearby Send, Private media, practical tools and one secure account. Core playback and nearby sharing remain local-first.',
-} as const;
+} as const
 
 export const SITE_CONFIG = {
   name: OTYA.name,
@@ -23,4 +25,4 @@ export const SITE_CONFIG = {
   telegramChannel: OTYA.telegramChannel,
   address: 'Uganda',
   social: {},
-} as const;
+} as const

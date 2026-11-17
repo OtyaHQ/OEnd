@@ -1,3 +1,4 @@
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -9,10 +10,10 @@ export const metadata: Metadata = {
   title: 'Otya — Digital products and real-world services',
   description: 'Explore the Otya ecosystem: digital products, account services and OtyaPoint shop services in Mbirizi, Lwengo, Uganda.',
   keywords: ['Otya', 'OtyaPoint', 'Otya Media', 'Otya ecosystem', 'Mbirizi electronics shop', 'mobile money agency Mbirizi', 'Uganda technology'],
-  alternates: { canonical: 'https://petersmartlink.com' },
+  alternates: { canonical: PUBLIC_URLS.primary },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com',
+    url: PUBLIC_URLS.primary,
     title: 'Otya — Digital products and real-world services',
     description: 'Explore Otya products and services, including OtyaPoint physical shop services in Mbirizi, Uganda.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Otya ecosystem' }],
@@ -62,7 +63,7 @@ export default function HomePage() {
       <section className="otya-shell py-10 sm:py-14">
         <div className="rounded-[32px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-6 sm:p-8 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-8 items-center">
           <div><div className="otya-kicker">Resources</div><h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">A helping hand, whenever you need it.</h2><p className="mt-4 max-w-[720px] text-sm sm:text-base leading-7 otya-muted">Find step-by-step guides and support options. Our service information page explains what you can check when something is not working.</p></div>
-          <div className="flex flex-wrap lg:flex-col gap-3"><Link href="https://docs.petersmartlink.com" className="cosmos-button inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-black">Documentation</Link><Link href="https://status.petersmartlink.com" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black">Service information</Link></div>
+          <div className="flex flex-wrap lg:flex-col gap-3"><Link href={PUBLIC_URLS.docs} className="cosmos-button inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-black">Documentation</Link><Link href={PUBLIC_URLS.status} className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black">Service information</Link></div>
         </div>
       </section>
     </main>

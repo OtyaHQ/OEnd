@@ -10,13 +10,24 @@ export { OtyaReleaseWorkflow } from './entrypoint.mjs'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
-const APP_ORIGIN = 'https://petersmartlink.com'
-const TELEGRAM_WEBHOOK_URL = 'https://petersmartlink.com/api/telegram/webhook'
 const TELEGRAM_WEBHOOK_FINGERPRINT_KEY = 'telegram:webhook:fingerprint:v1'
 const TELEGRAM_OWNER_UPDATE_PREFIX = 'telegram:owner-enrollment:update:'
 const TELEGRAM_HEALTH_CRON = '*/5 * * * *'
 const AUTH_TIMEOUT_MS = 5000
 
+function configuredOrigin(value, fallback) {
+  try {
+    const url = new URL(typeof value === 'string' ? value : fallback)
+    if (url.protocol === 'https:' && !url.username && !url.password) return url.origin
+  } catch {}
+  return fallback
+}
+function publicOrigin(env) {
+  return configuredOrigin(env.OTYA_PUBLIC_URL || env.WEBSITE_URL, 'https://otya.site')
+}
+function webhookUrl(env) {
+  return new URL('/api/telegram/webhook', configuredOrigin(env.OTYA_API_URL, 'https://api.otya.site')).toString()
+}
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } })
 }
@@ -55,13 +66,13 @@ async function sha256(value) {
 async function webhookFingerprint(env) {
   const secret = await bindingValue(env.TELEGRAM_WEBHOOK_SECRET)
   if (!secret) throw new Error('Telegram webhook secret is unavailable')
-  return sha256(`${TELEGRAM_WEBHOOK_URL}\n${secret}`)
+  return sha256(`${webhookUrl(env)}\n${secret}`)
 }
 async function ensureTelegramWebhook(env, { force = false } = {}) {
   const info = await getTelegramWebhookInfo(env)
   const fingerprint = await webhookFingerprint(env)
   const recorded = env.KV?.get ? await env.KV.get(TELEGRAM_WEBHOOK_FINGERPRINT_KEY) : null
-  const urlMatches = String(info?.url || '') === TELEGRAM_WEBHOOK_URL
+  const urlMatches = String(info?.url || '') === webhookUrl(env)
   const fingerprintMatches = !env.KV?.get || recorded === fingerprint
   if (!force && urlMatches && fingerprintMatches) return { changed: false, info }
 
@@ -129,7 +140,7 @@ function internalAuthorized(request, env) {
 }
 async function authorizeAdmin(request, env) {
   const origin = request.headers.get('Origin')
-  if (request.method !== 'GET' && origin && origin !== APP_ORIGIN) return json({ error: 'Invalid origin' }, 403)
+  if (request.method !== 'GET' && origin && ![publicOrigin(env), configuredOrigin(env.OTYA_SPACE_URL, 'https://space.otya.site'), configuredOrigin(env.OTYA_API_URL, 'https://api.otya.site')].includes(origin)) return json({ error: 'Invalid origin' }, 403)
   const user = await adminUser(request, env)
   if (!user) return json({ error: 'Administrator access required' }, 403)
   if (!await elevated(request, env)) return json({ error: 'Elevated administrator verification required' }, 403)
@@ -140,7 +151,7 @@ async function telegramStatus(env) {
   const next = await probeNext(env)
   try {
     const info = await getTelegramWebhookInfo(env)
-    const webhookConfigured = String(info?.url || '') === TELEGRAM_WEBHOOK_URL
+    const webhookConfigured = String(info?.url || '') === webhookUrl(env)
     const ready = webhookConfigured && next.ready
     return json({
       ok: ready,
@@ -251,7 +262,7 @@ export default {
       try {
         if (action === 'webhook' && request.method === 'POST') {
           const result = await ensureTelegramWebhook(env, { force: true })
-          return json({ ok: true, webhook_registered: Boolean(result?.info?.url === TELEGRAM_WEBHOOK_URL) })
+          return json({ ok: true, webhook_registered: Boolean(result?.info?.url === webhookUrl(env)) })
         }
         return await handleTelegramAdmin(request, env, action)
       } catch (error) {

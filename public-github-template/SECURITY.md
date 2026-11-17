@@ -4,7 +4,7 @@ Security reports should be handled privately. Otya is the public umbrella brand;
 
 ## Report a vulnerability
 
-Email **support@petersmartlink.com** with a clear subject such as `OTYA security report`.
+Email **security@otya.site** with a clear subject such as `OTYA security report`.
 
 Please include:
 

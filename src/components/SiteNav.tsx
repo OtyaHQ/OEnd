@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { OTYA } from '@/lib/constants'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 import { signOutBrowser } from '@/lib/browser-sign-out.mjs'
 import { useEffect, useRef, useState } from 'react'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
@@ -119,15 +120,15 @@ export function SiteNav() {
         <Brand />
         <nav className="hidden lg:flex ml-7 items-center gap-1" aria-label="Main navigation">{publicLinks.map(([label, href]) => <Link key={href} href={href.startsWith('/') ? `${OTYA.website}${href}` : href} className="min-h-10 inline-flex items-center rounded-full px-3.5 text-[13px] font-extrabold otya-muted hover:bg-black/[.045] dark:hover:bg-white/[.06]">{label}</Link>)}</nav>
         <div className="ml-auto flex items-center gap-2">
-          <a href="https://docs.petersmartlink.com" className="hidden md:inline-flex min-h-10 items-center rounded-full px-3.5 text-xs font-black otya-muted hover:bg-black/[.04] dark:hover:bg-white/[.05]">Docs</a>
-          {signedIn ? <a href="https://space.petersmartlink.com" className="hidden sm:inline-flex min-h-10 items-center gap-2 rounded-full border border-black/[.08] dark:border-white/[.10] px-3.5 text-xs font-black hover:bg-black/[.04] dark:hover:bg-white/[.05]" aria-label="Open Space"><SpaceGlyph/>Space</a> : <a href="https://space.petersmartlink.com/sign-in" className="hidden sm:inline-flex min-h-10 items-center rounded-full px-3.5 text-xs font-black">Sign in</a>}
+          <a href={PUBLIC_URLS.docs} className="hidden md:inline-flex min-h-10 items-center rounded-full px-3.5 text-xs font-black otya-muted hover:bg-black/[.04] dark:hover:bg-white/[.05]">Docs</a>
+          {signedIn ? <a href={PUBLIC_URLS.space} className="hidden sm:inline-flex min-h-10 items-center gap-2 rounded-full border border-black/[.08] dark:border-white/[.10] px-3.5 text-xs font-black hover:bg-black/[.04] dark:hover:bg-white/[.05]" aria-label="Open Space"><SpaceGlyph/>Space</a> : <a href={`${PUBLIC_URLS.space}/sign-in`} className="hidden sm:inline-flex min-h-10 items-center rounded-full px-3.5 text-xs font-black">Sign in</a>}
           <div ref={accountWrap} className="relative">
-            <button onClick={() => signedIn ? setAccountOpen(value => !value) : window.location.assign('https://space.petersmartlink.com/sign-in')} aria-label={signedIn ? 'Open account menu' : 'Sign in'} className="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-black/[.08] dark:border-white/[.10] bg-black/[.025] dark:bg-white/[.04]">
+            <button onClick={() => signedIn ? setAccountOpen(value => !value) : window.location.assign(`${PUBLIC_URLS.space}/sign-in`)} aria-label={signedIn ? 'Open account menu' : 'Sign in'} className="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-black/[.08] dark:border-white/[.10] bg-black/[.025] dark:bg-white/[.04]">
               {!signedIn ? <AccountGlyph/> : avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer"/> : <span className="text-xs font-black">{initials(user ?? undefined)}</span>}
             </button>
             {signedIn && accountOpen && <div className="absolute right-0 mt-2 w-[280px] overflow-hidden rounded-[22px] border border-black/[.08] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] shadow-2xl">
               <div className="px-4 py-4 border-b border-black/[.06] dark:border-white/[.08]"><div className="font-black truncate">{user?.name || 'Otya account'}</div><div className="mt-1 text-xs otya-muted truncate">{user?.email}</div></div>
-              <div className="p-2 text-sm"><a href="https://space.petersmartlink.com" onClick={() => setAccountOpen(false)} className="block rounded-xl px-3 py-2.5 font-bold hover:bg-black/[.04] dark:hover:bg-white/[.06]">Open Space</a><a href="https://space.petersmartlink.com/account/" onClick={() => setAccountOpen(false)} className="block rounded-xl px-3 py-2.5 font-bold hover:bg-black/[.04] dark:hover:bg-white/[.06]">Manage account</a><button onClick={() => void signOut()} className="w-full text-left rounded-xl px-3 py-2.5 text-red-500 hover:bg-black/[.04] dark:hover:bg-white/[.06]">Sign out</button></div>
+              <div className="p-2 text-sm"><a href={PUBLIC_URLS.space} onClick={() => setAccountOpen(false)} className="block rounded-xl px-3 py-2.5 font-bold hover:bg-black/[.04] dark:hover:bg-white/[.06]">Open Space</a><a href={`${PUBLIC_URLS.space}/account/`} onClick={() => setAccountOpen(false)} className="block rounded-xl px-3 py-2.5 font-bold hover:bg-black/[.04] dark:hover:bg-white/[.06]">Manage account</a><button onClick={() => void signOut()} className="w-full text-left rounded-xl px-3 py-2.5 text-red-500 hover:bg-black/[.04] dark:hover:bg-white/[.06]">Sign out</button></div>
             </div>}
           </div>
         </div>
@@ -139,10 +140,10 @@ export function SiteNav() {
       <aside ref={menuPanel} id="otya-mobile-menu" role="dialog" aria-modal={menuOpen} aria-label="Main navigation" className={`absolute inset-y-0 left-0 w-[88vw] max-w-[360px] border-r border-black/[.08] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] shadow-2xl transition-transform ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-16 flex items-center px-4 border-b border-black/[.06] dark:border-white/[.08]"><Brand/><button onClick={() => setMenuOpen(false)} aria-label="Close menu" className="ml-auto h-11 w-11 grid place-items-center rounded-full"><CloseGlyph/></button></div>
         <div className="p-4 text-sm">
-          {signedIn && <a href="https://space.petersmartlink.com" onClick={() => setMenuOpen(false)} className="mb-4 flex items-center gap-3 rounded-2xl px-3 py-3 font-black bg-black/[.035] dark:bg-white/[.05]"><SpaceGlyph/>Open Space</a>}
+          {signedIn && <a href={PUBLIC_URLS.space} onClick={() => setMenuOpen(false)} className="mb-4 flex items-center gap-3 rounded-2xl px-3 py-3 font-black bg-black/[.035] dark:bg-white/[.05]"><SpaceGlyph/>Open Space</a>}
           <div className="space-y-1">{publicLinks.map(([label, href]) => <Link key={href} href={href.startsWith('/') ? `${OTYA.website}${href}` : href} onClick={() => setMenuOpen(false)} className="block rounded-2xl px-3 py-3 font-bold hover:bg-black/[.045] dark:hover:bg-white/[.06]">{label}</Link>)}</div>
-          <div className="mt-4 pt-4 border-t border-black/[.06] dark:border-white/[.08] space-y-1"><a href="https://docs.petersmartlink.com" className="block rounded-2xl px-3 py-3 font-bold">Documentation</a><a href="https://status.petersmartlink.com" className="block rounded-2xl px-3 py-3 font-bold">Service status</a></div>
-          {signedIn ? <button onClick={() => void signOut()} className="mt-4 w-full text-left rounded-2xl px-3 py-3 text-red-500">Sign out</button> : <a href="https://space.petersmartlink.com/sign-in" onClick={() => setMenuOpen(false)} className="cosmos-button mt-4 flex min-h-11 items-center justify-center rounded-full px-4 font-black">Sign in</a>}
+          <div className="mt-4 pt-4 border-t border-black/[.06] dark:border-white/[.08] space-y-1"><a href={PUBLIC_URLS.docs} className="block rounded-2xl px-3 py-3 font-bold">Documentation</a><a href={PUBLIC_URLS.status} className="block rounded-2xl px-3 py-3 font-bold">Service status</a></div>
+          {signedIn ? <button onClick={() => void signOut()} className="mt-4 w-full text-left rounded-2xl px-3 py-3 text-red-500">Sign out</button> : <a href={`${PUBLIC_URLS.space}/sign-in`} onClick={() => setMenuOpen(false)} className="cosmos-button mt-4 flex min-h-11 items-center justify-center rounded-full px-4 font-black">Sign in</a>}
         </div>
       </aside>
     </div>

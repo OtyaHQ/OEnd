@@ -7,11 +7,18 @@ import { secureJson, errorJson } from '@/lib/response'
 import { getDB } from '@/lib/d1'
 import { getSystemStats, checkEndpointHealth } from '@/lib/monitor'
 import { verifyAdminSession } from '@/lib/admin_auth'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  'https://petersmartlink.com',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+function corsHeaders(request?: Request) {
+  const origin = request?.headers.get('Origin') ?? ''
+  const allowed = new Set([PUBLIC_URLS.primary, PUBLIC_URLS.api, PUBLIC_URLS.space].map(value => new URL(value).origin))
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Vary': 'Origin',
+  })
+  if (origin && allowed.has(origin)) headers.set('Access-Control-Allow-Origin', origin)
+  return headers
 }
 
 export async function GET(req: NextRequest) {
@@ -46,9 +53,9 @@ export async function GET(req: NextRequest) {
       'SELECT AVG(stars) as avg, COUNT(*) as total FROM ratings'
     ).first<{ avg: number; total: number }>().catch(() => null),
     checkEndpointHealth([
-      'https://petersmartlink.com',
-      'https://petersmartlink.com/latest',
-      'https://petersmartlink.com/download/otya-player',
+      PUBLIC_URLS.primary,
+      `${PUBLIC_URLS.api}/health`,
+      `${PUBLIC_URLS.primary}/download/otya-player`,
     ]),
     db.prepare(`
       SELECT
@@ -131,6 +138,6 @@ export async function GET(req: NextRequest) {
   }, { cache: 'no-store' })
 }
 
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, { status: 204, headers: corsHeaders(req) })
 }

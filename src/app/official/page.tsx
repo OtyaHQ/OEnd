@@ -4,14 +4,15 @@ import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 import { OTYA } from '@/lib/constants'
+import { PUBLIC_URLS } from '@/lib/public-urls'
 
 export const metadata: Metadata = {
   title: 'Official Otya links',
   description: 'Authoritative Otya page for official Otya web, Telegram, support and product links.',
-  alternates: { canonical: 'https://petersmartlink.com/official' },
+  alternates: { canonical: `${PUBLIC_URLS.primary}/official` },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com/official',
+    url: `${PUBLIC_URLS.primary}/official`,
     title: 'Official Otya links',
     description: 'Authoritative links for Otya products and official Telegram properties operated by Otya.',
   },
@@ -55,7 +56,7 @@ export default function OfficialLinksPage() {
 
           <Link href="/otya-player" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
             <span className="w-12 h-12 shrink-0 rounded-2xl grid place-items-center border border-black/[.06] dark:border-white/[.08]"><OtyaBrandMark size={34}/></span>
-            <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official product page</span><strong className="block mt-1 text-xl">Otya Media</strong><span className="block mt-1 text-sm otya-muted">Product information and official distribution links on petersmartlink.com</span></span>
+            <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official product page</span><strong className="block mt-1 text-xl">Otya Media</strong><span className="block mt-1 text-sm otya-muted">Product information and official distribution links on the official Otya website</span></span>
           </Link>
         </section>
 
@@ -69,7 +70,7 @@ export default function OfficialLinksPage() {
           <Link href="/company">About Otya</Link>
           <Link href="/help">Help</Link>
           <Link href="/contact">Contact</Link>
-          <Link href="https://docs.petersmartlink.com">Documentation</Link>
+          <Link href={PUBLIC_URLS.docs}>Documentation</Link>
         </div>
       </section>
     </main>

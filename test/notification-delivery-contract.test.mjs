@@ -20,6 +20,8 @@ test('admin push links stay on official HTTPS hosts', () => {
   const route = read('src/app/api/push/route.ts')
 
   assert.match(route, /url\.protocol !== 'https:'/)
-  assert.match(route, /host\.endsWith\('\.petersmartlink\.com'\)/)
+  assert.match(route, /approvedPublicOrigins/)
+  assert.ok(route.includes('PUBLIC_URLS.primary'))
+  assert.match(route, /official Otya HTTPS host/)
   assert.match(route, /official Otya HTTPS host/)
 })
