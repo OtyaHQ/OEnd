@@ -56,7 +56,7 @@ function consoleHref(publicId: string | null | undefined, section: string | unde
   return id && section ? `/u/${id}/${section}` : fallback
 }
 
-export function OtyaSpaceChrome({ children, initialUser }: { children: ReactNode; initialUser: SpaceUser }) {
+export function OtyaSpaceChrome({ children, initialUser, businessAccess = false }: { children: ReactNode; initialUser: SpaceUser; businessAccess?: boolean }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
@@ -102,11 +102,11 @@ export function OtyaSpaceChrome({ children, initialUser }: { children: ReactNode
     </header>
 
     <div className="lg:grid lg:grid-cols-[270px_minmax(0,1fr)]">
-      <aside className="hidden lg:block border-r min-h-[calc(100vh-64px)]" style={{ borderColor: 'var(--cosmos-divider)' }}><SpaceNav query={query} setQuery={setQuery} publicId={user.otya_id} /></aside>
+      <aside className="hidden lg:block border-r min-h-[calc(100vh-64px)]" style={{ borderColor: 'var(--cosmos-divider)' }}><SpaceNav query={query} setQuery={setQuery} publicId={user.otya_id} businessAccess={businessAccess} /></aside>
       <div className="min-w-0">{children}</div>
     </div>
 
-    {mobileNavOpen && <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="Otya Space menu"><button type="button" aria-label="Close menu" onClick={() => setMobileNavOpen(false)} className="absolute inset-0 bg-black/45" /><aside className="relative h-full w-[88vw] max-w-[390px] border-r shadow-2xl" style={{ background: 'var(--cosmos-scaffold)', borderColor: 'var(--cosmos-divider)' }}><div className="h-16 flex items-center gap-2 px-4 border-b" style={{ borderColor: 'var(--cosmos-divider)' }}><OtyaBrandMark size={34}/><strong className="tracking-[-.02em]">Otya Space</strong><button type="button" aria-label="Close menu" onClick={() => setMobileNavOpen(false)} className="ml-auto h-11 w-11 grid place-items-center rounded-xl hover:bg-black/5 dark:hover:bg-white/5"><Icon><path d="m6 6 12 12M18 6 6 18"/></Icon></button></div><SpaceNav query={query} setQuery={setQuery} publicId={user.otya_id} onNavigate={() => setMobileNavOpen(false)} /></aside></div>}
+    {mobileNavOpen && <div className="fixed inset-0 z-[70] lg:hidden" role="dialog" aria-modal="true" aria-label="Otya Space menu"><button type="button" aria-label="Close menu" onClick={() => setMobileNavOpen(false)} className="absolute inset-0 bg-black/45" /><aside className="relative h-full w-[88vw] max-w-[390px] border-r shadow-2xl" style={{ background: 'var(--cosmos-scaffold)', borderColor: 'var(--cosmos-divider)' }}><div className="h-16 flex items-center gap-2 px-4 border-b" style={{ borderColor: 'var(--cosmos-divider)' }}><OtyaBrandMark size={34}/><strong className="tracking-[-.02em]">Otya Space</strong><button type="button" aria-label="Close menu" onClick={() => setMobileNavOpen(false)} className="ml-auto h-11 w-11 grid place-items-center rounded-xl hover:bg-black/5 dark:hover:bg-white/5"><Icon><path d="m6 6 12 12M18 6 6 18"/></Icon></button></div><SpaceNav query={query} setQuery={setQuery} publicId={user.otya_id} businessAccess={businessAccess} onNavigate={() => setMobileNavOpen(false)} /></aside></div>}
   </div>
 
   async function signOut() {
@@ -124,13 +124,16 @@ export function OtyaSpaceChrome({ children, initialUser }: { children: ReactNode
   }
 }
 
-function SpaceNav({ query, setQuery, publicId, onNavigate }: { query: string; setQuery: (value: string) => void; publicId?: string | null; onNavigate?: () => void }) {
+function SpaceNav({ query, setQuery, publicId, businessAccess = false, onNavigate }: { query: string; setQuery: (value: string) => void; publicId?: string | null; businessAccess?: boolean; onNavigate?: () => void }) {
   const normalized = query.trim().toLowerCase()
   const match = (label: string) => !normalized || label.toLowerCase().includes(normalized)
+  const groups = businessAccess
+    ? [...GROUPS, { label: 'Company operations', items: [{ label: 'OtyaPoint operations', fallback: '/space/otyapoint', icon: icons.overview }] }]
+    : GROUPS
   return <nav className="sticky top-16 max-h-[calc(100dvh-64px)] overflow-y-auto px-3 py-4" aria-label="Otya Space">
     <label className="mb-3 flex h-11 items-center gap-2 rounded-xl border px-3" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}><Icon><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></Icon><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search Space" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-current placeholder:opacity-45" /></label>
     {match('Space home') && <NavLink item={{ label: 'Space home', section: 'overview', fallback: '/', icon: icons.overview }} publicId={publicId} onNavigate={onNavigate} strong />}
-    {GROUPS.map(group => { const visible = group.items.filter(item => match(item.label)); if (!visible.length) return null; return <div key={group.label} className="mt-5"><div className="px-3 pb-2 text-sm font-semibold otya-muted">{group.label}</div><div className="space-y-0.5">{visible.map(item => <NavLink key={item.label} item={item} publicId={publicId} onNavigate={onNavigate} />)}</div></div> })}
+    {groups.map(group => { const visible = group.items.filter(item => match(item.label)); if (!visible.length) return null; return <div key={group.label} className="mt-5"><div className="px-3 pb-2 text-sm font-semibold otya-muted">{group.label}</div><div className="space-y-0.5">{visible.map(item => <NavLink key={item.label} item={item} publicId={publicId} onNavigate={onNavigate} />)}</div></div> })}
     <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--cosmos-divider)' }}><NavLink item={{ label: 'Help & Docs', fallback: PUBLIC_URLS.docs, icon: icons.help, external: true }} publicId={publicId} onNavigate={onNavigate} /></div>
   </nav>
 }
