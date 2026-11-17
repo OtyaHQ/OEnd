@@ -133,6 +133,10 @@ service = "otya-next"
 [[services]]
 binding = "OTYAPOINT"
 service = "otyapoint-api"
+[[secrets_store_secrets]]
+binding = "OTYAPOINT_BOOTSTRAP_SECRET"
+store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
+secret_name = "OTYAPOINT_BOOTSTRAP_SECRET"
 
 [[workflows]]
 name = "otya-release"
