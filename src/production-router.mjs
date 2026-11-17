@@ -160,6 +160,8 @@ function isSharedAppAssetPath(pathname) {
 function isSpaceSurfacePath(pathname) {
   return pathname === '/space'
     || pathname === '/space/'
+    || pathname === '/space/otyapoint'
+    || pathname.startsWith('/space/otyapoint/')
     || pathname === '/telegram'
     || pathname === '/telegram/'
     || pathname === '/ask'
