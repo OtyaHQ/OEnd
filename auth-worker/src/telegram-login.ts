@@ -373,7 +373,7 @@ export async function handleTelegramLogin(request: Request, env: TelegramLoginEn
   try {
     const stored = JSON.parse(storedRaw) as StoredTelegramState
     if (!stored.verifier || !stored.nonce) throw new Error('Telegram OIDC state is incomplete')
-    const redirectUri = env.TELEGRAM_LOGIN_REDIRECT_URI || DEFAULT_REDIRECT
+    const redirectUri = env.TELEGRAM_LOGIN_REDIRECT_URI || new URL('/api/auth/telegram/callback', publicOrigin(env)).toString()
     const basic = btoa(`${env.TELEGRAM_LOGIN_CLIENT_ID}:${env.TELEGRAM_LOGIN_CLIENT_SECRET}`)
     const tokenResponse = await fetch(OIDC_TOKEN, {
       method: 'POST',
