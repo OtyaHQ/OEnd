@@ -80,6 +80,11 @@ jobs:
           npm run lint
           npm run build
           npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
+          # The canonical OtyaPoint backend lives in backend/; keep its full
+          # schema and API contract in the ecosystem release validation gate.
+          npm --prefix backend run check
+          npm --prefix backend test
+          npm --prefix backend run verify:schema
 
       - name: Validate Next worker
         working-directory: ai-worker
