@@ -6,7 +6,7 @@ const deploy = readFileSync(new URL('../.github/workflows/deploy.yml', import.me
 
 test('production deployment verifies Turnstile remains usable after Cloudflare propagation', () => {
   assert.match(deploy, /verify-production:/)
-  assert.match(deploy, /https:\/\/petersmartlink\.com\/api\/security\/turnstile\/config/)
+  assert.match(deploy, /https:\/\/otya.site\/api\/security\/turnstile\/config/)
   assert.match(deploy, /"turnstile"\[\[:space:\]\]\*:\[\[:space:\]\]\*true/)
   assert.match(deploy, /Turnstile is not enabled after production deploy/)
   assert.match(deploy, /Turnstile site key is unavailable after production deploy/)
