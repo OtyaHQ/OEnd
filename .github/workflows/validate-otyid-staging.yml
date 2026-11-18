@@ -1,0 +1,59 @@
+name: Validate isolated Otya ID staging
+
+on:
+  push:
+    branches:
+      - "feat/otyid-staging-isolation"
+  pull_request:
+    branches:
+      - main
+      - feature/otyapoint-email-otp-login
+    paths:
+      - ".github/workflows/validate-otyid-staging.yml"
+      - ".github/workflows/deploy-otyid-staging.yml"
+      - "auth-worker/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: otyid-staging-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Test and dry-run private Otya ID staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: "22.23.4"
+          package-manager-cache: false
+
+      - name: Install locked Auth dependencies
+        working-directory: auth-worker
+        run: npm ci --ignore-scripts
+
+      - name: Run Auth security and staging contract tests
+        working-directory: auth-worker
+        run: npm test
+
+      - name: Type-check Auth Worker
+        working-directory: auth-worker
+        run: npm run typecheck
+
+      - name: Dry-run the isolated staging Worker without Cloudflare credentials
+        working-directory: auth-worker
+        env:
+          AUTH_JWT_SECRET: "ci-only-not-a-real-secret-00000000000000000000000000000000"
+          RESEND_API_KEY: "re_test_ci_placeholder"
+        run: npx wrangler deploy --dry-run --config wrangler.otya-id-staging.toml
+
+      - name: Confirm no deployment or remote database operation occurred
+        shell: bash
+        run: |
+          echo "This workflow used synthetic secrets only."
+          echo "No Cloudflare API token was supplied; no Worker deployment, D1 migration, DNS change or secret write occurred."
