@@ -122,7 +122,7 @@ async function executeOwnerEmail(env, action) {
     body: JSON.stringify({
       from: 'OTYA <noreply@otya.site>',
       to: [to],
-      reply_to: 'support@petersmartlink.com',
+      reply_to: 'support@otya.site',
       subject: action.payload.subject,
       text: action.payload.text,
     }),

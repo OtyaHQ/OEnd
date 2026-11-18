@@ -100,7 +100,7 @@ const schemaOrg = {
       description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
       logo: `${SITE_URL}${OTYA_MARK}`,
-      email: 'support@petersmartlink.com',
+      email: 'support@otya.site',
     },
     {
       '@type': 'SoftwareApplication',

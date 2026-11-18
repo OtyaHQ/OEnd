@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 const security = readFileSync(new URL('../public/.well-known/security.txt', import.meta.url), 'utf8')
 
 test('public security.txt exposes the canonical private reporting contract', () => {
-  assert.match(security, /^Contact: mailto:support@petersmartlink\.com$/m)
+  assert.match(security, /^Contact: mailto:support@otya\.site$/m)
   assert.match(security, /^Expires: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/m)
   assert.match(security, /^Preferred-Languages: en$/m)
   assert.match(security, /^Canonical: https:\/\/otya\.site\/\.well-known\/security\.txt$/m)

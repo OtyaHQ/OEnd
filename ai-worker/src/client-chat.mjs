@@ -67,7 +67,7 @@ async function runAi(env,messages,selection){
 }
 
 async function publicOtyaContext(env){
-  const base=(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')
+  const base=(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')
   const facts=[
     'Otya Media is an offline-first Android media app in the Otya ecosystem.',
     'Otya has three permanent top-level destinations: Video, Music and Me. Advanced utilities should appear contextually or under organized Tools/Settings rather than as duplicate top-level screens.',
@@ -174,7 +174,7 @@ async function sendAdminHandoff(env,{message,email,name,source,userId}){
     body:JSON.stringify({
       from:'Otya Support <noreply@otya.site>',
       to:[admin],
-      reply_to:clean(email,180)||'support@petersmartlink.com',
+      reply_to:clean(email,180)||'support@otya.site',
       subject:`Otya support handoff · ${ticket}`,
       text:lines.join('\n'),
     }),
@@ -202,12 +202,12 @@ export async function handleSharedTelegram(request,env){
   const selection=resolveModel(env,null,false)
   let answer
   if(text==='/start')answer='Welcome to Next by Otya. Ask me a general question or ask about Otya playback, local music, files, Transfer, account, updates and troubleshooting.'
-  else if(text==='/download')answer=`Official Otya download: ${(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')}/download/otya-player`
+  else if(text==='/download')answer=`Official Otya download: ${(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')}/download/otya-player`
   else if(text==='/privacy')answer='Never send passwords, OTPs, payment details or secret keys here.'
   else{
     try{
       const result=await temporaryReply(env,{message:text,selection})
-      answer=result.handoff_available?`${result.answer}\n\nFor human Otya help, use the official support page: ${(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')}/apps/otya-player/support`:result.answer
+      answer=result.handoff_available?`${result.answer}\n\nFor human Otya help, use the official support page: ${(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')}/apps/otya-player/support`:result.answer
     }catch(e){console.error('[telegram-shared]',e?.message);answer='Next is unavailable right now. Please try again shortly.'}
   }
   await telegram(env,'sendMessage',{chat_id:chatId,text:clean(answer,3500),disable_web_page_preview:true})
@@ -247,7 +247,7 @@ export async function handlePublicChat(request,env){
       return json({ok:true,handoff_sent:true,ticket,message:'Otya support has been notified.'})
     }catch(e){
       console.error('[support-handoff]',e?.message)
-      return json({error:'Could not notify support right now. Please use support@petersmartlink.com.',code:'HANDOFF_FAILED'},503)
+      return json({error:'Could not notify support right now. Please use support@otya.site.',code:'HANDOFF_FAILED'},503)
     }
   }
 

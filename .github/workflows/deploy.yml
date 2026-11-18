@@ -423,10 +423,10 @@ jobs:
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
-            https://petersmartlink.com/.well-known/security.txt \
+            https://otya.site/.well-known/security.txt \
             --output /tmp/otya-security.txt
-          grep -Fxq 'Contact: mailto:support@petersmartlink.com' /tmp/otya-security.txt
-          grep -Fxq 'Canonical: https://petersmartlink.com/.well-known/security.txt' /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
 
           curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
             https://status.petersmartlink.com/api/status \
