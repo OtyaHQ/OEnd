@@ -21,27 +21,30 @@ test('login OTP requests are generic and rate-limited by email and source IP', (
   assert.ok(otp.includes('return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)'))
 })
 
-test('email login codes are purpose-bound HMAC digests, expire, and require a verified account', () => {
-  assert.ok(otp.includes("digestCode(env, 'email-login', email, code)"))
-  assert.ok(otp.includes('expirationTtl: OTP_TTL'))
+test('email login challenges store purpose-bound HMAC digests in D1 and require verified accounts', () => {
+  assert.ok(otp.includes("digestCode(env, 'email-login', user.id, code)"))
+  assert.ok(otp.includes('INSERT INTO auth_email_login_challenges'))
+  assert.ok(otp.includes('expires_at = excluded.expires_at'))
   assert.ok(otp.includes('user.is_verified !== 1'))
-  assert.ok(otp.includes("matchesStoredCode(env, stored, 'email-login', email, code)"))
+  assert.ok(otp.includes('expires_at > ?3'))
   assert.ok(otp.includes('^[A-Z][0-9]{4}$'))
 })
 
-test('email sign-in delivery receives the generated code and removes failed deliveries', () => {
+test('email sign-in delivery uses the generated code and cleans up an undelivered challenge', () => {
   assert.ok(otp.includes("'Your Otya sign-in code'"))
   assert.ok(otp.includes("'Use this one-time code to sign in to your Otya account:', code)"))
-  assert.ok(otp.includes('await env.AUTH_KV.delete(key)'))
+  assert.ok(otp.includes('DELETE FROM auth_email_login_challenges WHERE user_id = ?1 AND code_digest = ?2'))
 })
 
-test('login OTP verification is brute-force limited and creates Otya refresh session records', () => {
+test('verification atomically consumes the challenge before creating refresh session records', () => {
   assert.ok(otp.includes('secure_otp_attempt:login:${email}:${ip}'))
   assert.ok(otp.includes('secure_otp_attempt_global:login:${email}'))
+  assert.ok(otp.includes('DELETE FROM auth_email_login_challenges'))
+  assert.ok(otp.includes('RETURNING user_id'))
   assert.ok(otp.includes('access_token: accessToken'))
   assert.ok(otp.includes('refresh_token: refreshToken'))
   assert.ok(otp.includes('rt_user:${user.id}:${refreshToken}'))
-  assert.ok(otp.includes('compare-and-delete'))
+  assert.ok(!otp.includes('secure_login_otp:'))
 })
 
 test('successful OTP sign-in triggers the existing new-device security email', () => {
