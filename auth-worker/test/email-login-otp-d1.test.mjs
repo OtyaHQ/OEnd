@@ -25,16 +25,12 @@ function issue(db, digest, issuedAt, expiresAt) {
   `).run('user-1', digest, issuedAt, expiresAt)
 }
 
-function claim(db) {
-  // SQLite's positional placeholders exercise the same D1 DELETE RETURNING
-  // operation used in source; numbered placeholders are normalized only for
-  // node:sqlite's binding API.
-  const statement = `
-    DELETE FROM auth_email_login_challenges
-    WHERE user_id = ? AND code_digest = ? AND expires_at > ?
-    RETURNING user_id
-  `
-  return statement
+function claimStatement() {
+  // Run the exact production DELETE RETURNING statement. SQLite's Node binding
+  // accepts anonymous positional placeholders, so normalize only ?1/?2/?3.
+  const match = source.match(/DELETE FROM auth_email_login_challenges[\\s\\S]*?RETURNING user_id/)
+  assert.ok(match, 'atomic challenge claim statement must exist in production source')
+  return match[0].replace(/\\?1/g, '?').replace(/\\?2/g, '?').replace(/\\?3/g, '?')
 }
 
 test('a D1 email login challenge can only be claimed once', () => {
@@ -42,7 +38,7 @@ test('a D1 email login challenge can only be claimed once', () => {
   try {
     const now = Math.floor(Date.now() / 1000)
     issue(db, 'hmac-sha256:approved-digest', now, now + 600)
-    const consume = db.prepare(claim(db))
+    const consume = db.prepare(claimStatement())
     assert.equal(consume.get('user-1', 'hmac-sha256:approved-digest', now).user_id, 'user-1')
     assert.equal(consume.get('user-1', 'hmac-sha256:approved-digest', now), undefined)
   } finally {
