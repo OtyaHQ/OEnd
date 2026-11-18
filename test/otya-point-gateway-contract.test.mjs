@@ -9,7 +9,7 @@ test('OtyaPoint gateway only accepts HttpOnly Otya account cookies and private s
   const config = read('../wrangler.toml')
   assert.match(route, /__Secure-otya_access/)
   assert.match(route, /__Secure-otya_refresh/)
-  assert.match(route, /COOKIE_DOMAIN = '\\.otya\\.site'/)
+  assert.ok(route.includes("const COOKIE_DOMAIN = '.otya.site'"))
   assert.match(route, /domain: COOKIE_DOMAIN/)
 
   assert.match(route, /OTYAPOINT_API/)
