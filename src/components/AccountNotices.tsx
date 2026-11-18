@@ -29,7 +29,7 @@ export function AccountNotices({ compact = false }: { compact?: boolean }) {
             if (!Array.isArray(data.sessions)) throw new Error('invalid sessions')
             return data.sessions.filter(item => item && typeof item.id === 'string' && typeof item.created_at === 'string')
           }),
-        fetch('https://petersmartlink.com/latest', { credentials: 'omit', cache: 'no-store', signal: controller.signal })
+        fetch('https://otya.site/latest', { credentials: 'omit', cache: 'no-store', signal: controller.signal })
           .then(async response => {
             if (!response.ok) throw new Error('release unavailable')
             const data = await response.json() as Release
@@ -57,7 +57,7 @@ export function AccountNotices({ compact = false }: { compact?: boolean }) {
       {releaseError ? <p className="otya-muted">Release information could not be loaded.</p> : release?.published === false ? <p className="otya-muted">No public release is available yet.</p> : release && <>
         <p>Otya {release.version}</p>
         {!compact && typeof release.changelog === 'string' && <p className="mt-2 whitespace-pre-wrap otya-muted">{release.changelog}</p>}
-        <a href="https://petersmartlink.com/download/otya-player" className="inline-flex min-h-11 items-center underline">View release</a>
+        <a href="https://otya.site/download/otya-player" className="inline-flex min-h-11 items-center underline">View release</a>
       </>}
     </section>
     <section>
