@@ -1,4 +1,4 @@
-Contact: mailto:support@petersmartlink.com
+Contact: mailto:support@otya.site
 Expires: 2027-09-01T00:00:00Z
 Preferred-Languages: en
 Canonical: https://otya.site/.well-known/security.txt
