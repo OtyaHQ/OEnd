@@ -208,8 +208,6 @@ const REQUIRED_SCHEMA_READS = [
    FROM user_products LIMIT 0`,
   `SELECT user_id, provider, provider_subject, provider_username, provider_email, linked_at, last_used_at
    FROM linked_identities LIMIT 0`,
-  `SELECT user_id, challenge_id, email_normalized, code_digest, attempt_count, expires_at, status, created_at, consumed_at
-   FROM email_login_challenges LIMIT 0`,
 ] as const
 
 /** Read-only runtime readiness; DDL belongs to deployment repair. */
@@ -217,6 +215,14 @@ export async function assertSchemaReady(db: D1Database): Promise<void> {
   for (const query of REQUIRED_SCHEMA_READS) {
     await db.prepare(query).all()
   }
+}
+
+/** OTP is separately gated so an unapplied OTP migration cannot break legacy sign-in. */
+export async function assertEmailLoginOtpSchemaReady(db: D1Database): Promise<void> {
+  await db.prepare(
+    `SELECT user_id, challenge_id, email_normalized, code_digest, attempt_count, expires_at, status, created_at, consumed_at
+     FROM email_login_challenges LIMIT 0`,
+  ).all()
 }
 export async function ensureSchema(db: D1Database): Promise<void> {
   // Existing v1 D1 databases are intentionally preserved during reset. Create
