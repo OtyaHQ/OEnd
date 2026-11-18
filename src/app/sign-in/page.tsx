@@ -12,7 +12,7 @@ const PRIVACY_VERSION = '2026-11-10'
 const DEFAULT_AFTER_AUTH = 'https://space.petersmartlink.com/'
 
 type Mode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset' | 'twofactor' | 'owner' | 'owner-otp' | 'owner-telegram'
-type Json = { error?: string; code?: string; message?: string; authenticated?: boolean; authorization_url?: string } & { telegram_challenge?: string }
+type Json = { error?: string; code?: string; message?: string; authenticated?: boolean }
 type AdminState = { configured?: boolean; authenticated?: boolean; accountAdmin?: boolean; error?: string; telegram_challenge?: string }
 type GoogleCredentialResponse = { credential?: string }
 type GoogleApi = { accounts: { id: { initialize(input: { client_id: string; callback: (response: GoogleCredentialResponse) => void; auto_select?: boolean }): void; renderButton(element: HTMLElement, options: Record<string, unknown>): void } } }
