@@ -150,9 +150,9 @@ export default function SpaceHomePage() {
 
       <SpaceCard title="Privacy & help" eyebrow="Control">
         <div className="flex flex-col gap-2 text-sm font-black">
-          <a href="https://petersmartlink.com/privacy">Privacy Policy</a>
-          <a href="https://petersmartlink.com/terms">Terms of Service</a>
-          <a href="https://docs.petersmartlink.com">Otya Help & Docs</a>
+          <a href="https://otya.site/privacy">Privacy Policy</a>
+          <a href="https://otya.site/terms">Terms of Service</a>
+          <a href="https://docs.otya.site">Otya Help & Docs</a>
           <Link href={settingsHref}>Account preferences</Link>
         </div>
       </SpaceCard>
