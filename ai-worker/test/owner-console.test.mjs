@@ -27,7 +27,7 @@ test('natural Telegram request prepares first and explicit go-ahead executes onc
   let externalWrites = 0
   globalThis.fetch = async (url, init) => {
     externalWrites += 1
-    assert.equal(String(url), 'https://petersmartlink.com/api/admin/telegram/test')
+    assert.equal(String(url), 'https://otya.site/api/admin/telegram/test')
     const requestHeaders = new Headers(init.headers)
     assert.equal(requestHeaders.get('X-OTYA-Internal-Secret'), 'owner-secret')
     assert.equal(requestHeaders.get('X-OTYA-Admin-Action'), 'telegram')
