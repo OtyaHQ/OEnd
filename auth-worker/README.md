@@ -38,7 +38,7 @@ OTYA supports two Telegram verification paths:
 Configure the callback:
 
 ```text
-https://petersmartlink.com/auth/telegram/callback
+https://otya.site/auth/telegram/callback
 ```
 
 Optional secrets:
