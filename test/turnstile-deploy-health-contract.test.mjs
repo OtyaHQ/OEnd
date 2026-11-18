@@ -17,7 +17,7 @@ test('core deploy verifies public security disclosure and sanitized live status'
   assert.match(deploy, /needs\.plan-deploy\.outputs\.core == 'true'/)
   assert.match(deploy, /https:\/\/otya\.site\/\.well-known\/security\.txt/)
   assert.match(deploy, /Contact: mailto:support@otya\.site/)
-  assert.match(deploy, /https:\/\/status\.petersmartlink\.com\/api\/status/)
+  assert.match(deploy, /https:\/\/status\.otya\.site\/api\/status/)
   assert.match(deploy, /set\(components\) != \{'website', 'accounts', 'next'\}/)
   assert.match(deploy, /public status component set changed unexpectedly/)
   assert.match(deploy, /Core public trust surfaces are healthy and privacy-bounded/)
