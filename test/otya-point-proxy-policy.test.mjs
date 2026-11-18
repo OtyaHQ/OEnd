@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isAllowedOtyaPointProxyRequest, otyaPointUpstreamPath } from '../src/lib/otya-point-proxy-policy.mjs'
 
-const origin = 'https://space.petersmartlink.com'
+const origin = 'https://space.otya.site'
 
 test('allows same-origin reads without requiring an Origin header', () => {
   assert.equal(isAllowedOtyaPointProxyRequest({
