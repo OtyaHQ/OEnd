@@ -778,7 +778,7 @@ async function handleVerifyEmailLoginOtp(req: Request, env: Env): Promise<Respon
   ).run()
 
   if (consumed.meta.changes !== 1) {
-    const failedAttempt = await env.AUTH_DB.prepare(
+    await env.AUTH_DB.prepare(
       "UPDATE email_login_challenges SET attempt_count=attempt_count+1,status=CASE WHEN attempt_count+1 >= ? THEN 'LOCKED' ELSE status END WHERE user_id=? AND challenge_id=? AND status='PENDING' AND attempt_count < ? AND datetime(expires_at) > datetime('now') AND code_digest <> ?",
     ).bind(
       EMAIL_LOGIN_OTP_MAX_ATTEMPTS,
