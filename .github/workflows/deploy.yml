@@ -57,7 +57,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
+          git clone --depth 1 --branch main https://github.com/OtyaHQ/OPoint.git "$RUNNER_TEMP/OtyaPoint"
           OTYAPOINT_SHA="$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)"
           echo "sha=$OTYAPOINT_SHA" >> "$GITHUB_OUTPUT"
 
@@ -313,7 +313,7 @@ jobs:
           set -euo pipefail
           test -n "$OTYAPOINT_SHA"
           git init "$RUNNER_TEMP/OtyaPoint"
-          git -C "$RUNNER_TEMP/OtyaPoint" remote add origin https://github.com/PeterSmartLink/OtyaPoint.git
+          git -C "$RUNNER_TEMP/OtyaPoint" remote add origin https://github.com/OtyaHQ/OPoint.git
           git -C "$RUNNER_TEMP/OtyaPoint" fetch --depth 1 origin "$OTYAPOINT_SHA"
           git -C "$RUNNER_TEMP/OtyaPoint" checkout --detach FETCH_HEAD
           test "$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)" = "$OTYAPOINT_SHA"
