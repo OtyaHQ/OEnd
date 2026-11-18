@@ -8,10 +8,6 @@ const PUBLIC_PREFIX = '/api/auth/telegram/'
 const AUTH_PREFIX = '/auth/telegram/'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
-const COOKIE_DOMAIN = '.petersmartlink.com'
-const SPACE_URL = 'https://space.petersmartlink.com/'
-const ACCESS_MAX_AGE = 15 * 60
-const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 
 type AuthService = { fetch(request: Request): Promise<Response> }
 type Payload = Record<string, unknown> & {
@@ -24,9 +20,6 @@ type Payload = Record<string, unknown> & {
   widget_auth_url?: string
 }
 
-function cookieOptions(maxAge: number) {
-  return { httpOnly: true, secure: true, sameSite: 'lax' as const, domain: COOKIE_DOMAIN, path: '/', maxAge }
-}
 function safeWidgetPage(request: NextRequest, data: Payload): string | null {
   if (data.provider_mode !== 'widget' || typeof data.bot_username !== 'string' || typeof data.widget_auth_url !== 'string') return null
   if (!/^[A-Za-z0-9_]{5,32}$/.test(data.bot_username)) return null
@@ -72,15 +65,12 @@ async function forward(request: NextRequest): Promise<Response> {
     const data = contentType.includes('application/json') ? await upstream.clone().json().catch(() => ({})) as Payload : null
 
     if (publicUrl.pathname.endsWith('/miniapp') && data) {
-      if (!upstream.ok) return NextResponse.json(data, { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
-      if (data.authenticated === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.json(withoutTokens(data), { status: upstream.status })
-        response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
-        response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
-      return NextResponse.json(withoutTokens(data), { status: upstream.status, headers: { 'Cache-Control': 'no-store' } })
+      // Never upgrade a Telegram response into a browser session. Even if an
+      // older handler accidentally returns bearer tokens, strip them.
+      return NextResponse.json(withoutTokens(data), {
+        status: upstream.status,
+        headers: { 'Cache-Control': 'no-store' },
+      })
     }
 
     if (publicUrl.pathname.endsWith('/start') && upstream.ok && data) {
@@ -92,15 +82,6 @@ async function forward(request: NextRequest): Promise<Response> {
       return response
     }
 
-    if (publicUrl.pathname.endsWith('/callback') && upstream.ok && data) {
-      if (data.telegram_login === true && data.access_token && data.refresh_token) {
-        const response = NextResponse.redirect(SPACE_URL, 302)
-        response.cookies.set(ACCESS_COOKIE, data.access_token, cookieOptions(ACCESS_MAX_AGE))
-        response.cookies.set(REFRESH_COOKIE, data.refresh_token, cookieOptions(REFRESH_MAX_AGE))
-        response.headers.set('Cache-Control', 'no-store')
-        return response
-      }
-    }
     return upstream
   } catch (error) {
     console.error('[telegram-auth-proxy]', (error as Error)?.message)
