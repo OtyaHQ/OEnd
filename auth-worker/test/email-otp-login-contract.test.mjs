@@ -109,6 +109,11 @@ test('unapplied OTP migration does not block existing password, registration or 
   const helper = production.slice(start, end)
   assert.match(helper, /\['\/auth\/register', '\/auth\/login', '\/auth\/google'\]/)
   assert.doesNotMatch(helper, /\/auth\/login\/otp\//)
-  assert.match(production, /ensureEmailLoginOtpSchema/)
+  const otpRouteGate = production.slice(
+    production.indexOf("&& ['/auth/login/otp/request', '/auth/login/otp/verify']"),
+    production.indexOf("if (request.method === 'POST' && url.pathname === '/auth/google')"),
+  )
+  assert.match(otpRouteGate, /ensureIdentitySchema/)
+  assert.match(otpRouteGate, /ensureEmailLoginOtpSchema/)
   assert.match(production, /EMAIL_OTP_SCHEMA_UNAVAILABLE/)
 })
