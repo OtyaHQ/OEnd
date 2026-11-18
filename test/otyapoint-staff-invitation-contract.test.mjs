@@ -4,9 +4,9 @@ import {
   isAllowedOtyaPointStaffInvitationRole,
   isOtyaPointStaffInvitationPath,
   OTYAPOINT_STAFF_INVITATION_ROLES,
-  LEGACY_OPINT_STAFF_INVITATION_ROLES,
+  LEGACY_COMPAT_STAFF_INVITATION_ROLES,
   OTYAPOINT_STAFF_INVITATION_PATH,
-  LEGACY_OPINT_STAFF_INVITATION_PATH,
+  LEGACY_COMPAT_STAFF_INVITATION_PATH,
 } from '../auth-worker/src/otyapoint-staff-invitation.ts'
 
 test('OtyaPoint invitation contract accepts every canonical workforce role', () => {
@@ -25,12 +25,12 @@ test('OtyaPoint invitation contract accepts every canonical workforce role', () 
 })
 
 test('legacy role values remain an explicit compatibility-only set', () => {
-  assert.deepEqual(LEGACY_OPINT_STAFF_INVITATION_ROLES, [
+  assert.deepEqual(LEGACY_COMPAT_STAFF_INVITATION_ROLES, [
     'ATTENDANT',
     'MANAGING_DIRECTOR',
     'CHAIRMAN',
   ])
-  for (const role of LEGACY_OPINT_STAFF_INVITATION_ROLES) {
+  for (const role of LEGACY_COMPAT_STAFF_INVITATION_ROLES) {
     assert.equal(isAllowedOtyaPointStaffInvitationRole(role), true, role)
   }
 })
@@ -43,8 +43,8 @@ test('invitation role validation rejects unknown, empty and injected values', ()
 
 test('canonical and legacy private invitation paths are recognized', () => {
   assert.equal(OTYAPOINT_STAFF_INVITATION_PATH, '/internal/notifications/otyapoint/staff-invitation')
-  assert.equal(LEGACY_OPINT_STAFF_INVITATION_PATH, '/internal/notifications/omnipoint/staff-invitation')
+  assert.equal(LEGACY_COMPAT_STAFF_INVITATION_PATH, '/internal/notifications/omnipoint/staff-invitation')
   assert.equal(isOtyaPointStaffInvitationPath(OTYAPOINT_STAFF_INVITATION_PATH), true)
-  assert.equal(isOtyaPointStaffInvitationPath(LEGACY_OPINT_STAFF_INVITATION_PATH), true)
+  assert.equal(isOtyaPointStaffInvitationPath(LEGACY_COMPAT_STAFF_INVITATION_PATH), true)
   assert.equal(isOtyaPointStaffInvitationPath('/public/staff-invitation'), false)
 })
