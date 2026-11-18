@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          headers="$(curl -fsSIL --max-time 20 'https://petersmartlink.com/sign-in/?auth_smoke=1')"
+          headers="$(curl -fsSIL --max-time 20 'https://otya.site/sign-in/?auth_smoke=1')"
           printf '%s\n' "$headers"
           csp="$(printf '%s\n' "$headers" | grep -i '^content-security-policy:' | tail -n1)"
           cache="$(printf '%s\n' "$headers" | grep -i '^cache-control:' | tail -n1)"
@@ -49,7 +49,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          body="$(curl -fsS --max-time 20 https://petersmartlink.com/api/account-session/session)"
+          body="$(curl -fsS --max-time 20 https://otya.site/api/account-session/session)"
           printf '%s\n' "$body"
           printf '%s\n' "$body" | grep -E '"authenticated"|"error"' >/dev/null
 
@@ -61,7 +61,7 @@ jobs:
           status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' \
             -X POST -H 'Content-Type: application/json' \
             --data '{"email":"not-an-email","password":"x"}' \
-            https://petersmartlink.com/api/account-session/register)"
+            https://otya.site/api/account-session/register)"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" -ge 400
           test "$status" -lt 500
@@ -76,7 +76,7 @@ jobs:
           status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' \
             -X POST -H 'Content-Type: application/json' \
             --data '{"id_token":"invalid-smoke-token"}' \
-            https://petersmartlink.com/api/account-session/google)"
+            https://otya.site/api/account-session/google)"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" -ge 400
           test "$status" -lt 500
@@ -91,11 +91,11 @@ jobs:
           status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' \
             -X POST -H 'Content-Type: application/json' \
             --data '{"email":"not-an-email","password":"x"}' \
-            https://petersmartlink.com/auth/login)"
+            https://otya.site/auth/login)"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" -ge 400
           test "$status" -lt 500
-          grep -qi 'application/json' <(curl -sSI -X POST -H 'Content-Type: application/json' https://petersmartlink.com/auth/login || true) || true
+          grep -qi 'application/json' <(curl -sSI -X POST -H 'Content-Type: application/json' https://otya.site/auth/login || true) || true
           ! grep -qi 'This page could not be found' "$response"
           ! grep -qi '<!DOCTYPE html' "$response"
 
@@ -107,7 +107,7 @@ jobs:
           status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' \
             -X POST -H 'Content-Type: application/json' \
             --data '{"id_token":"invalid-smoke-token"}' \
-            https://petersmartlink.com/auth/google)"
+            https://otya.site/auth/google)"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" -ge 400
           test "$status" -lt 500
@@ -124,7 +124,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          code="$(curl -sS --max-time 20 -o /tmp/miniapp -w '%{http_code}' 'https://space.petersmartlink.com/telegram/?smoke=1')"
+          code="$(curl -sS --max-time 20 -o /tmp/miniapp -w '%{http_code}' 'https://space.otya.site/telegram/?smoke=1')"
           test "$code" = "200"
           grep -E 'OTYA|telegram' /tmp/miniapp >/dev/null
 
@@ -136,7 +136,7 @@ jobs:
           status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' \
             -X POST -H 'Content-Type: application/json' \
             --data '{"initData":"auth_date=1&user=%7B%22id%22%3A1%7D&hash=0000000000000000000000000000000000000000000000000000000000000000"}' \
-            https://space.petersmartlink.com/api/auth/telegram/miniapp)"
+            https://space.otya.site/api/auth/telegram/miniapp)"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" -ge 400
           test "$status" -lt 500
@@ -150,6 +150,6 @@ jobs:
             -X POST -H 'Content-Type: application/json' \
             -H 'X-Telegram-Bot-Api-Secret-Token: definitely-wrong' \
             --data '{"update_id":1}' \
-            https://petersmartlink.com/api/telegram/webhook)"
+            https://otya.site/api/telegram/webhook)"
           cat /tmp/tg-webhook; echo; echo "HTTP $status"
           test "$status" = "401"
