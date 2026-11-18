@@ -26,18 +26,18 @@ function issue(db, digest, issuedAt, expiresAt) {
 }
 
 function claimStatement() {
-  // Execute the exact production DELETE RETURNING statement.
-  const start = source.indexOf('DELETE FROM auth_email_login_challenges\\n      WHERE user_id = ?1 AND code_digest = ?2 AND expires_at > ?3')
+  // The second occurrence is the actual conditional claim; the first is
+  // undelivered-email cleanup. Execute the exact production SQL statement.
+  const start = source.lastIndexOf('DELETE FROM auth_email_login_challenges')
   assert.notEqual(start, -1, 'atomic challenge claim statement must exist in production source')
   const endMarker = 'RETURNING user_id'
   const end = source.indexOf(endMarker, start)
   assert.notEqual(end, -1, 'atomic challenge claim must return the claimed row')
   return source.slice(start, end + endMarker.length)
-    .replace(/\\?1/g, '?')
-    .replace(/\\?2/g, '?')
-    .replace(/\\?3/g, '?')
+    .replaceAll('?1', '?')
+    .replaceAll('?2', '?')
+    .replaceAll('?3', '?')
 }
-
 test('a D1 email login challenge can only be claimed once', () => {
   const db = createDatabase()
   try {
@@ -80,6 +80,6 @@ test('issuing a new challenge supersedes the previous digest for that account', 
 
 test('production code claims challenges with a conditional DELETE RETURNING', () => {
   const statement = claimStatement()
-  assert.match(statement, /WHERE user_id = \\?1 AND code_digest = \\?2 AND expires_at > \\?3/)
-  assert.match(statement, /RETURNING user_id$/)
+  assert.ok(statement.includes('WHERE user_id = ?1 AND code_digest = ?2 AND expires_at > ?3'))
+  assert.ok(statement.endsWith('RETURNING user_id'))
 })
