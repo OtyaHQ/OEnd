@@ -7,6 +7,9 @@ const wrapper = read('auth-worker/src/production-entrypoint-miniapp.ts')
 const miniAuth = read('auth-worker/src/telegram-miniapp.ts')
 const telegramLogin = read('auth-worker/src/telegram-login.ts')
 const proxy = read('src/app/api/auth/telegram/[...path]/route.ts')
+const telegramLoginPage = read('src/app/telegram-login/page.tsx')
+const accountMethodsPage = read('src/app/account/sign-in-methods/page.tsx')
+const adminPage = read('src/app/admin/page.tsx')
 const config = read('next.config.mjs')
 const router = read('src/production-router.mjs')
 const wrangler = read('auth-worker/wrangler.toml')
@@ -41,6 +44,15 @@ test('Browser proxy never converts Telegram response tokens into Otya session co
   assert.match(proxy, /withoutTokens\(data\)/)
   assert.doesNotMatch(proxy, /response\.cookies\.set/)
   assert.doesNotMatch(proxy, /telegram_login === true/)
+})
+
+test('No public Telegram Login Widget or Admin OAuth path remains', () => {
+  assert.match(telegramLoginPage, /Telegram is not a sign-in method/)
+  assert.doesNotMatch(telegramLoginPage, /telegram-widget\\.js|data-telegram-login|Continue with Telegram/)
+  assert.doesNotMatch(adminPage, /mode=admin|Continue with Telegram/)
+  assert.match(adminPage, /telegram_challenge/)
+  assert.match(accountMethodsPage, /Email and Google are sign-in methods/)
+  assert.match(accountMethodsPage, /Link Telegram identity/)
 })
 
 test('Google and Telegram browser origins remain constrained without unsafe-eval', () => {
