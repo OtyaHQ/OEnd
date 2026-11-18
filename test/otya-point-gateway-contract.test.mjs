@@ -7,8 +7,10 @@ const read = path => readFileSync(new URL(path, import.meta.url), 'utf8')
 test('OtyaPoint gateway only accepts HttpOnly Otya account cookies and private service bindings', () => {
   const route = read('../src/app/api/otya-point/[...path]/route.ts')
   const config = read('../wrangler.toml')
-  assert.match(route, /__Secure-otya_access/)
-  assert.match(route, /__Secure-otya_refresh/)
+  assert.match(route, /__Host-otya_access/)
+  assert.match(route, /__Host-otya_refresh/)
+  assert.doesNotMatch(route, /COOKIE_DOMAIN|domain:/)
+
   assert.match(route, /OTYAPOINT_API/)
   assert.match(route, /Authorization: `Bearer \$\{token\}`/)
   assert.match(route, /isAllowedOtyaPointProxyRequest/)
