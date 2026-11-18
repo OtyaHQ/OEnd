@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   isAllowedOtyaPointStaffInvitationRole,
   isOtyaPointStaffInvitationPath,
@@ -47,4 +48,20 @@ test('canonical and legacy private invitation paths are recognized', () => {
   assert.equal(isOtyaPointStaffInvitationPath(OTYAPOINT_STAFF_INVITATION_PATH), true)
   assert.equal(isOtyaPointStaffInvitationPath(LEGACY_COMPAT_STAFF_INVITATION_PATH), true)
   assert.equal(isOtyaPointStaffInvitationPath('/public/staff-invitation'), false)
+})
+
+const productionEntrypoint = readFileSync(
+  new URL('../auth-worker/src/production-entrypoint.ts', import.meta.url),
+  'utf8',
+)
+
+test('private invitation route checks caller secret and bounds all request bodies', () => {
+  assert.match(productionEntrypoint, /isOtyaPointStaffInvitationPath\(url\.pathname\)/)
+  assert.match(productionEntrypoint, /x-otya-service-token/)
+  assert.match(productionEntrypoint, /x-otya-service.*otyapoint/)
+  assert.match(productionEntrypoint, /encode\(rawBody\)\.byteLength > 4096/)
+  assert.match(productionEntrypoint, /Invalid invitation ID/)
+  assert.match(productionEntrypoint, /isAllowedOtyaPointStaffInvitationRole\(role\)/)
+  assert.match(productionEntrypoint, /Invalid invitation token/)
+  assert.match(productionEntrypoint, /Invalid invitation expiry/)
 })
