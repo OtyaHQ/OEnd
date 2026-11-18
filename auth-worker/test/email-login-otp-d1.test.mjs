@@ -28,7 +28,7 @@ function issue(db, digest, issuedAt, expiresAt) {
 function claimStatement() {
   // Execute the exact production DELETE RETURNING statement, including its
   // real predicate; translate only numbered bindings for node:sqlite.
-  const start = source.indexOf('DELETE FROM auth_email_login_challenges')
+  const start = source.indexOf('DELETE FROM auth_email_login_challenges\\n      WHERE user_id = ?1 AND code_digest = ?2 AND expires_at > ?3')
   assert.notEqual(start, -1, 'atomic challenge claim statement must exist in production source')
   const endMarker = 'RETURNING user_id'
   const end = source.indexOf(endMarker, start)
