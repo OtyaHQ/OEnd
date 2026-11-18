@@ -52,7 +52,7 @@ test('Telegram bot command surface matches the approved package', () => {
   assert.match(core, /Elevated administrator verification required/)
 })
 
-test('Telegram Mini App validates raw initData server-side and creates or logs in the verified identity', () => {
+test('Telegram Mini App validates raw initData and links only to an existing authenticated Otya identity', () => {
   assert.match(miniAuth, /verifyTelegramInitData/)
   assert.match(miniAuth, /params\.delete\('hash'\)/)
   assert.match(miniAuth, /join\('\\n'\)/)
@@ -60,22 +60,21 @@ test('Telegram Mini App validates raw initData server-side and creates or logs i
   assert.match(miniAuth, /constantTimeHexEqual/)
   assert.match(miniAuth, /MAX_AGE_SECONDS/)
   assert.match(miniAuth, /Number\.isSafeInteger\(user\.id\)/)
-  assert.match(miniAuth, /createOrGetTelegramUser/)
-  assert.match(miniAuth, /created_or_logged_in/)
-  assert.doesNotMatch(miniAuth, /OTYA_ACCOUNT_REQUIRED/)
+  assert.match(miniAuth, /currentUserId\(request, env\)/)
+  assert.match(miniAuth, /OTYA_ACCOUNT_REQUIRED/)
+  assert.match(miniAuth, /INSERT INTO linked_identities/)
+  assert.doesNotMatch(miniAuth, /createOrGetTelegramUser|created_or_logged_in|generateRefreshToken|signJwt|issueSession/)
   assert.doesNotMatch(miniAuth, /initDataUnsafe/)
 })
 
-test('Mini App auth establishes shared secure Otya browser cookies without exposing tokens', () => {
+test('Mini App uses the existing Otya browser session and never issues new auth cookies', () => {
   assert.match(proxy, /endsWith\('\/miniapp'\)/)
   assert.match(proxy, /__Secure-otya_access/)
   assert.match(proxy, /__Secure-otya_refresh/)
-  assert.match(proxy, /COOKIE_DOMAIN = '\.petersmartlink\.com'/)
   assert.match(proxy, /delete safe\.access_token/)
   assert.match(proxy, /delete safe\.refresh_token/)
-  assert.match(proxy, /httpOnly: true/)
-  assert.match(proxy, /secure: true/)
-  assert.match(proxy, /sameSite: 'lax'/)
+  assert.doesNotMatch(proxy, /response\.cookies\.set/)
+  assert.match(proxy, /headers\.set\('Authorization', `Bearer \$\{accessToken\}`\)/)
 })
 
 test('Mini App exposes all approved product surfaces and keeps identity server verified', () => {
