@@ -54,6 +54,10 @@ const productionEntrypoint = readFileSync(
   new URL('../auth-worker/src/production-entrypoint.ts', import.meta.url),
   'utf8',
 )
+const authEntrypoint = readFileSync(
+  new URL('../auth-worker/src/index.ts', import.meta.url),
+  'utf8',
+)
 
 test('private invitation route checks caller secret and bounds all request bodies', () => {
   assert.match(productionEntrypoint, /isOtyaPointStaffInvitationPath\(url\.pathname\)/)
@@ -64,4 +68,16 @@ test('private invitation route checks caller secret and bounds all request bodie
   assert.match(productionEntrypoint, /isAllowedOtyaPointStaffInvitationRole\(role\)/)
   assert.match(productionEntrypoint, /Invalid invitation token/)
   assert.match(productionEntrypoint, /Invalid invitation expiry/)
+})
+
+test('Otya ID exposes verified-email state without weakening bearer verification', () => {
+  const start = authEntrypoint.indexOf('async function handleVerify(')
+  const end = authEntrypoint.indexOf('/** POST /auth/send-verification', start)
+  assert.ok(start >= 0 && end > start)
+  const handler = authEntrypoint.slice(start, end)
+  assert.match(handler, /verifyJwt\(token, env\.AUTH_JWT_SECRET\)/)
+  assert.match(handler, /SELECT is_verified FROM users WHERE id = \? LIMIT 1/)
+  assert.match(handler, /email_verified: emailVerified/)
+  assert.match(handler, /emailVerified = row\?\.is_verified === 1 \|\| row\?\.is_verified === true/)
+  assert.match(handler, /if \(!payload\)/)
 })
