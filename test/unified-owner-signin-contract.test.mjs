@@ -23,7 +23,7 @@ test('owner factors are resolved by the authenticated Otya sign-in journey', () 
 
 test('owner second factor uses a linked Telegram bot challenge, not Telegram OAuth sign-in', () => {
   assert.match(telegramBot, /ownerChallengeFromUpdate/)
-  assert.match(telegramBot, /start owner_/)
+  assert.match(telegramBot, /owner_\(\[A-Za-z0-9_-/)
   assert.match(telegramBot, /auth\/admin\/telegram-challenge\/confirm/)
 })
 
