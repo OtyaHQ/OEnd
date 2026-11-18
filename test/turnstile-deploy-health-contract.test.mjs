@@ -15,8 +15,8 @@ test('production deployment verifies Turnstile remains usable after Cloudflare p
 test('core deploy verifies public security disclosure and sanitized live status', () => {
   assert.match(deploy, /name: Verify core trust surfaces/)
   assert.match(deploy, /needs\.plan-deploy\.outputs\.core == 'true'/)
-  assert.match(deploy, /https:\/\/petersmartlink\.com\/\.well-known\/security\.txt/)
-  assert.match(deploy, /Contact: mailto:support@petersmartlink\.com/)
+  assert.match(deploy, /https:\/\/otya\.site\/\.well-known\/security\.txt/)
+  assert.match(deploy, /Contact: mailto:support@otya\.site/)
   assert.match(deploy, /https:\/\/status\.petersmartlink\.com\/api\/status/)
   assert.match(deploy, /set\(components\) != \{'website', 'accounts', 'next'\}/)
   assert.match(deploy, /public status component set changed unexpectedly/)
