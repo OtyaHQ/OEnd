@@ -248,14 +248,13 @@ async function ensureIdentitySchema(env: ProductionEnv): Promise<Response | null
   }
 }
 
+const LEGACY_SESSION_CREATING_PATHS = ['/auth/register', '/auth/login', '/auth/google']
+
 function createsIdentitySession(request: Request, url: URL): boolean {
-  return request.method === 'POST' && [
-    '/auth/register',
-    '/auth/login',
-    '/auth/google',
-    '/auth/login/otp/request',
-    '/auth/login/otp/verify',
-  ].includes(url.pathname)
+  return request.method === 'POST' && (
+    LEGACY_SESSION_CREATING_PATHS.includes(url.pathname)
+    || ['/auth/login/otp/request', '/auth/login/otp/verify'].includes(url.pathname)
+  )
 }
 
 async function verifiedGooglePayload(request: Request, env: ProductionEnv): Promise<GoogleTokenPayload | Response> {
