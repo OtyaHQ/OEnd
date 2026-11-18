@@ -6,11 +6,11 @@ compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 workers_dev = false
 routes = [
-  { pattern = "petersmartlink.com", custom_domain = true },
-  { pattern = "www.petersmartlink.com", custom_domain = true },
-  { pattern = "docs.petersmartlink.com", custom_domain = true },
-  { pattern = "status.petersmartlink.com", custom_domain = true },
-  { pattern = "space.petersmartlink.com", custom_domain = true }
+  { pattern = "otya.site", custom_domain = true },
+  { pattern = "www.otya.site", custom_domain = true },
+  { pattern = "docs.otya.site", custom_domain = true },
+  { pattern = "status.otya.site", custom_domain = true },
+  { pattern = "space.otya.site", custom_domain = true }
 ]
 
 [observability]
@@ -29,7 +29,7 @@ enabled = true
 [vars]
 ENVIRONMENT = "production"
 APP_NAME    = "OTYA"
-WEBSITE_URL = "https://petersmartlink.com"
+WEBSITE_URL = "https://otya.site"
 ADMIN_REPORT_EMAIL = "petersmartlink@gmail.com"
 FIREBASE_PROJECT_ID = "otya-player"
 FIREBASE_PROJECT_NUMBER = "82776565585"
