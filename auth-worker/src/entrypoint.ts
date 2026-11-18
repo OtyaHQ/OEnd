@@ -353,7 +353,7 @@ export default {
     let refreshTokenForTouch: string | null = null
     let refreshTokenForLogout: string | null = null
 
-    if (request.method === 'POST' && url.pathname === '/auth/login') {
+    if (request.method === 'POST' && ['/auth/login', '/auth/login/otp/verify'].includes(url.pathname)) {
       try {
         const body = await request.clone().json() as Record<string, unknown>
         loginSecondFactor = {
@@ -401,7 +401,7 @@ export default {
       legacyEnv as Parameters<typeof legacyWorker.fetch>[1],
     )
 
-    if (response.ok && request.method === 'POST' && url.pathname === '/auth/login') {
+    if (response.ok && request.method === 'POST' && ['/auth/login', '/auth/login/otp/verify'].includes(url.pathname)) {
       try {
         const data = await response.clone().json() as {
           refresh_token?: string
@@ -466,7 +466,7 @@ export default {
     if (
       response.ok
       && request.method === 'POST'
-      && (url.pathname === '/auth/login' || url.pathname === '/auth/register' || url.pathname === '/auth/google')
+      && (url.pathname === '/auth/login' || url.pathname === '/auth/login/otp/verify' || url.pathname === '/auth/register' || url.pathname === '/auth/google')
     ) {
       await recordSessionFromAuthResponse(request, response, env)
     }
