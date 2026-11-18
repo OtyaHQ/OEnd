@@ -1,9 +1,8 @@
 import worker from './production-entrypoint'
 import { handleTelegramMiniApp } from './telegram-miniapp'
-import { handleTelegramPrimaryLogin, type TelegramPrimaryLoginEnv } from './telegram-primary-login'
 import { createRefreshSafeKv } from './refresh-token-store'
 
-type AuthEnv = Parameters<typeof worker.fetch>[1] & TelegramPrimaryLoginEnv & {
+type AuthEnv = Parameters<typeof worker.fetch>[1] & {
   TELEGRAM_MINIAPP_BOT_TOKEN?: unknown
 }
 
@@ -11,15 +10,14 @@ export default {
   ...worker,
   async fetch(request: Request, env: Parameters<typeof worker.fetch>[1]): Promise<Response> {
     const rawEnv = env as AuthEnv
-    // Apply one refresh-token storage boundary before any provider-specific
-    // handler runs. New refresh credentials are indexed only by SHA-256 digest;
-    // legacy raw-key sessions remain readable until their original KV TTL ends.
     const authEnv = {
       ...rawEnv,
       AUTH_KV: createRefreshSafeKv(rawEnv.AUTH_KV),
     } as AuthEnv
     const url = new URL(request.url)
 
+    // Telegram Mini App is link-only. It requires an existing Otya bearer
+    // session and cannot create an account or issue access/refresh tokens.
     if (url.pathname === '/auth/telegram/miniapp') {
       const miniEnv = {
         ...authEnv,
@@ -29,13 +27,8 @@ export default {
       if (response) return response
     }
 
-    // Browser Telegram login is a first-class OTYA provider: start uses KV +
-    // PKCE only; callback verifies Telegram OIDC and creates or reuses exactly
-    // one D1 OTYA user before issuing the normal OTYA session.
-    const primaryLogin = await handleTelegramPrimaryLogin(request, authEnv)
-    if (primaryLogin) return primaryLogin
-
-    // Link/admin/widget compatibility routes remain on the established worker.
+    // The shared worker handles authenticated Telegram linking and rejects
+    // login/admin modes. Telegram OIDC primary sign-in is not wired here.
     return worker.fetch(request, authEnv)
   },
 }
