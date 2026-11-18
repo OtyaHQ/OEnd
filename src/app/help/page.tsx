@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 const quickHelp = [
-  ['I cannot sign in', 'Email, Google and Telegram are sign-in methods for the same Otya account. Use the method already connected to your account. When adding another provider to an existing account, sign in first and link it from your account settings rather than creating a second account.'],
+  ['I cannot sign in', 'Email and Google are Otya sign-in methods. Telegram is only a linked identity for optional notifications and owner-device confirmation; it cannot sign in to your account. Sign in first, then link Telegram from Account → Sign-in and linked methods.'],
   ['I did not receive a verification code', 'Registration sends one verification code automatically. Check spam or promotions first, then request a new code only if you still need one. When a newer code is issued, use that newest code.'],
   ['I did not receive a password-reset email', 'Request one fresh reset code and check spam or promotions. Avoid repeatedly requesting codes because only the newest valid reset request should be used.'],
   ['Music or videos are missing in the Android app', 'Allow the media permissions requested by Android, then refresh or rescan the local library. Local media scanning does not require an Otya account.'],
