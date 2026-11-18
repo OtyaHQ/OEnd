@@ -101,3 +101,14 @@ test('security evidence distinguishes email-code request and completion', () => 
   assert.match(events, /'\/auth\/login\/otp\/request': 'email_otp_login_requested'/)
   assert.match(events, /'\/auth\/login\/otp\/verify': 'email_otp_login_verified'/)
 })
+
+test('unapplied OTP migration does not block existing password, registration or Google sign-in', () => {
+  const production = read('src/production-entrypoint.ts')
+  const start = production.indexOf('function createsIdentitySession')
+  const end = production.indexOf('async function verifiedGooglePayload', start)
+  const helper = production.slice(start, end)
+  assert.match(helper, /\['\/auth\/register', '\/auth\/login', '\/auth\/google'\]/)
+  assert.doesNotMatch(helper, /\/auth\/login\/otp\//)
+  assert.match(production, /ensureEmailLoginOtpSchema/)
+  assert.match(production, /EMAIL_OTP_SCHEMA_UNAVAILABLE/)
+})
