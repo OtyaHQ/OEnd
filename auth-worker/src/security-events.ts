@@ -7,6 +7,8 @@ export interface AuthSecurityEventEnv {
 const DIRECT_EVENT_TYPES: Record<string, string> = {
   '/auth/register': 'registration',
   '/auth/login': 'password_login',
+  '/auth/login/otp/request': 'email_otp_login_requested',
+  '/auth/login/otp/verify': 'email_otp_login_verified',
   '/auth/google': 'google_login',
   '/auth/logout': 'logout',
   '/auth/forgot-password': 'password_reset_requested',
