@@ -6,7 +6,7 @@ export const OTYA = {
   console: 'Otya Command Center',
   backend: 'Otya Backend',
   website: 'https://otya.site',
-  supportEmail: 'support@petersmartlink.com',
+  supportEmail: 'support@otya.site',
   noReplyEmail: 'noreply@otya.site',
   telegramChannel: 'https://t.me/otyaplayer',
   telegramSupport: 'https://t.me/OtyaPlayerBot',
