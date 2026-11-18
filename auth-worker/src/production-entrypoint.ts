@@ -8,6 +8,10 @@ import { handleSecureOtpRoute, type SecureOtpEnv } from './secure-otp'
 import { handleSecureAccountRoute, type SecureAccountEnv } from './secure-account'
 import { withAuthSecurityEvent } from './security-events'
 import { sendResendEmail } from './resend'
+import {
+  isAllowedOtyaPointStaffInvitationRole,
+  isOtyaPointStaffInvitationPath,
+} from './otyapoint-staff-invitation'
 
 interface GoogleTokenPayload {
   sub?: string
@@ -88,7 +92,7 @@ async function matchesInternalServiceSecret(provided: string, expected: string):
 
 async function handleOtyaPointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
   const url = new URL(request.url)
-  if (url.pathname !== '/internal/notifications/omnipoint/staff-invitation') return null
+  if (!isOtyaPointStaffInvitationPath(url.pathname)) return null
   if (request.method !== 'POST') return authError('Method not allowed', 405)
   // The service binding is the network boundary; the shared secret is a second
   // authorization boundary so another bound Worker cannot impersonate OtyaPoint.
@@ -98,11 +102,12 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
       request.headers.get('x-otya-service-token') || '',
       expectedServiceSecret,
     ))) return authError('Service not allowed', 403)
-  if (Number(request.headers.get('content-length') || '0') > 4096) return authError('Payload too large', 413)
+  const rawBody = await request.text()
+  if (new TextEncoder().encode(rawBody).byteLength > 4096) return authError('Payload too large', 413)
 
   let body: Record<string, unknown>
   try {
-    const value = await request.json()
+    const value = JSON.parse(rawBody)
     if (!value || typeof value !== 'object' || Array.isArray(value)) return authError('Invalid invitation payload', 400)
     body = value as Record<string, unknown>
   } catch {
@@ -114,7 +119,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   const displayName = typeof body.displayName === 'string'
     ? body.displayName.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 120)
     : ''
-  const role = typeof body.role === 'string' ? body.role.trim() : ''
+  const role = typeof body.role === 'string' ? body.role.trim().toUpperCase() : ''
   const token = typeof body.token === 'string' ? body.token.trim().toLowerCase() : ''
   const expiresAt = typeof body.expiresAt === 'string' ? body.expiresAt.trim() : ''
   const expiration = Date.parse(expiresAt)
@@ -123,7 +128,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
     return authError('Invalid invitation email', 400)
   }
   if (!/^[a-f0-9]{64}$/.test(token)) return authError('Invalid invitation token', 400)
-  if (!['ATTENDANT', 'MANAGER', 'MANAGING_DIRECTOR', 'CHAIRMAN'].includes(role)) {
+  if (!isAllowedOtyaPointStaffInvitationRole(role)) {
     return authError('Invalid invitation role', 400)
   }
   if (!Number.isFinite(expiration) || expiration <= Date.now() || expiration > Date.now() + 49 * 60 * 60 * 1000) {
