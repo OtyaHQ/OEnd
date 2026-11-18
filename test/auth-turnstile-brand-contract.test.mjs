@@ -62,9 +62,10 @@ test('sign-in UI supplies fresh Turnstile proof to every public provider path', 
   assert.match(challenge, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/)
   assert.match(challenge, /Cloudflare protection/)
 
-  assert.match(telegramProxy, /publicUrl\.searchParams\.get\('mode'\) === 'login'/)
-  assert.match(telegramProxy, /verifyTurnstileToken\(request\.headers\.get\('X-Otya-Turnstile'\), request\)/)
-  assert.match(telegramProxy, /headers\.delete\('X-Otya-Turnstile'\)/)
+  assert.match(telegramProxy, /withoutTokens\(data\)/)
+  assert.doesNotMatch(telegramProxy, /response\.cookies\.set/)
+  assert.doesNotMatch(telegramProxy, /verifyTurnstileToken/)
+  assert.doesNotMatch(telegramProxy, /publicUrl\.searchParams\.get\('mode'\) === 'login'/)
 })
 
 test('website brand tokens match the approved Otya cyan and blue identity', () => {
