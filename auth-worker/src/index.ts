@@ -804,24 +804,43 @@ async function handleDeleteAccount(req: Request, env: Env): Promise<Response> {
   return jsonOk({ ok: true, message: 'Account deleted.' }, env)
 }
 
-/** GET /auth/verify — called by otya-backend via Service Binding */
+/** GET /auth/verify — called by product Workers via Service Binding */
 async function handleVerify(req: Request, env: Env): Promise<Response> {
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     return jsonErr('Authorization header required', env, 401)
   }
 
-  const token   = authHeader.slice(7)
+  const token = authHeader.slice(7)
   const payload = await verifyJwt(token, env.AUTH_JWT_SECRET)
 
   if (!payload) {
     return jsonOk({ ok: false, error: 'Invalid or expired token' }, env, 401)
   }
 
+  // Product APIs use this claim for email-bound invitation redemption. Keep
+  // normal bearer-token verification available if the profile lookup is down;
+  // downstream invitation acceptance fails closed when this claim is false.
+  let currentEmail: string | null = null
+  let emailVerified = false
+  try {
+    const row = await env.AUTH_DB.prepare(
+      'SELECT email, is_verified FROM users WHERE id = ? LIMIT 1',
+    ).bind(payload.sub).first<{ email?: string | null; is_verified?: number | boolean }>()
+    currentEmail = typeof row?.email === 'string' ? row.email.trim().toLowerCase() : null
+    const tokenEmail = typeof payload.email === 'string' ? payload.email.trim().toLowerCase() : ''
+    emailVerified = (row?.is_verified === 1 || row?.is_verified === true)
+      && Boolean(currentEmail)
+      && currentEmail === tokenEmail
+  } catch (error) {
+    console.error('[auth/verify] Email verification claim unavailable:', (error as Error)?.message)
+  }
+
   return jsonOk({
-    ok:      true,
+    ok: true,
     user_id: payload.sub,
-    email:   payload.email,
+    email: currentEmail ?? payload.email,
+    email_verified: emailVerified,
   }, env)
 }
 
