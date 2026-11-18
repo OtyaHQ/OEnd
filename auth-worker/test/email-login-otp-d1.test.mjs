@@ -15,22 +15,28 @@ function createDatabase() {
 }
 
 function issue(db, digest, issuedAt, expiresAt) {
-  db.prepare(`
+  db.prepare(\`
     INSERT INTO auth_email_login_challenges (user_id, code_digest, issued_at, expires_at)
     VALUES (?, ?, ?, ?)
     ON CONFLICT(user_id) DO UPDATE SET
       code_digest = excluded.code_digest,
       issued_at = excluded.issued_at,
       expires_at = excluded.expires_at
-  `).run('user-1', digest, issuedAt, expiresAt)
+  \`).run('user-1', digest, issuedAt, expiresAt)
 }
 
 function claimStatement() {
-  // Run the exact production DELETE RETURNING statement. SQLite's Node binding
-  // accepts anonymous positional placeholders, so normalize only ?1/?2/?3.
-  const match = source.match(/DELETE FROM auth_email_login_challenges[\\s\\S]*?RETURNING user_id/)
-  assert.ok(match, 'atomic challenge claim statement must exist in production source')
-  return match[0].replace(/\\?1/g, '?').replace(/\\?2/g, '?').replace(/\\?3/g, '?')
+  // Execute the exact production DELETE RETURNING statement, including its
+  // real predicate; translate only numbered bindings for node:sqlite.
+  const start = source.indexOf('DELETE FROM auth_email_login_challenges')
+  assert.notEqual(start, -1, 'atomic challenge claim statement must exist in production source')
+  const endMarker = 'RETURNING user_id'
+  const end = source.indexOf(endMarker, start)
+  assert.notEqual(end, -1, 'atomic challenge claim must return the claimed row')
+  return source.slice(start, end + endMarker.length)
+    .replace(/\?1/g, '?')
+    .replace(/\?2/g, '?')
+    .replace(/\?3/g, '?')
 }
 
 test('a D1 email login challenge can only be claimed once', () => {
@@ -51,7 +57,7 @@ test('wrong and expired digests cannot consume a D1 email login challenge', () =
   try {
     const now = Math.floor(Date.now() / 1000)
     issue(db, 'hmac-sha256:approved-digest', now - 700, now - 100)
-    const consume = db.prepare(claim(db))
+    const consume = db.prepare(claimStatement())
     assert.equal(consume.get('user-1', 'hmac-sha256:wrong-digest', now), undefined)
     assert.equal(consume.get('user-1', 'hmac-sha256:approved-digest', now), undefined)
   } finally {
@@ -65,7 +71,7 @@ test('issuing a new challenge supersedes the previous digest for that account', 
     const now = Math.floor(Date.now() / 1000)
     issue(db, 'hmac-sha256:old', now, now + 600)
     issue(db, 'hmac-sha256:new', now + 1, now + 601)
-    const consume = db.prepare(claim(db))
+    const consume = db.prepare(claimStatement())
     assert.equal(consume.get('user-1', 'hmac-sha256:old', now + 1), undefined)
     assert.equal(consume.get('user-1', 'hmac-sha256:new', now + 1).user_id, 'user-1')
   } finally {
@@ -74,5 +80,7 @@ test('issuing a new challenge supersedes the previous digest for that account', 
 })
 
 test('production code claims challenges with a conditional DELETE RETURNING', () => {
-  assert.match(source, /DELETE FROM auth_email_login_challenges[\s\S]*?WHERE user_id = \?1 AND code_digest = \?2 AND expires_at > \?3[\s\S]*?RETURNING user_id/)
+  const statement = claimStatement()
+  assert.match(statement, /WHERE user_id = \?1 AND code_digest = \?2 AND expires_at > \?3/)
+  assert.match(statement, /RETURNING user_id$/)
 })
