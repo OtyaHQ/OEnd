@@ -196,3 +196,16 @@ test('admin notification URLs reject embedded credentials and nonstandard ports'
   }
   assert.equal(officialNotificationUrl('https://petersmartlink.com/help'), 'https://petersmartlink.com/help')
 })
+
+test('admin notification URLs accept both official domains and still reject lookalikes', async () => {
+  const source = readFileSync(new URL('../src/app/api/push/route.ts', import.meta.url), 'utf8')
+  const helper = source.slice(source.indexOf('function officialNotificationUrl'), source.indexOf('const CORS_HEADERS'))
+  const { outputText } = ts.transpileModule(helper + '\nexport { officialNotificationUrl }', { compilerOptions: { module: ts.ModuleKind.ESNext } })
+  const { officialNotificationUrl } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
+  assert.equal(officialNotificationUrl('https://otya.site/help'), 'https://otya.site/help')
+  assert.equal(officialNotificationUrl('https://space.otya.site/account'), 'https://space.otya.site/account')
+  assert.equal(officialNotificationUrl('https://petersmartlink.com/help'), 'https://petersmartlink.com/help')
+  for (const url of ['https://otya.site.evil.example/', 'https://evilotya.site/', 'https://otya.site:8443/', 'https://user:pw@otya.site/', 'http://otya.site/']) {
+    assert.equal(officialNotificationUrl(url), null, url)
+  }
+})

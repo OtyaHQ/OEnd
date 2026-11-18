@@ -6,7 +6,7 @@ import { getFcmAccessToken, sendFcmWithToken } from '@/lib/fcm'
 import { verifyAdminSession } from '@/lib/admin_auth'
 
 const CHUNK_SIZE = 100
-const OTYA_DOWNLOAD_URL = 'https://petersmartlink.com/download/otya-player'
+const OTYA_DOWNLOAD_URL = 'https://otya.site/download/otya-player'
 
 function officialNotificationUrl(value: string): string | null {
   try {
@@ -14,7 +14,7 @@ function officialNotificationUrl(value: string): string | null {
     const host = url.hostname.toLowerCase()
     if (url.protocol !== 'https:' || url.username || url.password ||
         (url.port && url.port !== '443') ||
-        (host !== 'petersmartlink.com' && !host.endsWith('.petersmartlink.com'))) {
+        !['petersmartlink.com', 'otya.site'].some(domain => host === domain || host.endsWith('.' + domain))) {
       return null
     }
     return url.toString()

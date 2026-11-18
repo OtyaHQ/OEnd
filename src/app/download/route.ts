@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // Used as a short link in share messages and the app
 export async function GET(_req: NextRequest) {
   return NextResponse.redirect(
-    'https://petersmartlink.com/download/otya-player',
+    'https://otya.site/download/otya-player',
     { status: 302 }
   )
 }

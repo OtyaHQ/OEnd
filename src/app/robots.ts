@@ -20,6 +20,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: 'https://petersmartlink.com/sitemap.xml',
+    sitemap: 'https://otya.site/sitemap.xml',
   }
 }

@@ -8,9 +8,9 @@ import { getKV, getR2 } from '@/lib/d1'
 // pre-release R2 bucket as an operational error.
 const KV_CACHE_KEY  = 'version:current'
 const KV_TTL        = 300 // 5 minutes
-const DOWNLOAD_PAGE = 'https://petersmartlink.com/download/otya-player'
-const ARM64_APK     = 'https://petersmartlink.com/apk/arm64'
-const ARM32_APK     = 'https://petersmartlink.com/apk/arm32'
+const DOWNLOAD_PAGE = 'https://otya.site/download/otya-player'
+const ARM64_APK     = 'https://otya.site/apk/arm64'
+const ARM32_APK     = 'https://otya.site/apk/arm32'
 const BUILD_TAG_RE  = /^v\d+\.\d+\.\d+\+[1-9]\d*$/
 
 function releaseDownloads(tag?: unknown) {
