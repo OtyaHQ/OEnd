@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic'
 const PUBLIC_PREFIX = '/api/auth/telegram/'
 const AUTH_PREFIX = '/auth/telegram/'
 const ACCESS_COOKIE = '__Secure-otya_access'
-const REFRESH_COOKIE = '__Secure-otya_refresh'
 
 type AuthService = { fetch(request: Request): Promise<Response> }
 type Payload = Record<string, unknown> & {
