@@ -36,7 +36,7 @@ const LOGIN_OTP_ATTEMPT_LIMIT = 8
 const LOGIN_OTP_EMAIL_ATTEMPT_LIMIT = 16
 const ACCESS_TOKEN_TTL = 15 * 60
 const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60
-const EMAIL_RE = /^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/
+const EMAIL_RE = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -184,23 +184,23 @@ async function requestLoginOtp(request: Request, env: SecureOtpEnv): Promise<Res
 
   const ip = clientIp(request)
   const [emailAllowed, ipAllowed] = await Promise.all([
-    bump(env.AUTH_KV, \`secure_otp_send:login:\${email}\`, LOGIN_OTP_SEND_LIMIT, SEND_WINDOW_TTL),
-    bump(env.AUTH_KV, \`secure_otp_send_ip:login:\${ip}\`, LOGIN_OTP_IP_SEND_LIMIT, SEND_WINDOW_TTL),
+    bump(env.AUTH_KV, `secure_otp_send:login:${email}`, LOGIN_OTP_SEND_LIMIT, SEND_WINDOW_TTL),
+    bump(env.AUTH_KV, `secure_otp_send_ip:login:${ip}`, LOGIN_OTP_IP_SEND_LIMIT, SEND_WINDOW_TTL),
   ])
   if (!emailAllowed || !ipAllowed) {
     return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
   }
 
   const user = await getUserByEmail(env.AUTH_DB, email)
-  if (!user || !(user.is_verified === 1 || user.is_verified === true) || !env.RESEND_API_KEY) {
+  if (!user || user.is_verified !== 1 || !env.RESEND_API_KEY) {
     return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
   }
 
   const code = generateOtp()
-  const key = \`secure_login_otp:\${email}\`
+  const key = `secure_login_otp:${email}`
   await env.AUTH_KV.put(key, await digestCode(env, 'email-login', email, code), { expirationTtl: OTP_TTL })
   try {
-    await sendCode(env, email, 'Your Otya sign-in code', 'Use this one-time code to sign in to your Otya account:')
+    await sendCode(env, email, 'Your Otya sign-in code', 'Use this one-time code to sign in to your Otya account:', code)
   } catch (error) {
     await env.AUTH_KV.delete(key)
     console.error('[auth/otp] Email login code delivery failed:', (error as Error)?.message)
@@ -221,21 +221,21 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
 
   const ip = clientIp(request)
   const [ipAllowed, emailAllowed] = await Promise.all([
-    bump(env.AUTH_KV, \`secure_otp_attempt:login:\${email}:\${ip}\`, LOGIN_OTP_ATTEMPT_LIMIT, ATTEMPT_TTL),
-    bump(env.AUTH_KV, \`secure_otp_attempt_global:login:\${email}\`, LOGIN_OTP_EMAIL_ATTEMPT_LIMIT, ATTEMPT_TTL),
+    bump(env.AUTH_KV, `secure_otp_attempt:login:${email}:${ip}`, LOGIN_OTP_ATTEMPT_LIMIT, ATTEMPT_TTL),
+    bump(env.AUTH_KV, `secure_otp_attempt_global:login:${email}`, LOGIN_OTP_EMAIL_ATTEMPT_LIMIT, ATTEMPT_TTL),
   ])
   if (!ipAllowed || !emailAllowed) {
     return json({ error: 'Too many sign-in attempts. Request a new code later.' }, 429)
   }
 
-  const key = \`secure_login_otp:\${email}\`
+  const key = `secure_login_otp:${email}`
   const stored = await env.AUTH_KV.get(key)
   if (!(await matchesStoredCode(env, stored, 'email-login', email, code))) {
     return json({ error: 'Invalid or expired sign-in code.' }, 401)
   }
 
   const user = await getUserByEmail(env.AUTH_DB, email)
-  if (!user || !(user.is_verified === 1 || user.is_verified === true)) {
+  if (!user || user.is_verified !== 1) {
     await env.AUTH_KV.delete(key)
     return json({ error: 'Invalid or expired sign-in code.' }, 401)
   }
@@ -243,13 +243,13 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
     return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
   }
 
-  // Consume the short-lived, purpose-bound code before issuing credentials.
-  // KV does not provide compare-and-delete, so this follows the same one-use
-  // semantics as the existing verification OTP flow.
+  // Consume the email-bound code before issuing credentials. KV does not provide
+  // compare-and-delete; exact concurrent single-use enforcement remains a separate
+  // Durable Object/D1 coordination gate rather than being overstated here.
   await env.AUTH_KV.delete(key)
   await Promise.all([
-    env.AUTH_KV.delete(\`secure_otp_attempt:login:\${email}:\${ip}\`),
-    env.AUTH_KV.delete(\`secure_otp_attempt_global:login:\${email}\`),
+    env.AUTH_KV.delete(`secure_otp_attempt:login:${email}:${ip}`),
+    env.AUTH_KV.delete(`secure_otp_attempt_global:login:${email}`),
   ])
 
   const now = Math.floor(Date.now() / 1000)
@@ -262,13 +262,13 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
   const refreshToken = generateRefreshToken()
   try {
     await Promise.all([
-      env.AUTH_KV.put(\`rt:\${refreshToken}\`, user.id, { expirationTtl: REFRESH_TOKEN_TTL }),
-      env.AUTH_KV.put(\`rt_user:\${user.id}:\${refreshToken}\`, '1', { expirationTtl: REFRESH_TOKEN_TTL }),
+      env.AUTH_KV.put(`rt:${refreshToken}`, user.id, { expirationTtl: REFRESH_TOKEN_TTL }),
+      env.AUTH_KV.put(`rt_user:${user.id}:${refreshToken}`, '1', { expirationTtl: REFRESH_TOKEN_TTL }),
     ])
   } catch (error) {
     await Promise.all([
-      env.AUTH_KV.delete(\`rt:\${refreshToken}\`),
-      env.AUTH_KV.delete(\`rt_user:\${user.id}:\${refreshToken}\`),
+      env.AUTH_KV.delete(`rt:${refreshToken}`),
+      env.AUTH_KV.delete(`rt_user:${user.id}:${refreshToken}`),
     ])
     console.error('[auth/otp] Email login session creation failed:', (error as Error)?.message)
     return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
@@ -288,7 +288,6 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
     },
   })
 }
-
 export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv): Promise<Response | null> {
   const url = new URL(request.url)
   const path = url.pathname
