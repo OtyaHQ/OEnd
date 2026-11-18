@@ -54,23 +54,32 @@ test('Admin MFA OTPs are format-checked, single-use, and hashed at rest', () => 
   assert.doesNotMatch(source, /put\(`admin_mfa_otp:\$\{user\.id\}`, otp,/)
 })
 
-test('Admin Telegram step-up preserves the existing normal browser session', () => {
+test('Telegram OIDC cannot sign in or issue admin sessions; authenticated linking and separate owner step-up remain', () => {
   const worker = read('auth-worker/src/telegram-login.ts')
   const callback = read('src/app/api/auth/telegram/[...path]/route.ts')
+  const adminMfa = read('auth-worker/src/admin-mfa.ts')
+  const coreBot = read('src/telegram-entrypoint.mjs')
   const helper = worker.match(/async function completeTelegramIdentity\([\s\S]*?\n}\n\nexport async function handleTelegramLogin/)?.[0] ?? ''
-  const adminStart = helper.indexOf("if (stored.mode === 'admin')")
-  const adminEnd = helper.indexOf("await env.AUTH_DB.prepare(`\n    INSERT INTO linked_identities", adminStart)
-  const adminBlock = adminStart >= 0 && adminEnd > adminStart ? helper.slice(adminStart, adminEnd) : ''
 
-  assert.match(adminBlock, /existingIdentity\.user_id !== userId/)
-  assert.match(adminBlock, /markAdminTelegramComplete/)
-  assert.match(adminBlock, /admin_mfa:\s*true/)
-  assert.doesNotMatch(adminBlock, /issueBrowserTokens/)
-  assert.doesNotMatch(adminBlock, /refresh_token/)
-  assert.match(callback, /data\.admin_mfa === true/)
-  assert.match(callback, /\/admin\?telegram=verified/)
+  assert.match(worker, /requested === 'login' \|\| requested === 'admin'/)
+  assert.match(worker, /const mode: TelegramMode = 'link'/)
+  assert.match(worker, /const userId = await requireUser\(request, env\)/)
+  assert.match(helper, /stored\.mode !== 'link' \|\| !stored\.userId/)
+  assert.match(helper, /existingIdentity && existingIdentity\.user_id !== userId/)
+  assert.doesNotMatch(worker, /issueBrowserTokens|generateRefreshToken|signJwt/)
+  assert.doesNotMatch(helper, /telegram_login:\s*true|admin_mfa:\s*true|refresh_token/)
+
+  assert.doesNotMatch(callback, /data\.admin_mfa === true/)
+  assert.doesNotMatch(callback, /otya_admin_return/)
+  assert.doesNotMatch(callback, /\/admin\?telegram=verified/)
+
+  assert.match(adminMfa, /telegram_challenge: telegramChallenge/)
+  assert.match(adminMfa, /Complete Telegram verification first\./)
+  assert.match(adminMfa, /confirmAdminTelegramChallenge/)
+  assert.match(coreBot, /X-Telegram-Bot-Api-Secret-Token/)
+  assert.match(coreBot, /chat\?\.type !== 'private'/)
+  assert.match(coreBot, /auth\/admin\/telegram-challenge\/confirm/)
 })
-
 test('Production account OTPs are purpose-bound, protected at rest, and single-use', () => {
   const source = read('auth-worker/src/secure-otp.ts')
   const entry = read('auth-worker/src/production-entrypoint.ts')
