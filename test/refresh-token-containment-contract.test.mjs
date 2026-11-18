@@ -9,7 +9,7 @@ test('production auth wraps every provider in the refresh-safe KV boundary', () 
   assert.match(entry, /createRefreshSafeKv/)
   assert.match(entry, /AUTH_KV: createRefreshSafeKv\(rawEnv\.AUTH_KV\)/)
   assert.match(entry, /handleTelegramMiniApp\(request, miniEnv/)
-  assert.match(entry, /handleTelegramPrimaryLogin\(request, authEnv\)/)
+  assert.doesNotMatch(entry, /handleTelegramPrimaryLogin|telegram-primary-login/)
   assert.match(entry, /worker\.fetch\(request, authEnv\)/)
 })
 
