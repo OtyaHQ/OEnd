@@ -10,7 +10,7 @@ const chrome = read('src/components/OtyaSpaceChrome.tsx')
 const account = read('src/app/account/page.tsx')
 const proxy = read('src/app/api/account-session/[...path]/route.ts')
 
-test('Telegram-first Otya identities can add a unique primary email without replacing an existing one', () => {
+test('Existing Otya identities can add a unique primary email without replacing an existing one', () => {
   assert.match(profile, /const allowed = \[\s*'email'/)
   assert.match(profile, /EMAIL_IN_USE/)
   assert.match(profile, /EMAIL_CHANGE_REQUIRES_VERIFICATION/)
@@ -18,8 +18,11 @@ test('Telegram-first Otya identities can add a unique primary email without repl
   assert.match(profile, /getUserByEmail/)
 })
 
-test('Otya Space exposes one sign-in-method manager for email Google and Telegram', () => {
-  assert.match(methods, /Telegram, Google and email can all belong to one OTYA ID/)
+test('Otya Space distinguishes email and Google sign-in from Telegram identity linking', () => {
+  assert.match(methods, /Email and Google are sign-in methods/)
+  assert.match(methods, /Telegram is a linked identity/)
+  assert.match(methods, /it cannot sign in to Otya/)
+  assert.match(methods, /Link Telegram identity/)
   assert.match(methods, /accountFetch\('google\/link'/)
   assert.match(methods, /accountFetch\('account', \{ method: 'PATCH', body: JSON\.stringify\(\{ email \}\) \}\)/)
   assert.match(methods, /accountFetch\('send-verification'/)
