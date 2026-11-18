@@ -19,7 +19,7 @@ test('support inbox follows Cloudflare Email Routing into Gmail while Resend sta
     assert.doesNotMatch(source, /resend\.com\/emails\/receiving/)
     assert.match(source, /listGmailMessages/)
   }
-  assert.match(support, /to:\$\{SUPPORT_ADDRESS\} in:inbox/)
+  assert.match(support, /to:\{\$\{SUPPORT_ADDRESS\} \$\{LEGACY_SUPPORT_ADDRESS\}\} in:inbox/)
   assert.match(support, /resend\(env,'\/emails'/)
   assert.doesNotMatch(consoleTools, /capabilities: \['support inbox', 'personal replies', 'transactional email'\]/)
 })
