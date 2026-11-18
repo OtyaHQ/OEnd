@@ -11,6 +11,7 @@ const config = read('next.config.mjs')
 const router = read('src/production-router.mjs')
 const wrangler = read('auth-worker/wrangler.toml')
 const primaryLoginFile = new URL('../auth-worker/src/telegram-primary-login.ts', import.meta.url)
+const telegramAccountFile = new URL('../auth-worker/src/telegram-account.ts', import.meta.url)
 const secretWorkflowUrl = new URL('../.github/workflows/telegram-auth-secret.yml', import.meta.url)
 
 test('Telegram Mini App is authenticated account-linking only and cannot mint sessions', () => {
@@ -22,6 +23,7 @@ test('Telegram Mini App is authenticated account-linking only and cannot mint se
   assert.match(miniAuth, /TELEGRAM_ALREADY_LINKED/)
   assert.doesNotMatch(miniAuth, /createOrGetTelegramUser|generateRefreshToken|signJwt|issueSession|created_or_logged_in/)
   assert.equal(existsSync(primaryLoginFile), false)
+  assert.equal(existsSync(telegramAccountFile), false)
 })
 
 test('Telegram OIDC and Login Widget can only link an already authenticated Otya account', () => {
