@@ -408,6 +408,8 @@ export default {
       request.method === 'POST'
       && ['/auth/login/otp/request', '/auth/login/otp/verify'].includes(url.pathname)
     ) {
+      const identitySchemaError = await ensureIdentitySchema(env)
+      if (identitySchemaError) return audited(request, identitySchemaError, env)
       const otpSchemaError = await ensureEmailLoginOtpSchema(env)
       if (otpSchemaError) return audited(request, otpSchemaError, env)
     }
