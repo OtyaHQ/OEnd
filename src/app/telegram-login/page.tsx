@@ -28,7 +28,7 @@ export default function TelegramLoginPage() {
     const bot = params.get('bot') || ''
     const authUrl = validWidgetAuthUrl(params.get('auth') || '')
     if (!/^[A-Za-z0-9_]{5,32}$/.test(bot) || !authUrl || !widgetRef.current) {
-      setError('Telegram Sign-In could not be prepared safely. Return to OTYA and try again.')
+      setError('Telegram account linking could not be prepared safely. Return to OTYA and try again.')
       return
     }
 
@@ -58,13 +58,13 @@ export default function TelegramLoginPage() {
         <div className="mx-auto h-14 w-14 rounded-full grid place-items-center bg-[#229ED9]/10 text-[#229ED9] mb-5" aria-hidden="true">
           <svg viewBox="0 0 24 24" className="h-7 w-7 fill-current"><path d="M21.6 3.5 18.7 20c-.2 1.2-.8 1.5-1.7.9l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.8.4l.3-4.6 8.4-7.6c.4-.3-.1-.5-.6-.2L7.2 14.2 2.7 12.8c-1-.3-1-1 .2-1.5L20.4 4.5c.8-.3 1.5.2 1.2-1z"/></svg>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Continue with Telegram</h1>
-        <p className="mt-3 text-sm leading-6 otya-muted">Telegram verifies your identity. OTYA then signs in, links, or verifies only the OTYA Account associated with that Telegram identity.</p>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Connect Telegram</h1>
+        <p className="mt-3 text-sm leading-6 otya-muted">Connect Telegram only after signing in to your existing Otya account with email or Google. Telegram cannot create an account or sign in to Otya.</p>
 
-        {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[.07] px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div> : <div ref={widgetRef} className="mt-7 min-h-12 flex items-center justify-center" aria-label="Telegram Sign-In" />}
+        {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/[.07] px-4 py-3 text-sm text-red-700 dark:text-red-200">{error}</div> : <div ref={widgetRef} className="mt-7 min-h-12 flex items-center justify-center" aria-label="Telegram account linking" />}
 
         <div className="mt-7 border-t border-black/[.06] dark:border-white/[.08] pt-5 text-xs leading-5 otya-muted">
-          Never enter an OTYA password or verification code into Telegram. If your Telegram identity has not been linked yet, sign in to OTYA with email or Google first and connect Telegram from your account.
+          Telegram is a linked channel, not a sign-in method. Never share an Otya password or one-time code with anyone. Sign in with email or Google first, then connect Telegram from Account settings.
         </div>
       </div>
 

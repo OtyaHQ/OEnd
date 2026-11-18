@@ -30,11 +30,11 @@ Secondary/footer links:
 The homepage must quickly explain:
 1. Otya is the public umbrella brand.
 2. What products currently exist.
-3. Where Otya Media belongs in that portfolio.
+3. Where Omy Play belongs in that portfolio.
 4. How to reach Docs, Status and Space.
 5. A clear product discovery action.
 
-Otya Media has its own product page. Do not make the Otya homepage look like the company and a single Android app are the same entity.
+Omy Play has its own product page. Do not make the Otya homepage look like the company and a single Android app are the same entity.
 
 Do not expose internal infrastructure or unfinished product claims.
 
@@ -45,7 +45,7 @@ Purpose: public product guidance and user documentation.
 Top-level structure:
 
 - Get started
-  - Otya Media overview
+  - Omy Play overview
   - Install safely
   - First launch
   - Media permissions
@@ -132,7 +132,7 @@ Signed out:
 - Sign in
 - Create Otya Account
 - Google sign-in
-- Telegram sign-in where supported
+- Optional Telegram account linking after email or Google sign-in; never a sign-in method
 - Recover account
 - Concise explanation of Space
 
@@ -166,7 +166,7 @@ Do not show raw infrastructure, deployment secrets, logs or owner-only implement
 Purpose: portfolio view of current Otya products and connected surfaces.
 
 Current product presentation may include:
-- Otya Media
+- Omy Play
 - Next
 - Space
 

@@ -1,4 +1,4 @@
-name: OTYA Telegram Provider Smoke
+name: OTYA Telegram Account-Linking Smoke
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: otya-telegram-provider-smoke-production
+  group: otya-telegram-account-linking-smoke-production
   cancel-in-progress: true
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Require Telegram Sign-In human security gate
+      - name: Verify public retired Telegram sign-in remains blocked
         shell: bash
         run: |
           set -euo pipefail
@@ -26,12 +26,12 @@ jobs:
           echo "HTTP $status"
 
           # CI is intentionally not given a Turnstile bypass. Production must
-          # reject this automated login-start request and require the real
-          # human challenge before Telegram authorization can begin.
+          # reject this automated request to the retired Telegram sign-in route and require the real
+          # human challenge before any further provider operation can be attempted.
           test "$status" = "400"
           grep -q 'TURNSTILE_REQUIRED' "$response"
 
-      - name: Check Telegram handoff page
+      - name: Check Telegram account-linking page
         shell: bash
         run: |
           set -euo pipefail

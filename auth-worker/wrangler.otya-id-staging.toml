@@ -1,0 +1,39 @@
+name = "otya-id-staging"
+main = "src/production-entrypoint-miniapp.ts"
+compatibility_date = "2026-11-11"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+keep_vars = false
+
+[observability]
+enabled = true
+redact_query_string = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 0.1
+
+[vars]
+ENVIRONMENT = "staging"
+CORS_ORIGIN = "https://otya.site"
+OTP_EMAIL_ENABLED = "false"
+OTP_TELEGRAM_ENABLED = "false"
+# Enable delivery only after separate staging provider credentials are installed.
+# No Google, Telegram Login, Mini App login or product Firebase identity is configured.
+
+[[d1_databases]]
+binding = "AUTH_DB"
+database_name = "otya-id-staging-db"
+database_id = "575e42b8-fa87-4161-a0df-e7bba50b3df8"
+
+[[kv_namespaces]]
+binding = "AUTH_KV"
+id = "9bcd68a2cc014b68bdebac9ef6183314"
+
+[[queues.producers]]
+binding = "OTP_DELIVERY_QUEUE"
+queue = "otya-id-staging-delivery"

@@ -50,7 +50,6 @@ TELEGRAM_LOGIN_REDIRECT_URI = "https://petersmartlink.com/api/auth/telegram/call
 TELEGRAM_LOGIN_BOT_USERNAME = "OtyaPlayerBot"
 ADMIN_EMAILS = "petersmartlink@gmail.com"
 
-# Telegram browser sign-in stays OIDC + PKCE. Mini App signature verification
-# reads the same centralized Secrets Store entry through a purpose-specific
-# local binding so the legacy Login Widget path cannot mistake the binding
-# object for a raw token. No secret value is duplicated in GitHub.
+# Telegram can only be linked after a user has authenticated to Otya.
+# The Mini App signature verifier reads the bot token through this purpose-
+# specific Secrets Store alias. Telegram cannot create or issue Otya sessions.

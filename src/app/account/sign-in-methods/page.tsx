@@ -72,7 +72,7 @@ export default function SignInMethodsPage() {
       script.defer = true
       script.dataset.otyaGoogle = 'true'
       script.addEventListener('load', setup, { once: true })
-      script.addEventListener('error', () => setError('Google could not be loaded. You can still use your other OTYA sign-in methods.'), { once: true })
+      script.addEventListener('error', () => setError('Google could not be loaded. You can still use your email or Google sign-in.'), { once: true })
       document.head.appendChild(script)
     }
 
@@ -167,8 +167,8 @@ export default function SignInMethodsPage() {
   return <main className="px-4 sm:px-7 lg:px-10 py-8 max-w-[900px]">
     <div className="mb-7">
       <div className="text-[11px] font-black uppercase tracking-[.16em] otya-muted">Otya Space</div>
-      <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Sign-in methods</h1>
-      <p className="mt-2 text-sm sm:text-base otya-muted">Telegram, Google and email can all belong to one OTYA ID. Connecting another method does not create another account.</p>
+      <h1 className="mt-2 text-3xl sm:text-4xl font-black tracking-[-.045em]">Account access & verification</h1>
+      <p className="mt-2 text-sm sm:text-base otya-muted">Email and Google are sign-in methods. Telegram can be linked after sign-in for supported account verification, but it can never sign in to Otya.</p>
       <div className="mt-3 text-xs font-mono otya-muted">OTYA ID: {user.otya_id || 'Being assigned'}</div>
     </div>
 
@@ -194,8 +194,8 @@ export default function SignInMethodsPage() {
         {google ? <p className="mt-3 text-sm otya-muted">You can use this Google account to access the same OTYA identity.</p> : <div className="mt-4"><div ref={googleButtonRef} className={busy ? 'pointer-events-none opacity-55' : ''} /></div>}
       </MethodRow>
 
-      <MethodRow title="Telegram" status={telegram ? `Connected${telegram.provider_username ? ` · ${telegram.provider_username}` : ''}` : 'Not connected'}>
-        {telegram ? <p className="mt-3 text-sm otya-muted">Telegram is already attached to this OTYA identity.</p> : <button onClick={() => void connectTelegram()} disabled={busy} className="mt-4 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram</button>}
+      <MethodRow title="Telegram (linked channel)" status={telegram ? `Connected${telegram.provider_username ? ` · ${telegram.provider_username}` : ''}` : 'Not connected'}>
+        {telegram ? <p className="mt-3 text-sm otya-muted">Telegram is already attached to this OTYA identity.</p> : <button onClick={() => void connectTelegram()} disabled={busy} className="mt-4 otya-quiet-button rounded-xl px-4 min-h-11 text-sm font-black">Connect Telegram for verification</button>}
       </MethodRow>
     </section>
 
