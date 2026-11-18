@@ -689,7 +689,7 @@ async function handleRequestEmailLoginOtp(req: Request, env: Env): Promise<Respo
         'This code expires in 10 minutes and can be used once.',
         'If you did not request this code, you can ignore this email.',
         '— The Otya Team',
-      ].join('\\n'),
+      ].join('\n'),
     })
   } catch (error) {
     await env.AUTH_DB.prepare(
