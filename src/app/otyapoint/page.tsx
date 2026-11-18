@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 
-const SITE_URL = 'https://petersmartlink.com'
+const SITE_URL = 'https://otya.site'
 const MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Old%20Market%2C%20Mbirizi%2C%20Lwengo%20District%2C%20Uganda'
 const ENQUIRY_URL = 'mailto:support@petersmartlink.com?subject=OtyaPoint%20shop%20enquiry'
 

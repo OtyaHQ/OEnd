@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   const downloadUrl =
     (typeof downloads.auto === 'string' && downloads.auto) ||
     (typeof downloads.arm64 === 'string' && downloads.arm64) ||
-    'https://petersmartlink.com/download/otya-player'
+    'https://otya.site/download/otya-player'
 
   return NextResponse.json(
     {

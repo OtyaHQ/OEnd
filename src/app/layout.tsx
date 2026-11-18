@@ -4,7 +4,7 @@ import './globals.css'
 import './brand-overrides.css'
 
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
-const SITE_URL = 'https://petersmartlink.com'
+const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
 const OTYA_MARK = '/otya-app-icon.webp'
 
