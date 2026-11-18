@@ -15,8 +15,8 @@ export interface ResendEmail {
 interface ResendResponse { id?: string; message?: string; name?: string; statusCode?: number }
 interface TemplateSelection { id: string; variables: Record<string, string | number> }
 
-const OTYA_SUPPORT_EMAIL = 'support@petersmartlink.com'
-const OTYA_LOGO_URL = 'https://petersmartlink.com/otya-app-icon.webp'
+const OTYA_SUPPORT_EMAIL = 'support@otya.site'
+const OTYA_LOGO_URL = 'https://otya.site/otya-app-icon.webp'
 
 function escapeHtml(value: string): string {
   return value.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')
