@@ -7,12 +7,24 @@ const signIn = read('src/app/sign-in/page.tsx')
 const adminLayout = read('src/app/admin/layout.tsx')
 const router = read('src/production-router.mjs')
 const home = read('src/app/page.tsx')
+const telegramBot = read('src/telegram-entrypoint.mjs')
 
 test('owner factors are resolved by the authenticated Otya sign-in journey', () => {
   assert.match(signIn, /async function routeAuthenticatedSession\(\)/)
   assert.match(signIn, /await beginOwnerVerification\(\)/)
   assert.match(signIn, /mode === 'owner-otp'/)
   assert.match(signIn, /mode === 'owner-telegram'/)
+  assert.match(signIn, /data\.telegram_challenge/)
+  assert.match(signIn, /https:\/\/t\.me\/OtyaPlayerBot\?start=owner_/)
+  assert.match(signIn, /I've confirmed in Telegram/)
+  assert.doesNotMatch(signIn, /startOwnerTelegram|startTelegram\(/)
+  assert.doesNotMatch(signIn, /\/api\/auth\/telegram\/start\?mode=(?:login|admin)/)
+})
+
+test('owner second factor uses a linked Telegram bot challenge, not Telegram OAuth sign-in', () => {
+  assert.match(telegramBot, /ownerChallengeFromUpdate/)
+  assert.match(telegramBot, /start owner_/)
+  assert.match(telegramBot, /auth\/admin\/telegram-challenge\/confirm/)
 })
 
 test('browser admin routes stay unavailable while their protected backend boundary remains', () => {
