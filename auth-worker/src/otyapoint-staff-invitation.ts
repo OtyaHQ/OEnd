@@ -2,7 +2,6 @@ export const OTYAPOINT_STAFF_INVITATION_PATH = '/internal/notifications/otyapoin
 export const LEGACY_COMPAT_STAFF_INVITATION_PATH = '/internal/notifications/omnipoint/staff-invitation' as const;
 
 export const OTYAPOINT_STAFF_INVITATION_ROLES = [
-  'OWNER',
   'ADMIN',
   'MANAGER',
   'CASHIER',
