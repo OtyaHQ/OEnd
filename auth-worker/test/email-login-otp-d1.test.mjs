@@ -80,6 +80,6 @@ test('issuing a new challenge supersedes the previous digest for that account', 
 
 test('production code claims challenges with a conditional DELETE RETURNING', () => {
   const statement = claimStatement()
-  assert.ok(statement.includes('WHERE user_id = ?1 AND code_digest = ?2 AND expires_at > ?3'))
+  assert.ok(statement.includes('WHERE user_id = ? AND code_digest = ? AND expires_at > ?'))
   assert.ok(statement.endsWith('RETURNING user_id'))
 })
