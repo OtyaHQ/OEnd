@@ -368,11 +368,6 @@ export default {
     const opsEmailResponse = await handleOtyaNextOpsEmail(request, env)
     if (opsEmailResponse) return opsEmailResponse
 
-    if (createsIdentitySession(request, url)) {
-      const schemaError = await ensureIdentitySchema(env)
-      if (schemaError) return audited(request, schemaError, env)
-    }
-
     if (url.pathname.startsWith('/auth/admin/')) {
       const response = await handleAdminMfa(request, env)
       if (response) return audited(request, response, env)
@@ -381,6 +376,11 @@ export default {
     if (url.pathname.startsWith('/auth/telegram/')) {
       const response = await handleTelegramLogin(request, env)
       if (response) return audited(request, response, env)
+    }
+
+    if (createsIdentitySession(request, url)) {
+      const schemaError = await ensureIdentitySchema(env)
+      if (schemaError) return audited(request, schemaError, env)
     }
 
     const googleLinkResponse = await handleGoogleLink(request, env)
