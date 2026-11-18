@@ -90,6 +90,23 @@ CREATE TABLE IF NOT EXISTS linked_identities (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_linked_identities_user ON linked_identities(user_id, provider);
+
+CREATE TABLE IF NOT EXISTS email_login_challenges (
+  user_id TEXT PRIMARY KEY,
+  challenge_id TEXT NOT NULL UNIQUE,
+  email_normalized TEXT NOT NULL,
+  code_digest TEXT NOT NULL
+    CHECK (length(code_digest) = 64 AND code_digest NOT GLOB '*[^0-9a-f]*'),
+  attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count BETWEEN 0 AND 5),
+  expires_at TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'PENDING'
+    CHECK (status IN ('PENDING','CONSUMED','LOCKED','FAILED','EXPIRED')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  consumed_at TEXT,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_email_login_challenges_expiry
+  ON email_login_challenges(status, expires_at);
 `.trim()
 
 const USER_COLUMN_DEFS: Record<string, string> = {
@@ -191,6 +208,8 @@ const REQUIRED_SCHEMA_READS = [
    FROM user_products LIMIT 0`,
   `SELECT user_id, provider, provider_subject, provider_username, provider_email, linked_at, last_used_at
    FROM linked_identities LIMIT 0`,
+  `SELECT user_id, challenge_id, email_normalized, code_digest, attempt_count, expires_at, status, created_at, consumed_at
+   FROM email_login_challenges LIMIT 0`,
 ] as const
 
 /** Read-only runtime readiness; DDL belongs to deployment repair. */
