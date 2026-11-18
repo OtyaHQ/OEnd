@@ -50,7 +50,7 @@ Test `/start`, `/privacy`, `/channel`, normal OTYA support question, unsupported
 Never ask users for passwords, OTPs, JWTs, API keys or bot tokens.
 
 ## 4. otya-store resources
-Verify canonical custom domains remain `petersmartlink.com` and `www.petersmartlink.com`.
+Verify `otya.site` and `www.otya.site` are canonical public domains; retain the legacy domain only for controlled compatibility until clients and callbacks have migrated.
 Verify R2 `R2 -> otya-player-releases`.
 Verify KV `KV -> 3f179286e0fc4dbfa2332884cdf81312`.
 Verify D1 `DB -> otya-store-db` (`ab157fc6-2cbb-4d46-9789-2e4392e16aea`).
@@ -71,7 +71,7 @@ Verify secrets: `AUTH_JWT_SECRET`, `RESEND_API_KEY`; preserve approved `INTERNAL
 Verify Google OAuth, email/password auth, refresh/session invalidation, verification OTP, password reset, same-email Google linking, account deletion, backup/Drive authorization, consent endpoints.
 
 ## 6. Email/Resend
-Audit all live automated client email paths. Automated email must use `noreply@petersmartlink.com`; human support/reply path uses `support@petersmartlink.com`.
+Audit all live automated client email paths. Automated email must use `noreply@otya.site`; human support/reply path uses `support@otya.site`. Continue checking the legacy `support@petersmartlink.com` inbox alias during migration.
 Verify Resend domain/sender is validated.
 Test personalized welcome email with the actual user's display name, verification OTP, password-reset OTP, security/new-device notice, account/legal notice and backend health/admin mail.
 Transactional/security/legal email must not depend on marketing opt-in. Promotional email must require marketing consent and have preference/unsubscribe handling before campaigns are enabled.
