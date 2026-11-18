@@ -172,7 +172,7 @@ async function sendAdminHandoff(env,{message,email,name,source,userId}){
     method:'POST',
     headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json'},
     body:JSON.stringify({
-      from:'Otya Support <noreply@petersmartlink.com>',
+      from:'Otya Support <noreply@otya.site>',
       to:[admin],
       reply_to:clean(email,180)||'support@petersmartlink.com',
       subject:`Otya support handoff · ${ticket}`,

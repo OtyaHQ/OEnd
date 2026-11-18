@@ -51,7 +51,7 @@ export async function deliverRegistrationEmails(response: Response, env: Product
 
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya <noreply@petersmartlink.com>',
+      from: 'Otya <noreply@otya.site>',
       to: [email],
       subject: 'Your Otya verification code',
       text: [
@@ -104,7 +104,7 @@ export async function deliverNewDeviceAlert(request: Request, response: Response
 
   try {
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'Otya Security <noreply@petersmartlink.com>',
+      from: 'Otya Security <noreply@otya.site>',
       to: [email],
       subject: 'New login to your Otya account',
       text: [
