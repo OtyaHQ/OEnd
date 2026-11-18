@@ -81,7 +81,7 @@ Do not self-host a commodity system merely to claim independence. Self-host only
 
 ## Provider independence
 
-Every external integration must follow [PROVIDER_ADAPTER_STANDARD.md](./PROVIDER_ADAPTER_STANDARD.md).
+Every external integration must follow [PROVIDER_ADAPTER_STANDARD.md](./PROVIDER_ADAPTER_STANDARD.md). For overlapping identity, migration and release work, follow [CHANGE_COORDINATION.md](./CHANGE_COORDINATION.md).
 
 Required rules:
 - Provider-specific details stay inside the adapter.
