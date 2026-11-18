@@ -249,7 +249,13 @@ async function ensureIdentitySchema(env: ProductionEnv): Promise<Response | null
 }
 
 function createsIdentitySession(request: Request, url: URL): boolean {
-  return request.method === 'POST' && ['/auth/register', '/auth/login', '/auth/google'].includes(url.pathname)
+  return request.method === 'POST' && [
+    '/auth/register',
+    '/auth/login',
+    '/auth/google',
+    '/auth/login/otp/request',
+    '/auth/login/otp/verify',
+  ].includes(url.pathname)
 }
 
 async function verifiedGooglePayload(request: Request, env: ProductionEnv): Promise<GoogleTokenPayload | Response> {
@@ -363,6 +369,11 @@ export default {
     const opsEmailResponse = await handleOtyaNextOpsEmail(request, env)
     if (opsEmailResponse) return opsEmailResponse
 
+    if (createsIdentitySession(request, url)) {
+      const schemaError = await ensureIdentitySchema(env)
+      if (schemaError) return audited(request, schemaError, env)
+    }
+
     if (url.pathname.startsWith('/auth/admin/')) {
       const response = await handleAdminMfa(request, env)
       if (response) return audited(request, response, env)
@@ -380,11 +391,13 @@ export default {
     if (secureAccountResponse) return audited(request, secureAccountResponse, env)
 
     const secureOtpResponse = await handleSecureOtpRoute(request, env)
-    if (secureOtpResponse) return audited(request, secureOtpResponse, env)
-
-    if (createsIdentitySession(request, url)) {
-      const schemaError = await ensureIdentitySchema(env)
-      if (schemaError) return audited(request, schemaError, env)
+    if (secureOtpResponse) {
+      if (request.method === 'POST' && url.pathname === '/auth/login/otp/verify' && secureOtpResponse.ok) {
+        await deliverNewDeviceAlert(request, secureOtpResponse, env).catch(error => {
+          console.error('[auth/email] OTP login new-device alert failed:', (error as Error)?.message)
+        })
+      }
+      return audited(request, secureOtpResponse, env)
     }
 
     if (request.method === 'POST' && url.pathname === '/auth/google') {
