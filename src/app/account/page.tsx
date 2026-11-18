@@ -117,7 +117,7 @@ export default function AccountPage() {
       <section className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <SectionLink href={`${base}/security`} title="Security" text="Email verification, two-step verification and recovery." />
         <SectionLink href={`${base}/devices`} title="Devices & sessions" text="Review and revoke active sessions." />
-        <SectionLink href={`${base}/providers`} title="Sign-in methods" text="Email, Google and Telegram for this same Otya ID." />
+        <SectionLink href={`${base}/providers`} title="Sign-in methods" text="Email and Google sign-in; Telegram is a linked identity only." />
         <SectionLink href={`${base}/settings`} title="Preferences" text="Locale, timezone and account preferences." />
         <SectionLink href={`${base}/activity`} title="Activity" text="Review recent account session activity." />
         <SectionLink href={`${base}/storage`} title="Data & recovery" text="Understand device-first data and supported backups." />
