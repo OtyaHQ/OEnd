@@ -759,7 +759,7 @@ async function handleVerifyEmailLoginOtp(req: Request, env: Env): Promise<Respon
   }
 
   if (challenge.attempt_count >= EMAIL_LOGIN_OTP_MAX_ATTEMPTS) {
-    return jsonErr('Too many sign-in attempts. Request a new code later.', env, 429, req)
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
   }
 
   const codeIsWellFormed = EMAIL_LOGIN_OTP_CODE_RE.test(code)
@@ -787,9 +787,6 @@ async function handleVerifyEmailLoginOtp(req: Request, env: Env): Promise<Respon
       EMAIL_LOGIN_OTP_MAX_ATTEMPTS,
       suppliedDigest,
     ).run()
-    if (failedAttempt.meta.changes === 1 && challenge.attempt_count + 1 >= EMAIL_LOGIN_OTP_MAX_ATTEMPTS) {
-      return jsonErr('Too many sign-in attempts. Request a new code later.', env, 429, req)
-    }
     return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
   }
 
@@ -805,11 +802,6 @@ async function handleVerifyEmailLoginOtp(req: Request, env: Env): Promise<Respon
 
   const accessToken = await issueAccessToken(user.id, user.email, env.AUTH_JWT_SECRET)
   const refreshToken = await issueRefreshToken(env.AUTH_KV, user.id)
-  await Promise.all([
-    env.AUTH_KV.delete('email_login_otp_verify_email:' + emailKey),
-    env.AUTH_KV.delete('email_login_otp_verify_ip:' + ipKey),
-  ])
-
   return jsonOk({
     ok: true,
     access_token: accessToken,
