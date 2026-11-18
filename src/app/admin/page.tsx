@@ -109,7 +109,7 @@ function AdminGate({ configured, accountAdmin, checkError, onRetry, onSuccess }:
         <button onClick={sendOtp} disabled={loading} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Sending…' : 'Unlock Admin'}</button>
       </div> : stage === 'otp' ? <form onSubmit={verifyOtp} className="mt-6 space-y-3">
         <input className={input} style={surfaceStyle()} autoComplete="one-time-code" inputMode="text" placeholder="Email verification code" value={otp} onChange={e => setOtp(e.target.value.toUpperCase().slice(0, 5))} />
-        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Continue with Telegram'}</button>
+        <button disabled={loading || otp.trim().length !== 5} className="w-full rounded-xl bg-violet-500 px-4 py-3 text-sm font-black text-white disabled:opacity-50">{loading ? 'Checking…' : 'Verify email and continue'}</button>
         <button type="button" onClick={sendOtp} disabled={loading} className="w-full rounded-xl border px-4 py-2.5 text-sm font-bold" style={{ borderColor: 'var(--cosmos-divider)' }}>Send a new code</button>
       </form> : <div className="mt-6 space-y-3">
         <p className="text-sm" style={{ color: 'var(--cosmos-text-secondary)' }}>Email verification passed. Open the Otya bot and confirm with the Telegram identity already linked to this Otya account. Telegram will not sign you in or create a session.</p>
