@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
           response="$(mktemp)"
           status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' \
-            'https://petersmartlink.com/api/ai/chat?models=1')"
+            'https://otya.site/api/ai/chat?models=1')"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" = "200"
           grep -q '"models"' "$response"
@@ -37,7 +37,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -H 'Accept: application/json' \
             --data '{"message":"Reply with a very short greeting.","guest_id":"production-smoke"}' \
-            'https://petersmartlink.com/api/ai/chat')"
+            'https://otya.site/api/ai/chat')"
           cat "$response"; echo; echo "HTTP $status"
           test "$status" = "200"
           grep -q '"answer"' "$response"

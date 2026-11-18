@@ -15,10 +15,10 @@ test('documentation product links and help preserve their destinations', () => {
 })
 
 test('custom domains are canonical public entry points', () => {
-  assert.ok(router.includes("const APP_HOST = 'petersmartlink.com'"))
-  assert.ok(router.includes("const DOCS_HOST = 'docs.petersmartlink.com'"))
-  assert.ok(router.includes("const STATUS_HOST = 'status.petersmartlink.com'"))
-  assert.ok(router.includes("const SPACE_HOST = 'space.petersmartlink.com'"))
+  assert.ok(router.includes("const APP_HOST = 'otya.site'"))
+  assert.ok(router.includes("const DOCS_HOST = 'docs.otya.site'"))
+  assert.ok(router.includes("const STATUS_HOST = 'status.otya.site'"))
+  assert.ok(router.includes("const SPACE_HOST = 'space.otya.site'"))
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, STATUS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/')"))

@@ -220,7 +220,7 @@ async function handlePushMessage(msg, env) {
 
   if (!title || !body) throw new Error('Missing required fields: title, body')
 
-  const link = url ?? env.WEBSITE_URL ?? 'https://petersmartlink.com/download/otya-player'
+  const link = url ?? env.WEBSITE_URL ?? 'https://otya.site/download/otya-player'
   const data = { url: String(link) }
   for (const [key, value] of Object.entries(msg?.data ?? {})) {
     if (value !== undefined && value !== null) data[String(key)] = String(value)

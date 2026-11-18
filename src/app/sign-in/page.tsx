@@ -9,7 +9,7 @@ const API = '/api/account-session'
 const GOOGLE_WEB_CLIENT_ID = '82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com'
 const TERMS_VERSION = '2026-11-10'
 const PRIVACY_VERSION = '2026-11-10'
-const DEFAULT_AFTER_AUTH = 'https://space.petersmartlink.com/'
+const DEFAULT_AFTER_AUTH = 'https://space.otya.site/'
 
 type Mode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset' | 'twofactor' | 'owner' | 'owner-otp' | 'owner-telegram'
 type Json = { error?: string; code?: string; message?: string; authenticated?: boolean; authorization_url?: string }
@@ -374,7 +374,7 @@ export default function SignInPage() {
 
   return <main className="otya-auth-page min-h-screen text-[color:var(--cosmos-text-primary)] grid place-items-center px-4 py-8 sm:py-12">
     <section className="w-full max-w-[460px]">
-      <Link href="https://petersmartlink.com" aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
+      <Link href="https://otya.site" aria-label="Otya home" className="inline-flex items-center gap-2.5 mb-8"><OtyaBrandMark size={40} /><span><span className="block font-black text-[15px] tracking-[-.03em]">Otya</span><span className="block text-[11px] otya-muted">Otya Space</span></span></Link>
       <div className="otya-auth-card rounded-[30px] border p-5 sm:p-7">
         <div className="mb-5"><OtyaBrandMark size={46}/></div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">{title}</h1>
@@ -415,7 +415,7 @@ export default function SignInPage() {
           </div>
         </div>}
       </div>
-      <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs otya-muted"><Link href="https://petersmartlink.com/terms">Terms</Link><Link href="https://petersmartlink.com/privacy">Privacy</Link><Link href="https://docs.petersmartlink.com">Help & Docs</Link></div>
+      <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs otya-muted"><Link href="https://otya.site/terms">Terms</Link><Link href="https://otya.site/privacy">Privacy</Link><Link href="https://docs.otya.site">Help & Docs</Link></div>
     </section>
   </main>
 }

@@ -33,7 +33,7 @@ interface BackupDeleteBody {
   drive_token?: unknown
 }
 
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
+const PRIMARY_ORIGIN = 'https://otya.site'
 const DRIVE_FILE_ID_TTL = 365 * 24 * 60 * 60
 
 function headers(env: BackupRouteEnv): Record<string, string> {

@@ -85,7 +85,7 @@ async function checkPrivateService(name,binding,request,healthyStatuses){
 }
 
 async function runProductionHealthCheck(env,ctx){
-  const baseUrl=env.WEBSITE_URL||'https://petersmartlink.com'
+  const baseUrl=env.WEBSITE_URL||'https://otya.site'
   const results=[]
   for(const path of HEALTH_PATHS){
     const startedAt=Date.now()

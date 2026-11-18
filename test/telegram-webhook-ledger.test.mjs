@@ -24,7 +24,7 @@ function database() {
 }
 
 function request(updateId) {
-  return new Request('https://petersmartlink.com/api/telegram/webhook', {
+  return new Request('https://otya.site/api/telegram/webhook', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

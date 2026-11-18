@@ -70,7 +70,7 @@ This is a dated engineering snapshot, not a release certificate. "Merged" means 
 
 ### Production controls and cutover rules
 
-1. Keep `otya.site` as the canonical public identity. Retain `petersmartlink.com` only as a controlled compatibility alias until app versions, OAuth callbacks, email paths, downloads and existing sessions are proven migrated. Do not delete its zone or Worker bindings as a shortcut.
+1. Keep `otya.site` as the canonical public identity. Retain `petersmartlink.com` only as a controlled compatibility redirect while app versions, OAuth callbacks, email paths, downloads and sessions are verified; do not delete its DNS zone or Worker binding until those dependencies are checked.
 2. Do not describe a CI build, branch merge, Worker custom-domain attachment or green staging test as a production release. Record the deployed Worker version, migrations, public endpoint smoke results and device acceptance separately.
 3. Never mix shop cash, retail stock, mobile-money cash, MTN/Airtel provider float or provider-confirmed transactions. Staff membership does not grant every work area; Retail and Mobile Money need separate branch-scoped assignments and server-enforced duties.
 4. Do not enable live provider payment/write endpoints until provider contracts, approvals, credentials, reconciliation and sandbox-to-production acceptance are complete. Operator-entered transactions are not provider-confirmed transactions.

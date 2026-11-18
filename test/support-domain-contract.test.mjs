@@ -44,7 +44,7 @@ test('support inbox accepts both the current address and legacy alias', async ()
   assert.match(connections, /support@otya\.site and the legacy support alias/)
 })
 
-test('authentication replies use the current support address without moving legacy CORS yet', async () => {
+test('authentication replies use the current support address and canonical Otya.site origin', async () => {
   const [auth, resend, invite, workflow] = await Promise.all([
     read('../auth-worker/src/entrypoint.ts'),
     read('../auth-worker/src/resend.ts'),
@@ -53,7 +53,7 @@ test('authentication replies use the current support address without moving lega
   ])
 
   assert.match(auth, /const OTYA_SUPPORT_EMAIL = 'support@otya\.site'/)
-  assert.match(auth, /const PRIMARY_ORIGIN = 'https:\/\/petersmartlink\.com'/)
+  assert.match(auth, /const PRIMARY_ORIGIN = 'https:\/\/otya.site'/)
   assert.match(resend, /const OTYA_SUPPORT_EMAIL = 'support@otya\.site'/)
   assert.match(invite, /replyTo: 'support@otya\.site'/)
   assert.match(workflow, /https:\/\/otya\.site\/.well-known\/security\.txt/)

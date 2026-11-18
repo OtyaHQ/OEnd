@@ -10,8 +10,9 @@ export { OtyaReleaseWorkflow } from './entrypoint.mjs'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
-const APP_ORIGIN = 'https://petersmartlink.com'
-const TELEGRAM_WEBHOOK_URL = 'https://petersmartlink.com/api/telegram/webhook'
+const APP_ORIGIN = 'https://otya.site'
+const ALLOWED_APP_ORIGINS = new Set([APP_ORIGIN, 'https://www.otya.site', 'https://space.otya.site'])
+const TELEGRAM_WEBHOOK_URL = 'https://otya.site/api/telegram/webhook'
 const TELEGRAM_WEBHOOK_FINGERPRINT_KEY = 'telegram:webhook:fingerprint:v1'
 const TELEGRAM_OWNER_UPDATE_PREFIX = 'telegram:owner-enrollment:update:'
 const TELEGRAM_HEALTH_CRON = '*/5 * * * *'
@@ -129,7 +130,7 @@ function internalAuthorized(request, env) {
 }
 async function authorizeAdmin(request, env) {
   const origin = request.headers.get('Origin')
-  if (request.method !== 'GET' && origin && origin !== APP_ORIGIN) return json({ error: 'Invalid origin' }, 403)
+  if (request.method !== 'GET' && origin && !ALLOWED_APP_ORIGINS.has(origin)) return json({ error: 'Invalid origin' }, 403)
   const user = await adminUser(request, env)
   if (!user) return json({ error: 'Administrator access required' }, 403)
   if (!await elevated(request, env)) return json({ error: 'Elevated administrator verification required' }, 403)

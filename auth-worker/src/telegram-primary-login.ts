@@ -35,7 +35,7 @@ type JoseWebKey = JsonWebKey & { kid?: string }
 const AUTH_URL = 'https://oauth.telegram.org/auth'
 const TOKEN_URL = 'https://oauth.telegram.org/token'
 const JWKS_URL = 'https://oauth.telegram.org/.well-known/jwks.json'
-const DEFAULT_REDIRECT = 'https://petersmartlink.com/api/auth/telegram/callback'
+const DEFAULT_REDIRECT = 'https://otya.site/api/auth/telegram/callback'
 const STATE_PREFIX = 'telegram_primary_oidc:'
 const STATE_TTL = 10 * 60
 const ACCESS_TTL = 15 * 60
@@ -220,7 +220,7 @@ async function callback(request: Request, env: TelegramPrimaryLoginEnv): Promise
     })
   } catch (error) {
     console.error('[telegram-primary-login]', (error as Error)?.message)
-    return Response.redirect('https://petersmartlink.com/sign-in?telegram=error', 302)
+    return Response.redirect('https://otya.site/sign-in?telegram=error', 302)
   }
 }
 

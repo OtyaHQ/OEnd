@@ -1,7 +1,7 @@
 import { handleSupportEmailAdmin } from './support-email.mjs'
 
 const RESEND_API = 'https://api.resend.com/emails'
-const OTYA_CORE_URL = 'https://petersmartlink.com'
+const OTYA_CORE_URL = 'https://otya.site'
 const ACTION_TTL_SECONDS = 15 * 60
 const PROVIDER_TIMEOUT_MS = 12000
 const LATEST_ACTION_KEY = 'owner-action:latest'

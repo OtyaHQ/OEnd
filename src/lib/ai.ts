@@ -259,7 +259,7 @@ export async function generateReleaseEmail(
       <h2>What's New</h2>
       <pre style="background:#f4f4f4;padding:16px;border-radius:8px">${release.changelog}</pre>
       <p>Released: ${release.date}</p>
-      <a href="https://petersmartlink.com/download"
+      <a href="https://otya.site/download"
          style="background:#6366f1;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;margin-top:16px">
         Download Now
       </a>

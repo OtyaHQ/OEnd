@@ -5,7 +5,7 @@ import { getDB } from '@/lib/d1'
 import { verifyAdminSession } from '@/lib/admin_auth'
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://petersmartlink.com',
+  'Access-Control-Allow-Origin': 'https://otya.site',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }

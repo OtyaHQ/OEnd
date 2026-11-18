@@ -59,8 +59,8 @@ test('multi-component deploys remain ordered and fail closed', () => {
 })
 
 test('live verification covers canonical and legacy Otya download paths after an authorized deploy', () => {
-  assert.match(workflow, /https:\/\/petersmartlink\.com\/download\/otya /)
-  assert.match(workflow, /https:\/\/petersmartlink\.com\/download\/otya-player /)
+  assert.match(workflow, /https:\/\/otya\.site\/download\/otya /)
+  assert.match(workflow, /https:\/\/otya\.site\/download\/otya-player /)
   assert.match(workflow, /needs\.plan-deploy\.outputs\.any_runtime == 'true'/)
   assert.match(workflow, /needs\.validate\.result == 'success'/)
   assert.match(workflow, /needs\.authorize-deploy\.result == 'success'/)

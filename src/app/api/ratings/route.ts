@@ -7,7 +7,7 @@ import { secureJson, errorJson } from '@/lib/response'
 import { getDB } from '@/lib/d1'
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  'https://petersmartlink.com',
+  'Access-Control-Allow-Origin':  'https://otya.site',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Firebase-AppCheck, X-Otya-Device-Id',
 }
