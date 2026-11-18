@@ -124,6 +124,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
   const expiresAt = typeof body.expiresAt === 'string' ? body.expiresAt.trim() : ''
   const expiration = Date.parse(expiresAt)
 
+  if (!/^[a-z0-9][a-z0-9._:-]{0,127}$/.test(invitationId)) return authError('Invalid invitation ID', 400)
   if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) || email.length > 254) {
     return authError('Invalid invitation email', 400)
   }
