@@ -75,7 +75,7 @@ test('Otya ID exposes verified-email state without weakening bearer verification
   assert.ok(start >= 0 && end > start)
   const handler = authEntrypoint.slice(start, end)
   assert.match(handler, /verifyJwt\(token, env\.AUTH_JWT_SECRET\)/)
-  assert.match(handler, /SELECT is_verified FROM users WHERE id = \? LIMIT 1/)
+  assert.match(handler, /SELECT email, is_verified FROM users WHERE id = \? LIMIT 1/)
   assert.match(handler, /email_verified: emailVerified/)
   assert.match(handler, /currentEmail = typeof row\?\.email === 'string' \? row\.email\.trim\(\)\.toLowerCase\(\) : null/)
   assert.match(handler, /currentEmail === tokenEmail/)
