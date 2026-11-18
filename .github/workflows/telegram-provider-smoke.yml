@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           response="$(mktemp)"
-          status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' -X POST -H 'Accept: application/json' 'https://petersmartlink.com/api/auth/telegram/start?mode=login')"
+          status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' -X POST -H 'Accept: application/json' 'https://otya.site/api/auth/telegram/start?mode=login')"
           cat "$response"
           echo
           echo "HTTP $status"
@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          status="$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' 'https://petersmartlink.com/telegram-login/?telegram_smoke=1')"
+          status="$(curl -sS --max-time 20 -o /dev/null -w '%{http_code}' 'https://otya.site/telegram-login/?telegram_smoke=1')"
           test "$status" = "200"
 
       - name: Check live Otya bot webhook and Next readiness
@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           response="$(mktemp)"
           for attempt in $(seq 1 30); do
-            status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' 'https://petersmartlink.com/api/telegram/status' || true)"
+            status="$(curl -sS --max-time 20 -o "$response" -w '%{http_code}' 'https://otya.site/api/telegram/status' || true)"
             if [ "$status" = "200" ] \
               && grep -q '"webhook_configured":true' "$response" \
               && grep -q '"ai_service_bound":true' "$response" \
