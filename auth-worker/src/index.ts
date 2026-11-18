@@ -125,6 +125,8 @@ const GOOGLE_VERIFY_TIMEOUT_MS = 8000
 const ALLOWED_ORIGINS = new Set([
   'https://otya.site',
   'https://www.otya.site',
+  'https://space.otya.site',
+  'https://api.otya.site',
 ])
 
 const PRIMARY_ORIGIN = 'https://otya.site'
