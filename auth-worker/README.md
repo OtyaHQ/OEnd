@@ -74,7 +74,9 @@ All endpoints return `{ error: string }` on failure.
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | POST | `/auth/register` | None | Email + password signup |
-| POST | `/auth/login` | None | Email + password login |\n| POST | `/auth/login/otp/request` | None | Request a verified-email sign-in code |\n| POST | `/auth/login/otp/verify` | None | Redeem an email sign-in code and create a session |
+| POST | `/auth/login` | None | Email + password login |
+| POST | `/auth/login/otp/request` | None | Request a verified-email sign-in code |
+| POST | `/auth/login/otp/verify` | None | Redeem an email sign-in code and create a session |
 | POST | `/auth/refresh` | Refresh token | Issue a new access token |
 | POST | `/auth/logout` | Refresh token | Revoke refresh token |
 | POST | `/auth/google` | Google token | Google login/signup |
