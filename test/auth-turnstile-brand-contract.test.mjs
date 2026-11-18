@@ -47,14 +47,15 @@ test('public browser authentication is protected without changing authenticated 
   assert.doesNotMatch(accountProxy, /TURNSTILE_PROTECTED_AUTH[\s\S]{0,300}account/)
 })
 
-test('sign-in UI supplies fresh Turnstile proof to every public provider path', () => {
+test('sign-in UI supplies fresh Turnstile proof to public auth providers while Telegram login stays disabled', () => {
   const signIn = read('src/app/sign-in/page.tsx')
   const challenge = read('src/components/TurnstileChallenge.tsx')
   const telegramProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
 
   assert.match(signIn, /TurnstileChallenge/)
   assert.match(signIn, /turnstile_token: securityToken/)
-  assert.match(signIn, /X-Otya-Turnstile/)
+  assert.doesNotMatch(signIn, /X-Otya-Turnstile/)
+  assert.doesNotMatch(signIn, /Continue with Telegram/)
   assert.match(signIn, /Complete the Cloudflare security check/)
   assert.match(signIn, /resetSecurityChallenge/)
 
