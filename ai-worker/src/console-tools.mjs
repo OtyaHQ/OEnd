@@ -268,7 +268,9 @@ async function recentReleases(env) {
 async function supportInbox(env, limit = 12) {
   const gmail = await gmailStatus(env)
   if (!gmail.connected) return []
-  const rows = await listGmailMessages(env, `to:${env.OTYA_SUPPORT_EMAIL || 'support@otya.site'} in:inbox`, Math.max(1, Math.min(limit, 20)))
+  const supportAddress = env.OTYA_SUPPORT_EMAIL || 'support@otya.site'
+  const legacySupportAddress = env.OTYA_LEGACY_SUPPORT_EMAIL || 'support@petersmartlink.com'
+  const rows = await listGmailMessages(env, `to:{${supportAddress} ${legacySupportAddress}} in:inbox`, Math.max(1, Math.min(limit, 20)))
   return rows.map((x) => ({
     id: x.id,
     from: clean(x.from, 300),
