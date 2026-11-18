@@ -138,7 +138,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
     await sendResendEmail(env.RESEND_API_KEY, {
       from: 'Otya <noreply@otya.site>',
       to: [email],
-      replyTo: 'support@petersmartlink.com',
+      replyTo: 'support@otya.site',
       subject: 'You have been invited to OtyaPoint',
       idempotencyKey: `otyapoint/staff-invitation/${invitationId}/${digestHex}`,
       text: [
@@ -208,7 +208,7 @@ async function handleOtyaNextOpsEmail(request: Request, env: ProductionEnv): Pro
     const emailId = await sendResendEmail(env.RESEND_API_KEY, {
       from: 'Otya <noreply@otya.site>',
       to: recipients,
-      replyTo: 'support@petersmartlink.com',
+      replyTo: 'support@otya.site',
       subject,
       text: content,
       idempotencyKey,
