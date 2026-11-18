@@ -70,7 +70,7 @@ test('Telegram Mini App validates raw initData and links only to an existing aut
 test('Mini App uses the existing Otya browser session and never issues new auth cookies', () => {
   assert.match(proxy, /endsWith\('\/miniapp'\)/)
   assert.match(proxy, /__Secure-otya_access/)
-  assert.match(proxy, /__Secure-otya_refresh/)
+  assert.doesNotMatch(proxy, /__Secure-otya_refresh/)
   assert.match(proxy, /delete safe\.access_token/)
   assert.match(proxy, /delete safe\.refresh_token/)
   assert.doesNotMatch(proxy, /response\.cookies\.set/)
