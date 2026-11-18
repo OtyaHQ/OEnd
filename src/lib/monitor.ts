@@ -168,7 +168,7 @@ export async function sendAlertEmail(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: env.ALERT_EMAIL_FROM || 'OTYA Backend <notifications@petersmartlink.com>',
+      from: env.ALERT_EMAIL_FROM || 'OTYA Backend <notifications@otya.site>',
       to: [to],
       subject,
       text: body,

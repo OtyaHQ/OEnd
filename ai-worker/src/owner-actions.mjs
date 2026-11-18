@@ -120,7 +120,7 @@ async function executeOwnerEmail(env, action) {
       'Idempotency-Key': `otya-owner-${action.id}`,
     },
     body: JSON.stringify({
-      from: 'OTYA <noreply@petersmartlink.com>',
+      from: 'OTYA <noreply@otya.site>',
       to: [to],
       reply_to: 'support@petersmartlink.com',
       subject: action.payload.subject,
