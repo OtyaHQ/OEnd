@@ -210,7 +210,7 @@ async function requestLoginOtp(request: Request, env: SecureOtpEnv): Promise<Res
     `).bind(user.id, codeDigest, now, now + OTP_TTL).run()
   } catch (error) {
     console.error('[auth/otp] Email login challenge storage unavailable:', (error as Error)?.message)
-    return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
+    return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
   }
   try {
     await sendCode(env, email, 'Your Otya sign-in code', 'Use this one-time code to sign in to your Otya account:', code)
@@ -268,7 +268,7 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
     `).bind(user.id, codeDigest, now).first<{ user_id: string }>()
   } catch (error) {
     console.error('[auth/otp] Email login challenge lookup unavailable:', (error as Error)?.message)
-    return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
+    return json({ error: 'Invalid or expired sign-in code.' }, 401)
   }
   if (!claimed) {
     return json({ error: 'Invalid or expired sign-in code.' }, 401)
@@ -279,12 +279,12 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
     env.AUTH_KV.delete(`secure_otp_attempt_global:login:${email}`),
   ])
 
-  const now = Math.floor(Date.now() / 1000)
+  const issuedAt = Math.floor(Date.now() / 1000)
   const accessToken = await signJwt({
     sub: user.id,
     email: user.email,
-    iat: now,
-    exp: now + ACCESS_TOKEN_TTL,
+    iat: issuedAt,
+    exp: issuedAt + ACCESS_TOKEN_TTL,
   }, env.AUTH_JWT_SECRET)
   const refreshToken = generateRefreshToken()
   try {
