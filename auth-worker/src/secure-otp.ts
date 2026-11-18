@@ -197,12 +197,31 @@ async function requestLoginOtp(request: Request, env: SecureOtpEnv): Promise<Res
   }
 
   const code = generateOtp()
-  const key = `secure_login_otp:${email}`
-  await env.AUTH_KV.put(key, await digestCode(env, 'email-login', email, code), { expirationTtl: OTP_TTL })
+  const codeDigest = await digestCode(env, 'email-login', user.id, code)
+  const now = Math.floor(Date.now() / 1000)
+  try {
+    await env.AUTH_DB.prepare(`
+      INSERT INTO auth_email_login_challenges (user_id, code_digest, issued_at, expires_at)
+      VALUES (?1, ?2, ?3, ?4)
+      ON CONFLICT(user_id) DO UPDATE SET
+        code_digest = excluded.code_digest,
+        issued_at = excluded.issued_at,
+        expires_at = excluded.expires_at
+    `).bind(user.id, codeDigest, now, now + OTP_TTL).run()
+  } catch (error) {
+    console.error('[auth/otp] Email login challenge storage unavailable:', (error as Error)?.message)
+    return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
+  }
   try {
     await sendCode(env, email, 'Your Otya sign-in code', 'Use this one-time code to sign in to your Otya account:', code)
   } catch (error) {
-    await env.AUTH_KV.delete(key)
+    try {
+      await env.AUTH_DB.prepare(
+        'DELETE FROM auth_email_login_challenges WHERE user_id = ?1 AND code_digest = ?2',
+      ).bind(user.id, codeDigest).run()
+    } catch (cleanupError) {
+      console.error('[auth/otp] Could not remove undelivered login challenge:', (cleanupError as Error)?.message)
+    }
     console.error('[auth/otp] Email login code delivery failed:', (error as Error)?.message)
   }
   return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
@@ -228,25 +247,33 @@ async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Resp
     return json({ error: 'Too many sign-in attempts. Request a new code later.' }, 429)
   }
 
-  const key = `secure_login_otp:${email}`
-  const stored = await env.AUTH_KV.get(key)
-  if (!(await matchesStoredCode(env, stored, 'email-login', email, code))) {
-    return json({ error: 'Invalid or expired sign-in code.' }, 401)
-  }
-
   const user = await getUserByEmail(env.AUTH_DB, email)
   if (!user || user.is_verified !== 1) {
-    await env.AUTH_KV.delete(key)
     return json({ error: 'Invalid or expired sign-in code.' }, 401)
   }
   if (!env.AUTH_JWT_SECRET || env.AUTH_JWT_SECRET.length < 32) {
     return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
   }
 
-  // Consume the email-bound code before issuing credentials. KV does not provide
-  // compare-and-delete; exact concurrent single-use enforcement remains a separate
-  // Durable Object/D1 coordination gate rather than being overstated here.
-  await env.AUTH_KV.delete(key)
+  const codeDigest = await digestCode(env, 'email-login', user.id, code)
+  const now = Math.floor(Date.now() / 1000)
+  let claimed: { user_id: string } | null
+  try {
+    // One SQL DELETE is the atomic claim: concurrent requests for the same
+    // challenge cannot both receive the row returned by this statement.
+    claimed = await env.AUTH_DB.prepare(`
+      DELETE FROM auth_email_login_challenges
+      WHERE user_id = ?1 AND code_digest = ?2 AND expires_at > ?3
+      RETURNING user_id
+    `).bind(user.id, codeDigest, now).first<{ user_id: string }>()
+  } catch (error) {
+    console.error('[auth/otp] Email login challenge lookup unavailable:', (error as Error)?.message)
+    return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
+  }
+  if (!claimed) {
+    return json({ error: 'Invalid or expired sign-in code.' }, 401)
+  }
+
   await Promise.all([
     env.AUTH_KV.delete(`secure_otp_attempt:login:${email}:${ip}`),
     env.AUTH_KV.delete(`secure_otp_attempt_global:login:${email}`),
