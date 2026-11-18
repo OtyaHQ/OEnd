@@ -49,3 +49,37 @@ Fixed account notification visibility: device-only records are excluded from lis
 Shared auth verification now supplies an eight-second abort signal and rejects malformed success responses. Oversized notification, security and operational JSON remains parseable within the storage limit instead of being cut mid-document. Runtime worker logging has the same behavior.
 
 Remaining release acceptance evidence: deployed commit and production migrations; authenticated account/admin flows; Firebase delivery during playback/background use; Resend delivery and Telegram rendering; Android download/update installation; recovery drill and sustained-load measurements. This pass does not certify every feature or replace those live checks.
+
+## Ecosystem execution snapshot — 2026-11-18
+
+This is a dated engineering snapshot, not a release certificate. "Merged" means code is in the repository; it does not mean that a production Worker, database, mobile application or public endpoint has been deployed and verified.
+
+### Merged code and repository checks
+
+- **Otya End:** PR #286 moved automated mail to the verified `noreply@otya.site` sender. PR #287 set `otya.site` as the canonical public URL for the surfaces covered by that change. PR #293 moved public support, account-deletion, legal and security contacts to `support@otya.site`, while preserving legacy support-inbox lookup. Their validation/security checks passed; the latest main validation and security workflows also passed after the support migration.
+- **OHub:** PR #16 updated the private vulnerability-reporting contact to `support@otya.site`. PR #17 is still open: it changes the public Postman collection and scheduled smoke checks to the canonical domain. Its new live-host smoke checks have not yet produced a successful run.
+- The public product map remains **Otya**, **OtyaPoint**, **Omy Play**, **O**, **Otya ID**, **Otya Control**, **OEnd**, and **OHub**. The parent-company registration status must continue to be described accurately as in progress until legal registration is complete.
+
+### Open product work
+
+- **Otya End domain portability — PR #277:** the large hostname-routing, auth/session and public-surface migration remains open and currently conflicts with the newer main-branch work. It must be reconciled with the merged email, support and canonical-URL changes, then pass host-role, sign-in/session, redirect, API, docs, status, Space, asset, webhook and recovery tests. New Worker host attachments were observed in Cloudflare; attachment alone is not proof of public HTTP or authenticated end-to-end behavior.
+- **OtyaPoint — PR #143:** the private company-operations foundation has passing backend and security checks on its branch. It provides separate Retail and Mobile Money work assignments, branch-specific cash/float ledgers and branch stock foundations. Production D1 is still at migration 0009; migrations 0010 and 0011 remain unapplied. Do not migrate until the owner confirms branch mapping, opening balances, staff/work-area assignments and product stock, and a verified backup/rollback and initial owner setup exist. Provider write operations remain disabled.
+- **Omy Play — PR #186:** the canonical Otya host, shared exact-host allow-list, account identity migration and isolated staging backend are being prepared. Backend and release-guard checks pass; the current full Flutter test and release-mode ARM64 build have not yet completed at this snapshot. There is no dedicated Omy Play production Worker/D1 deployment, production signing evidence or physical-device acceptance yet. Offline/local playback remains distinct from online-service availability.
+- **O / owner AI:** PR #26 centralizes the owner app's Otya endpoints and adds HTTPS/exact-host contract tests; it remains a draft pending fresh CI and owner-device authentication tests. Owner privileges and high-impact actions remain approval-gated.
+- **OHub:** public docs are separated from private operational data. The new canonical smoke-check PR must pass against the actual public hostnames before those checks are treated as a live-domain verification.
+
+### Production controls and cutover rules
+
+1. Keep `otya.site` as the canonical public identity. Retain `petersmartlink.com` only as a controlled compatibility alias until app versions, OAuth callbacks, email paths, downloads and existing sessions are proven migrated. Do not delete its zone or Worker bindings as a shortcut.
+2. Do not describe a CI build, branch merge, Worker custom-domain attachment or green staging test as a production release. Record the deployed Worker version, migrations, public endpoint smoke results and device acceptance separately.
+3. Never mix shop cash, retail stock, mobile-money cash, MTN/Airtel provider float or provider-confirmed transactions. Staff membership does not grant every work area; Retail and Mobile Money need separate branch-scoped assignments and server-enforced duties.
+4. Do not enable live provider payment/write endpoints until provider contracts, approvals, credentials, reconciliation and sandbox-to-production acceptance are complete. Operator-entered transactions are not provider-confirmed transactions.
+5. Do not apply production D1 migrations without a fresh export/backup, migration review, owner-approved mapping of existing records, rollback plan and post-migration integrity tests.
+6. Do not publish a mobile release until release signing, package identity, immutable artifact evidence, install/upgrade tests and physical-device acceptance pass. Test/debug-signed APKs are not store/public release artifacts.
+7. Otya End production deployment uses an explicit release gate. A successful validation workflow alone does not deploy the Workers. Run a production deployment only after the domain migration is reconciled and the component's bindings, secrets, migrations, routing and rollback are reviewed.
+
+### Verified deployment boundary at this snapshot
+
+The Cloudflare account showed the Otya Core, Otya Auth, Otya Next and OtyaPoint Workers with production versions last deployed on 2026-11-10. The 2026-11-18 repository merges and passing main-branch checks did not establish a newer production Worker deployment. Omy Play and OtyaPoint had staging resources; Omy Play did not yet have its own dedicated production Worker/database. No production OtyaPoint branch/agency schema migration, live provider payment action, signing-key publication or store submission was performed in this pass.
+
+This snapshot should be refreshed only when new evidence exists. Keep code checks, staged deployment, live production checks and real-device acceptance as separate evidence states.
