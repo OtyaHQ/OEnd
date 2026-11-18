@@ -47,14 +47,15 @@ test('public browser authentication is protected without changing authenticated 
   assert.doesNotMatch(accountProxy, /TURNSTILE_PROTECTED_AUTH[\s\S]{0,300}account/)
 })
 
-test('sign-in UI supplies fresh Turnstile proof to every public provider path', () => {
+test('sign-in UI supplies fresh Turnstile proof to public auth providers while Telegram login stays disabled', () => {
   const signIn = read('src/app/sign-in/page.tsx')
   const challenge = read('src/components/TurnstileChallenge.tsx')
   const telegramProxy = read('src/app/api/auth/telegram/[...path]/route.ts')
 
   assert.match(signIn, /TurnstileChallenge/)
   assert.match(signIn, /turnstile_token: securityToken/)
-  assert.match(signIn, /X-Otya-Turnstile/)
+  assert.doesNotMatch(signIn, /X-Otya-Turnstile/)
+  assert.doesNotMatch(signIn, /Continue with Telegram/)
   assert.match(signIn, /Complete the Cloudflare security check/)
   assert.match(signIn, /resetSecurityChallenge/)
 
@@ -62,9 +63,10 @@ test('sign-in UI supplies fresh Turnstile proof to every public provider path', 
   assert.match(challenge, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/)
   assert.match(challenge, /Cloudflare protection/)
 
-  assert.match(telegramProxy, /publicUrl\.searchParams\.get\('mode'\) === 'login'/)
-  assert.match(telegramProxy, /verifyTurnstileToken\(request\.headers\.get\('X-Otya-Turnstile'\), request\)/)
-  assert.match(telegramProxy, /headers\.delete\('X-Otya-Turnstile'\)/)
+  assert.match(telegramProxy, /withoutTokens\(data\)/)
+  assert.doesNotMatch(telegramProxy, /response\.cookies\.set/)
+  assert.doesNotMatch(telegramProxy, /verifyTurnstileToken/)
+  assert.doesNotMatch(telegramProxy, /publicUrl\.searchParams\.get\('mode'\) === 'login'/)
 })
 
 test('website brand tokens match the approved Otya cyan and blue identity', () => {

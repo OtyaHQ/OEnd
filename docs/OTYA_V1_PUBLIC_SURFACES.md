@@ -132,7 +132,7 @@ Signed out:
 - Sign in
 - Create Otya Account
 - Google sign-in
-- Telegram sign-in where supported
+- Telegram account linking and secondary owner-device confirmation only; never primary sign-in
 - Recover account
 - Concise explanation of Space
 
