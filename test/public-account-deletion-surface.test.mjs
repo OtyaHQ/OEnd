@@ -8,10 +8,10 @@ const footer = readFileSync(new URL('../src/components/SiteFooter.tsx', import.m
 const secureDeletion = readFileSync(new URL('../auth-worker/src/secure-account.ts', import.meta.url), 'utf8')
 
 test('Otya exposes a dedicated public account deletion request page', () => {
-  assert.match(publicPage, /https:\/\/petersmartlink\.com\/delete-account/)
+  assert.match(publicPage, /https:\/\/otya\.site\/delete-account/)
   assert.match(publicPage, /public account-deletion request page/)
   assert.match(publicPage, /Me → Otya Account → Delete account/)
-  assert.match(publicPage, /mailto:support@petersmartlink\.com\?subject=Otya%20account%20deletion%20request/)
+  assert.match(publicPage, /mailto:support@otya\.site\?subject=Otya%20account%20deletion%20request/)
   assert.match(publicPage, /no longer have the Android app installed/)
 })
 
