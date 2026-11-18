@@ -6,10 +6,10 @@ import { SiteFooter } from '@/components/SiteFooter'
 export const metadata: Metadata = {
   title: 'Delete your Otya account | Otya',
   description: 'How to request deletion of your Otya account and associated server-side data.',
-  alternates: { canonical: 'https://petersmartlink.com/delete-account' },
+  alternates: { canonical: 'https://otya.site/delete-account' },
 }
 
-const deletionEmail = 'mailto:support@petersmartlink.com?subject=Otya%20account%20deletion%20request'
+const deletionEmail = 'mailto:support@otya.site?subject=Otya%20account%20deletion%20request'
 
 export default function DeleteAccountPage() {
   return <div className="min-h-screen flex flex-col otya-ambient" style={{ color: 'var(--cosmos-text-primary)' }}>
@@ -30,7 +30,7 @@ export default function DeleteAccountPage() {
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           <a href={deletionEmail} className="cosmos-button min-h-11 inline-flex items-center justify-center rounded-xl px-5 text-sm font-black">Email deletion request</a>
-          <Link href="https://space.petersmartlink.com/account" className="min-h-11 inline-flex items-center justify-center rounded-xl border px-5 text-sm font-black" style={{ borderColor: 'var(--cosmos-divider)' }}>Open Otya Space</Link>
+          <Link href="https://space.otya.site/account" className="min-h-11 inline-flex items-center justify-center rounded-xl border px-5 text-sm font-black" style={{ borderColor: 'var(--cosmos-divider)' }}>Open Otya Space</Link>
         </div>
       </section>
 
@@ -48,7 +48,7 @@ export default function DeleteAccountPage() {
       <section className="mt-5 rounded-[24px] border p-5 sm:p-6" style={{ borderColor: 'var(--cosmos-divider)' }}>
         <h2 className="text-xl font-black tracking-[-.025em]">Need help before deleting?</h2>
         <p className="mt-3 text-sm leading-7 otya-muted">If you are locked out or unsure which identity is linked, contact support first. Otya verifies account ownership before a manual deletion request is completed.</p>
-        <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold"><Link href="/privacy">Privacy</Link><Link href="/help">Help</Link><a href="mailto:support@petersmartlink.com">support@petersmartlink.com</a></div>
+        <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold"><Link href="/privacy">Privacy</Link><Link href="/help">Help</Link><a href="mailto:support@otya.site">support@otya.site</a></div>
       </section>
     </main>
     <SiteFooter />
