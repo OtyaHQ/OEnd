@@ -32,6 +32,7 @@ secret_name = "OTYAPOINT_INVITE_SERVICE_TOKEN"
 binding       = "AUTH_DB"
 database_name = "otya-auth-db"
 database_id   = "b05595f6-260a-4720-acca-4f8b13f5c43e"
+migrations_dir = "migrations"
 
 [[kv_namespaces]]
 binding = "AUTH_KV"
