@@ -1,0 +1,56 @@
+name = "o-ai-staging"
+main = "src/scheduled-entry.mjs"
+compatibility_date = "2026-11-11"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+keep_vars = false
+
+[observability]
+enabled = true
+redact_query_string = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+
+[observability.traces]
+enabled = true
+head_sampling_rate = 0.1
+
+[vars]
+ENVIRONMENT = "staging"
+APP_NAME = "O"
+WEBSITE_URL = "https://otya.site"
+OWNER_ONLY = "true"
+PUBLIC_CHAT_ENABLED = "false"
+AI_GATEWAY_ID = ""
+
+[ai]
+binding = "AI"
+
+[browser]
+binding = "BROWSER"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "o-ai-staging-db"
+database_id = "50619fbd-098c-4f22-b038-75e7e23ee3c6"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "3f3172a64be04655a52d012efdac0648"
+
+[[r2_buckets]]
+binding = "ARTIFACTS"
+bucket_name = "o-ai-staging-private"
+
+[[queues.consumers]]
+queue = "o-ai-staging-jobs"
+max_batch_size = 5
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "o-ai-staging-jobs-dlq"
+
+[[services]]
+binding = "AUTH"
+service = "otya-id-staging"

@@ -14,12 +14,16 @@ test('owner email OTP creates a short-lived single-use Telegram challenge', () =
   assert.match(auth, /await env\.AUTH_KV\.delete\(`\$\{TELEGRAM_CHALLENGE_PREFIX\}\$\{pending\}`\)/)
 })
 
-test('Telegram challenge confirmation is private and bound to the linked Telegram subject', () => {
+test('Telegram challenge confirmation is private and only links an unclaimed subject after email verification', () => {
   assert.match(auth, /\/auth\/admin\/telegram-challenge\/confirm/)
   assert.match(auth, /X-OTYA-Internal-Secret/)
   assert.match(auth, /timingSafeEqual\(suppliedSecret, env\.INTERNAL_SECRET\)/)
   assert.match(auth, /provider = 'telegram' AND provider_subject = \?/)
   assert.match(auth, /linked\.user_id !== userId/)
+  assert.match(auth, /currentForUser/)
+  assert.match(auth, /INSERT INTO linked_identities/)
+  assert.match(auth, /await assertSchemaReady\(env\.AUTH_DB\)/)
+  assert.doesNotMatch(auth, /issueBrowserTokens|issueSession|access_token|refresh_token/)
   assert.match(auth, /markAdminTelegramComplete\(env, userId\)/)
 })
 

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 const source = readFileSync(new URL('../auth-worker/src/production-entrypoint.ts', import.meta.url), 'utf8')
+const secure = readFileSync(new URL('../auth-worker/src/production-entrypoint-secure.ts', import.meta.url), 'utf8')
 
 test('production auth fails closed when identity schema is unavailable', () => {
   assert.match(source, /import \{ assertSchemaReady \} from '\.\/db'/)
@@ -22,8 +23,13 @@ test('schema readiness guards only session-creating identity writes', () => {
 
 test('security and provider handlers run before schema readiness', () => {
   const adminIndex = source.indexOf("url.pathname.startsWith('/auth/admin/')")
-  const telegramIndex = source.indexOf("url.pathname.startsWith('/auth/telegram/')")
   const schemaIndex = source.indexOf('if (createsIdentitySession(request, url))')
   assert.ok(adminIndex >= 0 && adminIndex < schemaIndex)
-  assert.ok(telegramIndex >= 0 && telegramIndex < schemaIndex)
+})
+
+test('legacy Telegram sign-in is rejected before the Auth worker or schema can run', () => {
+  const denyIndex = secure.indexOf('if (telegramSignInPath) return telegramSignInDisabled()')
+  const dispatchIndex = secure.indexOf('return worker.fetch(request, safeEnv)')
+  assert.ok(denyIndex >= 0 && dispatchIndex > denyIndex)
+  assert.match(secure, /status: 410/)
 })

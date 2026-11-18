@@ -227,7 +227,30 @@ export async function confirmAdminTelegramChallenge(
   const linked = await env.AUTH_DB.prepare(
     "SELECT user_id FROM linked_identities WHERE provider = 'telegram' AND provider_subject = ? LIMIT 1",
   ).bind(telegramSubject).first<{ user_id?: string }>()
-  if (!linked?.user_id || linked.user_id !== userId) return false
+  if (linked?.user_id && linked.user_id !== userId) return false
+
+  const currentForUser = await env.AUTH_DB.prepare(
+    "SELECT provider_subject FROM linked_identities WHERE provider = 'telegram' AND user_id = ? LIMIT 1",
+  ).bind(userId).first<{ provider_subject?: string }>()
+
+  // The owner has already passed a fresh email OTP challenge. On first
+  // enrollment, that challenge authorizes linking exactly one previously
+  // unclaimed Telegram subject to this Otya account. It never creates an
+  // Otya session and cannot take a Telegram identity from another account.
+  if (!linked?.user_id && !currentForUser?.provider_subject) {
+    await env.AUTH_DB.prepare(
+      `INSERT INTO linked_identities
+        (user_id, provider, provider_subject, linked_at, last_used_at)
+       VALUES (?, 'telegram', ?, datetime('now'), datetime('now'))`,
+    ).bind(userId, telegramSubject).run()
+  } else if (currentForUser?.provider_subject && currentForUser.provider_subject !== telegramSubject) {
+    return false
+  }
+
+  const confirmed = await env.AUTH_DB.prepare(
+    "SELECT user_id FROM linked_identities WHERE provider = 'telegram' AND provider_subject = ? LIMIT 1",
+  ).bind(telegramSubject).first<{ user_id?: string }>()
+  if (!confirmed?.user_id || confirmed.user_id !== userId) return false
 
   await env.AUTH_DB.prepare(
     "UPDATE linked_identities SET last_used_at = datetime('now') WHERE provider = 'telegram' AND provider_subject = ? AND user_id = ?",
@@ -272,7 +295,7 @@ export async function handleAdminMfa(request: Request, env: AdminMfaEnv): Promis
     const otp = generateOtp()
     await env.AUTH_KV.put(`admin_mfa_otp:${user.id}`, await otpDigest(user.id, otp), { expirationTtl: OTP_TTL })
     await sendResendEmail(env.RESEND_API_KEY, {
-      from: 'OTYA <noreply@petersmartlink.com>',
+      from: 'OTYA <noreply@otya.site>',
       to: [user.email!],
       subject: 'Trust this phone for Next',
       text: [

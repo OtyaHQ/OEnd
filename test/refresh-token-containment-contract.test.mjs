@@ -4,15 +4,14 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('production auth wraps every provider in the refresh-safe KV boundary', () => {
-  const entry = read('auth-worker/src/production-entrypoint-miniapp.ts')
+test('production Auth blocks retired Telegram sign-in and wraps the worker in refresh-safe KV', () => {
+  const entry = read('auth-worker/src/production-entrypoint-secure.ts')
   assert.match(entry, /createRefreshSafeKv/)
-  assert.match(entry, /AUTH_KV: createRefreshSafeKv\(rawEnv\.AUTH_KV\)/)
-  assert.match(entry, /handleTelegramMiniApp\(request, miniEnv/)
-  assert.match(entry, /handleTelegramPrimaryLogin\(request, authEnv\)/)
-  assert.match(entry, /worker\.fetch\(request, authEnv\)/)
+  assert.match(entry, /AUTH_KV: createRefreshSafeKv\(env\.AUTH_KV\)/)
+  assert.match(entry, /telegramSignInDisabled/)
+  assert.match(entry, /return worker\.fetch\(request, safeEnv\)/)
+  assert.doesNotMatch(entry, /handleTelegramMiniApp|handleTelegramPrimaryLogin/)
 })
-
 test('new refresh-token KV indexes contain only one-way versioned digests', () => {
   const store = read('auth-worker/src/refresh-token-store.ts')
   assert.match(store, /CURRENT_TOKEN_PREFIX = 'rt2:'/)

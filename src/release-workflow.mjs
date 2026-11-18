@@ -6,8 +6,8 @@ import { decodeWorkflowPayload } from './lib/workflow_payload.mjs'
 
 const TAG_RE = /^v\d+\.\d+\.\d+\+[1-9]\d*$/
 const VERSION_RE = /^\d+\.\d+\.\d+$/
-const DEFAULT_WORKER_URL = 'https://petersmartlink.com'
-const OFFICIAL_RELEASE_HOSTS = new Set(['petersmartlink.com', 'www.petersmartlink.com'])
+const DEFAULT_WORKER_URL = 'https://otya.site'
+const OFFICIAL_RELEASE_HOSTS = new Set(['otya.site', 'www.otya.site'])
 
 function requireString(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
@@ -39,6 +39,11 @@ function immutableApkUrl(workerUrl, abi, tag) {
 }
 
 function normalizePayload(raw = {}) {
+  const productCode = requireString(raw.productCode, 'productCode')
+  const applicationId = requireString(raw.applicationId, 'applicationId')
+  if (productCode !== 'OMY_PLAY') throw new Error('productCode must be OMY_PLAY')
+  if (applicationId !== 'com.otya.omyplay') throw new Error('applicationId must be com.otya.omyplay')
+
   const tag = requireString(raw.tag, 'tag')
   const version = requireString(raw.version, 'version')
   if (!TAG_RE.test(tag)) throw new Error('tag must match vX.Y.Z+BUILD')
@@ -62,19 +67,21 @@ function normalizePayload(raw = {}) {
   }
 
   const arm64Key = requireString(
-    raw.arm64Key ?? `releases/${tag}/OTYA-Player-${tag}-arm64.apk`,
+    raw.arm64Key ?? `releases/${tag}/OmyPlay-arm64.apk`,
     'arm64Key',
   )
   const arm32Key = requireString(
-    raw.arm32Key ?? `releases/${tag}/OTYA-Player-${tag}-arm32.apk`,
+    raw.arm32Key ?? `releases/${tag}/OmyPlay-arm32.apk`,
     'arm32Key',
   )
 
-  if (!arm64Key.startsWith(`releases/${tag}/`) || !arm32Key.startsWith(`releases/${tag}/`)) {
-    throw new Error('versioned APK keys must live under releases/<tag>/')
+  if (arm64Key !== `releases/${tag}/OmyPlay-arm64.apk` || arm32Key !== `releases/${tag}/OmyPlay-arm32.apk`) {
+    throw new Error('APK keys must match immutable Omy Play artifact names under releases/<tag>/')
   }
 
   return {
+    productCode,
+    applicationId,
     tag,
     version,
     versionCode,
@@ -153,7 +160,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
           date,
           release.changelog,
           release.forceUpdate ? 1 : 0,
-          `${release.workerUrl}/download/otya-player`,
+          `${release.workerUrl}/download/omy-play`,
           immutableApkUrl(release.workerUrl, 'arm64', release.tag),
           immutableApkUrl(release.workerUrl, 'arm32', release.tag),
           release.minSdk,
@@ -162,19 +169,43 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
         return { updated: true, tag: release.tag, versionCode: release.versionCode }
       })
 
+      const releaseManifest = await step.do('publish immutable Omy Play release manifest', async () => {
+        const value = {
+          productCode: release.productCode,
+          applicationId: release.applicationId,
+          tag: release.tag,
+          version: release.version,
+          versionCode: release.versionCode,
+          arm64Key: release.arm64Key,
+          arm32Key: release.arm32Key,
+          publishedAt: new Date().toISOString(),
+        }
+        const key = `releases/${release.tag}/release.json`
+        await this.env.R2.put(key, JSON.stringify(value, null, 2) + String.fromCharCode(10), {
+          httpMetadata: {
+            contentType: 'application/json; charset=utf-8',
+            cacheControl: 'public, max-age=31536000, immutable',
+          },
+        })
+        return { key, applicationId: value.applicationId, productCode: value.productCode }
+      })
+
       const metadata = await step.do('publish version metadata', async () => {
         const value = {
           tag: release.tag,
+          productCode: release.productCode,
+          applicationId: release.applicationId,
+          manifestKey: `releases/${release.tag}/release.json`,
           version: release.version,
           versionCode: release.versionCode,
           date: new Date().toISOString(),
           arm64: release.arm64Key,
           arm32: release.arm32Key,
           latestAliases: {
-            arm64: 'Otya-arm64.apk',
-            arm32: 'Otya-arm32.apk',
+            arm64: 'OmyPlay-arm64.apk',
+            arm32: 'OmyPlay-arm32.apk',
           },
-          changelog: release.changelog || `Otya Media ${release.version} is now available.`,
+          changelog: release.changelog || `Omy Play ${release.version} is now available.`,
           minSdk: release.minSdk,
           targetSdk: release.targetSdk,
           workerUrl: release.workerUrl,
@@ -183,11 +214,11 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
             arm32: `${release.workerUrl}/apk/arm32`,
             exactArm64: immutableApkUrl(release.workerUrl, 'arm64', release.tag),
             exactArm32: immutableApkUrl(release.workerUrl, 'arm32', release.tag),
-            auto: `${release.workerUrl}/download/otya-player`,
-            page: `${release.workerUrl}/download/otya-player`,
+            auto: `${release.workerUrl}/download/omy-play`,
+            page: `${release.workerUrl}/download/omy-play`,
           },
         }
-        const body = JSON.stringify(value, null, 2) + '\n'
+        const body = JSON.stringify(value, null, 2) + String.fromCharCode(10)
         await this.env.R2.put('version.json', body, {
           httpMetadata: {
             contentType: 'application/json; charset=utf-8',
@@ -199,14 +230,29 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
         return value
       })
 
-      const firebaseDistribution = await step.do('mirror test build to Firebase App Distribution', async () => {
+      const firebaseDistribution = await step.do('mirror approved Omy Play release to its dedicated Firebase project', async () => {
         try {
           const apk = await this.env.R2.get(release.arm64Key)
           if (!apk?.body) return { configured: false, mirrored: false, reason: 'arm64-apk-missing' }
+          // Never fall back to the legacy Otya Player Firebase account.
+          // Without the dedicated Omy Play service-account secret this mirror
+          // reports configured:false and leaves the authoritative R2 release intact.
+          const distributionConfig = this.env as unknown as {
+            OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON?: string
+            OMY_PLAY_FIREBASE_PROJECT_NUMBER?: string
+            OMY_PLAY_FIREBASE_ANDROID_APP_ID?: string
+            OMY_PLAY_FIREBASE_APP_DISTRIBUTION_TESTERS?: string
+          }
+          const omyPlayFirebaseEnv = {
+            FCM_SERVICE_ACCOUNT_JSON: distributionConfig.OMY_PLAY_FIREBASE_SERVICE_ACCOUNT_JSON,
+            FIREBASE_PROJECT_NUMBER: distributionConfig.OMY_PLAY_FIREBASE_PROJECT_NUMBER,
+            FIREBASE_ANDROID_APP_ID: distributionConfig.OMY_PLAY_FIREBASE_ANDROID_APP_ID,
+            FIREBASE_APP_DISTRIBUTION_TESTERS: distributionConfig.OMY_PLAY_FIREBASE_APP_DISTRIBUTION_TESTERS,
+          }
           return await mirrorApkToFirebaseAppDistribution(
-            this.env,
+            omyPlayFirebaseEnv,
             apk.body,
-            `OTYA-${release.tag}-arm64.apk`,
+            `OmyPlay-${release.tag}-arm64.apk`,
             metadata.changelog,
           )
         } catch (error) {
@@ -222,9 +268,9 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
       const notification = await step.do('queue update notification once', async () => {
         try {
           const markerKey = `release:push:${release.tag}`
-          const url = `${release.workerUrl}/download/otya-player`
+          const url = `${release.workerUrl}/download/omy-play`
           return await queueReleaseOnce(this.env, release.tag, {
-            title: `Otya ${release.version} is ready`,
+            title: `Omy Play ${release.version} is ready`,
             body: 'New features and improvements are ready. Tap to see what’s new.',
             url,
             type: 'release_available',
@@ -271,7 +317,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
         try {
           return await sendAdminReport(
             this.env,
-            `OTYA ${release.tag} release workflow completed`,
+            `Omy Play ${release.tag} release workflow completed`,
             [
               `Release: ${release.tag}`,
               `Version code: ${release.versionCode}`,
@@ -296,6 +342,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
         versionCode: release.versionCode,
         artifacts,
         database,
+        releaseManifest,
         firebaseDistribution,
         notification,
         telegram,
@@ -307,7 +354,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
       try {
         await step.do('send failure report', async () => sendAdminReport(
           this.env,
-          `OTYA release workflow failed${release?.tag ? `: ${release.tag}` : ''}`,
+          `Omy Play release workflow failed${release?.tag ? `: ${release.tag}` : ''}`,
           `Status: failed\nReason: ${message}`,
         ))
       } catch {

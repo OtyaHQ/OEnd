@@ -4,21 +4,21 @@ import './globals.css'
 import './brand-overrides.css'
 
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
-const SITE_URL = 'https://petersmartlink.com'
+const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
 const OTYA_MARK = '/otya-app-icon.webp'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Otya — Digital products and real-world services',
+    default: 'Otya — Connected products and services',
     template: '%s | Otya',
   },
   description:
     'Explore Otya digital products, account services, official support and OtyaPoint physical shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
-    'Otya Media',
+    'Omy Play',
     'Otya Android',
     'OtyaPoint',
     'Otya ecosystem',
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
     locale: 'en_UG',
     url: SITE_URL,
     siteName: 'Otya',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'Otya — Connected products and services',
     description:
-      'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
+      'A connected family of Otya digital products and real-world services.',
     images: [
       {
         url: OTYA_MARK,
@@ -69,8 +69,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'Otya — Offline Music & Video for Android',
-    description: 'Official Otya for local Android media, Otya Transfer and Watch Together.',
+    title: 'Otya — Connected products and services',
+    description: 'Explore connected Otya products and services.',
     images: [OTYA_MARK],
   },
   icons: {
@@ -104,16 +104,16 @@ const schemaOrg = {
     },
     {
       '@type': 'SoftwareApplication',
-      '@id': `${SITE_URL}/#otya-player`,
-      name: 'Otya',
-      alternateName: 'Otya Media',
-      identifier: 'com.otyaplayer.app',
+      '@id': `${SITE_URL}/#omy-play`,
+      name: 'Omy Play',
+      alternateName: 'Omy Play',
+      identifier: 'com.otya.omyplay',
       operatingSystem: 'Android',
       applicationCategory: 'MultimediaApplication',
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      url: `${SITE_URL}/otya-player`,
-      downloadUrl: `${SITE_URL}/download/otya-player`,
+      url: `${SITE_URL}/omy-play`,
+      downloadUrl: `${SITE_URL}/download/omy-play`,
       author: { '@id': `${SITE_URL}/#organization` },
       publisher: { '@id': `${SITE_URL}/#organization` },
       description:

@@ -8,7 +8,7 @@ import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 export const metadata: Metadata = {
   title: 'Otya products and services',
   description: 'Explore Otya digital products, account services and the OtyaPoint physical shop.',
-  alternates: { canonical: 'https://petersmartlink.com/apps' },
+  alternates: { canonical: 'https://otya.site/apps' },
 }
 
 export default function ProductsPage() {
@@ -26,11 +26,11 @@ export default function ProductsPage() {
       <section className="otya-shell pb-16 sm:pb-24 grid gap-4">
         <article className="overflow-hidden rounded-[32px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] grid lg:grid-cols-[.95fr_1.05fr] items-center">
           <div className="p-7 sm:p-10 lg:p-12">
-            <div className="flex items-center gap-3"><OtyaBrandMark size={44}/><div><div className="text-xs font-black otya-muted">Android</div><h2 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Otya Media</h2></div></div>
+            <div className="flex items-center gap-3"><OtyaBrandMark size={44}/><div><div className="text-xs font-black otya-muted">Android</div><h2 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Omy Play</h2></div></div>
             <p className="mt-5 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">Offline-first local music and video playback, nearby Transfer, Private media and practical media tools.</p>
-            <div className="mt-7 flex flex-wrap gap-3"><Link href="/otya-player" className="cosmos-button inline-flex min-h-11 items-center rounded-full px-5 text-sm font-black">Explore Otya Media</Link><Link href="/download/otya-player" className="inline-flex min-h-11 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black">Download</Link></div>
+            <div className="mt-7 flex flex-wrap gap-3"><Link href="/omy-play" className="cosmos-button inline-flex min-h-11 items-center rounded-full px-5 text-sm font-black">Explore Omy Play</Link><Link href="/download/omy-play" className="inline-flex min-h-11 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black">Download</Link></div>
           </div>
-          <div className="p-4 sm:p-6 lg:p-8"><Image src="/brand/otya-app-preview.svg" alt="Otya Media application preview" width={1200} height={820} className="w-full h-auto rounded-[26px]" /></div>
+          <div className="p-4 sm:p-6 lg:p-8"><Image src="/brand/otya-app-preview.svg" alt="Omy Play application preview" width={1200} height={820} className="w-full h-auto rounded-[26px]" /></div>
         </article>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -47,7 +47,7 @@ export default function ProductsPage() {
             <div className="mt-6 text-xs font-black otya-muted">Account environment</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-[-.045em]">Space</h2>
             <p className="mt-3 text-sm leading-7 otya-muted">One signed-in place for your Otya account, security, devices, providers, settings, Next and role-authorized Admin controls.</p>
-            <Link href="https://space.petersmartlink.com" className="mt-6 inline-flex text-sm font-black">Open Space →</Link>
+            <Link href="https://space.otya.site" className="mt-6 inline-flex text-sm font-black">Open Space →</Link>
           </article>
         <article className="overflow-hidden rounded-[30px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-7 sm:p-9 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-7 items-center">
           <div>

@@ -10,8 +10,8 @@ export { OtyaReleaseWorkflow } from './entrypoint.mjs'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
-const APP_ORIGIN = 'https://petersmartlink.com'
-const TELEGRAM_WEBHOOK_URL = 'https://petersmartlink.com/api/telegram/webhook'
+const APP_ORIGIN = 'https://otya.site'
+const TELEGRAM_WEBHOOK_URL = 'https://otya.site/api/telegram/webhook'
 const TELEGRAM_WEBHOOK_FINGERPRINT_KEY = 'telegram:webhook:fingerprint:v1'
 const TELEGRAM_OWNER_UPDATE_PREFIX = 'telegram:owner-enrollment:update:'
 const TELEGRAM_HEALTH_CRON = '*/5 * * * *'
@@ -221,8 +221,8 @@ async function handleOwnerEnrollmentWebhook(request, env) {
   }
 
   const text = verified
-    ? 'Identity confirmed for Next. Return to the Next app; this phone will finish trusted-device enrollment automatically.'
-    : 'This Next enrollment request is invalid, expired, or belongs to a different Telegram account. Return to Next and start the trust step again.'
+    ? 'Identity confirmed for your Otya account. Return to Otya Space to finish owner verification.'
+    : 'This Otya owner confirmation is invalid, expired, or belongs to a different Telegram account. Return to Otya Space and request a new owner code.'
   try {
     await sendTelegramMessage(enrollment.chatId, text, env)
   } catch (error) {

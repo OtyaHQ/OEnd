@@ -123,11 +123,15 @@ const GOOGLE_VERIFY_TIMEOUT_MS = 8000
  * origin so the browser-side fetch polyfill (if any) still works.
  */
 const ALLOWED_ORIGINS = new Set([
+  'https://otya.site',
+  'https://www.otya.site',
+  'https://space.otya.site',
+  // Keep legacy web origins during the domain transition.
   'https://petersmartlink.com',
   'https://www.petersmartlink.com',
 ])
 
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
+const PRIMARY_ORIGIN = 'https://otya.site'
 
 /**
  * Return CORS headers for the given request.
@@ -294,7 +298,7 @@ async function checkAndAlertNewDeviceLogin(
     if (storedIp && storedIp !== currentIp && env.EMAIL) {
       const now = new Date().toUTCString()
       env.EMAIL.send({
-        from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player Security' },
+        from:    { email: 'noreply@otya.site', name: 'OTYA Player Security' },
         to:      [{ email }],
         subject: 'New login to your OTYA Player account',
         text: [
@@ -400,7 +404,7 @@ async function sendVerificationOtp(env: Env, userId: string, email: string): Pro
 
   if (env.EMAIL) {
     await env.EMAIL.send({
-      from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player' },
+      from:    { email: 'noreply@otya.site', name: 'OTYA Player' },
       to:      [{ email }],
       subject: 'Your OTYA Player verification code',
       text: [
@@ -467,7 +471,7 @@ async function handleRegister(req: Request, env: Env): Promise<Response> {
   if (env.EMAIL) {
     try {
       await env.EMAIL.send({
-        from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player' },
+        from:    { email: 'noreply@otya.site', name: 'OTYA Player' },
         to:      [{ email: normalizedEmail }],
         subject: 'Welcome to OTYA Player!',
         text: [
@@ -700,7 +704,7 @@ async function handleForgotPassword(req: Request, env: Env): Promise<Response> {
   if (env.EMAIL) {
     try {
       await env.EMAIL.send({
-        from:    { email: 'noreply@petersmartlink.com', name: 'OTYA Player' },
+        from:    { email: 'noreply@otya.site', name: 'OTYA Player' },
         to:      [{ email: normalizedEmail }],
         subject: 'Your OTYA Player password reset code',
         text: [

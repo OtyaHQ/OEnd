@@ -26,5 +26,5 @@ test('registration verification uses Resend and an HMAC-only active OTP', () => 
 test('new-device alerts use isolated Resend state during legacy cleanup', () => {
   assert.match(email, /resend_last_login_ip:\$\{userId\}/)
   assert.match(email, /subject: 'New login to your Otya account'/)
-  assert.match(email, /Otya Security <noreply@petersmartlink\.com>/)
+  assert.match(email, /Otya Security <noreply@otya.site>/)
 })

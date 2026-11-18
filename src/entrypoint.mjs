@@ -5,7 +5,7 @@ export { OtyaReleaseWorkflow } from './release-workflow.mjs'
 const HEALTH_CHECK_CRON = '*/5 * * * *'
 const HEALTH_INCIDENT_KEY = 'monitor:health:incident:v2'
 const HEALTH_PATHS = ['/', '/download/otya-player', '/api/version', '/latest']
-const OTYA_NOREPLY_EMAIL = 'noreply@petersmartlink.com'
+const OTYA_NOREPLY_EMAIL = 'noreply@otya.site'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
 const UPSTREAM_TIMEOUT_MS = 8000

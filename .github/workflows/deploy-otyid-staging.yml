@@ -1,0 +1,130 @@
+name: Deploy isolated Otya ID staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DEPLOY-STAGING to deploy the isolated Otya ID staging Worker'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: otya-id-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy-otyid-staging:
+    name: Validate and deploy private Otya ID staging
+    if: github.ref == 'refs/heads/identity-ai-separation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22.23.4'
+          package-manager-cache: false
+
+      - name: Require explicit staging authority and dedicated credentials
+        shell: bash
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN_STAGING: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          AUTH_JWT_SECRET_STAGING: ${{ secrets.AUTH_JWT_SECRET_STAGING }}
+          RESEND_API_KEY_STAGING: ${{ secrets.RESEND_API_KEY_STAGING }}
+        run: |
+          set -euo pipefail
+          test "$CONFIRM" = 'DEPLOY-STAGING' || {
+            echo 'ERROR: staging deploy requires the exact confirmation DEPLOY-STAGING'
+            exit 1
+          }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || {
+            echo 'ERROR: CLOUDFLARE_ACCOUNT_ID is not configured'
+            exit 1
+          }
+          test -n "$CLOUDFLARE_API_TOKEN_STAGING" || {
+            echo 'ERROR: CLOUDFLARE_API_TOKEN_STAGING is not configured'
+            exit 1
+          }
+          test "${#AUTH_JWT_SECRET_STAGING}" -ge 32 || {
+            echo 'ERROR: AUTH_JWT_SECRET_STAGING must contain at least 32 characters'
+            exit 1
+          }
+          [[ "$RESEND_API_KEY_STAGING" == re_* ]] || {
+            echo 'ERROR: RESEND_API_KEY_STAGING must be a dedicated Resend API key'
+            exit 1
+          }
+          echo 'Staging authorization and credential presence checks passed.'
+
+      - name: Install locked Auth dependencies
+        working-directory: auth-worker
+        run: npm ci --ignore-scripts
+
+      - name: Run Auth tests and TypeScript checks
+        working-directory: auth-worker
+        run: |
+          set -euo pipefail
+          npm test
+          npm run typecheck
+
+      - name: Dry-run the private staging Worker
+        working-directory: auth-worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET_STAGING }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY_STAGING }}
+        run: |
+          set -euo pipefail
+          npx wrangler deploy --dry-run --config wrangler.otya-id-staging.toml
+
+      - name: Apply only the idempotent Otya ID staging baseline
+        working-directory: auth-worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+        run: |
+          set -euo pipefail
+          npx wrangler d1 migrations list otya-id-staging-db --remote --config wrangler.otya-id-staging.toml
+          npx wrangler d1 migrations apply otya-id-staging-db --remote --config wrangler.otya-id-staging.toml
+
+      - name: Deploy Otya ID staging with staging-only secrets
+        working-directory: auth-worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN_STAGING }}
+          AUTH_JWT_SECRET_STAGING: ${{ secrets.AUTH_JWT_SECRET_STAGING }}
+          RESEND_API_KEY_STAGING: ${{ secrets.RESEND_API_KEY_STAGING }}
+          SECRETS_FILE: ${{ runner.temp }}/otya-id-staging-secrets.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          trap 'rm -f "$SECRETS_FILE"' EXIT
+          node <<'NODE'
+          const fs = require('node:fs');
+          const target = process.env.SECRETS_FILE;
+          const values = {
+            AUTH_JWT_SECRET: process.env.AUTH_JWT_SECRET_STAGING,
+            RESEND_API_KEY: process.env.RESEND_API_KEY_STAGING,
+          };
+          for (const [name, value] of Object.entries(values)) {
+            if (typeof value !== 'string' || value.length === 0) {
+              throw new Error('Missing required staging secret: ' + name);
+            }
+          }
+          fs.writeFileSync(target, JSON.stringify(values), { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+          NODE
+          npx wrangler deploy --config wrangler.otya-id-staging.toml --secrets-file "$SECRETS_FILE"
+
+      - name: Record staging deployment boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Otya ID staging deployed without workers.dev or public routes.'
+          echo 'Product staging Workers must be rebound and redeployed separately after Auth smoke tests.'

@@ -39,12 +39,12 @@ test('2FA settings require an authenticated Otya account', async () => {
   assert.match(String(body.error ?? ''), /sign in to otya first/i)
 })
 
-test('Telegram login fails closed when provider credentials are unavailable', async () => {
+test('Telegram cannot create an Otya session and is explicitly retired as a sign-in provider', async () => {
   const response = await server.fetch('http://localhost/auth/telegram/start?mode=login', {
     method: 'POST',
   })
-  assert.equal(response.status, 503)
+  assert.equal(response.status, 410)
   const body = await response.json()
-  assert.equal(body.code, 'TELEGRAM_LOGIN_UNAVAILABLE')
-  assert.match(String(body.error ?? ''), /unavailable/i)
+  assert.equal(body.error, 'telegram_sign_in_disabled')
+  assert.match(String(body.message ?? ''), /email OTP/i)
 })

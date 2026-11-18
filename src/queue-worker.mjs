@@ -144,7 +144,7 @@ async function sendDailyAbuseReport(env) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'OTYA Backend <noreply@petersmartlink.com>',
+        from: 'OTYA Backend <noreply@otya.site>',
         to: [env.ADMIN_REPORT_EMAIL || 'petersmartlink@gmail.com'],
         subject: `[OTYA Backend] Daily Abuse Report — ${new Date().toDateString()}`,
         text,
