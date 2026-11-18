@@ -12,7 +12,6 @@ import {
 
 test('OtyaPoint invitation contract accepts every canonical workforce role', () => {
   assert.deepEqual(OTYAPOINT_STAFF_INVITATION_ROLES, [
-    'OWNER',
     'ADMIN',
     'MANAGER',
     'CASHIER',
