@@ -69,7 +69,7 @@ This document is the single source of truth for OTYA website, app-store, social,
 - OTP/security email header image.
 - Password reset email header image.
 - Transactional email footer brand line.
-- Verified Resend sender domain: `petersmartlink.com`.
+- Verified Resend sender domain: `otya.site`.
 
 ### Future graphics
 
