@@ -1,4 +1,4 @@
-import { generateOtp, hashPassword, verifyJwt } from './crypto'
+import { generateOtp, generateRefreshToken, hashPassword, signJwt, verifyJwt } from './crypto'
 import { getUserByEmail, getUserById, updatePasswordHash, type D1Database } from './db'
 import { sendResendEmail } from './resend'
 
@@ -29,6 +29,14 @@ const MAX_ATTEMPTS = 8
 const MAX_ATTEMPTS_PER_EMAIL = 16
 const CODE_RE = /^[A-Z][0-9]{4}$/
 const GENERIC_RESET_MESSAGE = 'If that email exists, a verification code has been sent.'
+const GENERIC_LOGIN_MESSAGE = 'If an eligible Otya account exists for that email, a sign-in code has been sent.'
+const LOGIN_OTP_SEND_LIMIT = 3
+const LOGIN_OTP_IP_SEND_LIMIT = 12
+const LOGIN_OTP_ATTEMPT_LIMIT = 8
+const LOGIN_OTP_EMAIL_ATTEMPT_LIMIT = 16
+const ACCESS_TOKEN_TTL = 15 * 60
+const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60
+const EMAIL_RE = /^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -163,13 +171,134 @@ export async function hardenRegistrationVerification(response: Response, env: Se
   }
 }
 
+
+async function requestLoginOtp(request: Request, env: SecureOtpEnv): Promise<Response> {
+  let body: { email?: string }
+  try { body = await request.json() as { email?: string } }
+  catch { return json({ error: 'Invalid JSON body' }, 400) }
+
+  const email = String(body.email ?? '').trim().toLowerCase()
+  if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
+    return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
+  }
+
+  const ip = clientIp(request)
+  const [emailAllowed, ipAllowed] = await Promise.all([
+    bump(env.AUTH_KV, \`secure_otp_send:login:\${email}\`, LOGIN_OTP_SEND_LIMIT, SEND_WINDOW_TTL),
+    bump(env.AUTH_KV, \`secure_otp_send_ip:login:\${ip}\`, LOGIN_OTP_IP_SEND_LIMIT, SEND_WINDOW_TTL),
+  ])
+  if (!emailAllowed || !ipAllowed) {
+    return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
+  }
+
+  const user = await getUserByEmail(env.AUTH_DB, email)
+  if (!user || !(user.is_verified === 1 || user.is_verified === true) || !env.RESEND_API_KEY) {
+    return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
+  }
+
+  const code = generateOtp()
+  const key = \`secure_login_otp:\${email}\`
+  await env.AUTH_KV.put(key, await digestCode(env, 'email-login', email, code), { expirationTtl: OTP_TTL })
+  try {
+    await sendCode(env, email, 'Your Otya sign-in code', 'Use this one-time code to sign in to your Otya account:')
+  } catch (error) {
+    await env.AUTH_KV.delete(key)
+    console.error('[auth/otp] Email login code delivery failed:', (error as Error)?.message)
+  }
+  return json({ ok: true, message: GENERIC_LOGIN_MESSAGE }, 202)
+}
+
+async function verifyLoginOtp(request: Request, env: SecureOtpEnv): Promise<Response> {
+  let body: { email?: string; code?: string }
+  try { body = await request.json() as { email?: string; code?: string } }
+  catch { return json({ error: 'Invalid JSON body' }, 400) }
+
+  const email = String(body.email ?? '').trim().toLowerCase()
+  const code = String(body.code ?? '').trim().toUpperCase()
+  if (!email || email.length > 254 || !EMAIL_RE.test(email) || !CODE_RE.test(code)) {
+    return json({ error: 'Invalid or expired sign-in code.' }, 401)
+  }
+
+  const ip = clientIp(request)
+  const [ipAllowed, emailAllowed] = await Promise.all([
+    bump(env.AUTH_KV, \`secure_otp_attempt:login:\${email}:\${ip}\`, LOGIN_OTP_ATTEMPT_LIMIT, ATTEMPT_TTL),
+    bump(env.AUTH_KV, \`secure_otp_attempt_global:login:\${email}\`, LOGIN_OTP_EMAIL_ATTEMPT_LIMIT, ATTEMPT_TTL),
+  ])
+  if (!ipAllowed || !emailAllowed) {
+    return json({ error: 'Too many sign-in attempts. Request a new code later.' }, 429)
+  }
+
+  const key = \`secure_login_otp:\${email}\`
+  const stored = await env.AUTH_KV.get(key)
+  if (!(await matchesStoredCode(env, stored, 'email-login', email, code))) {
+    return json({ error: 'Invalid or expired sign-in code.' }, 401)
+  }
+
+  const user = await getUserByEmail(env.AUTH_DB, email)
+  if (!user || !(user.is_verified === 1 || user.is_verified === true)) {
+    await env.AUTH_KV.delete(key)
+    return json({ error: 'Invalid or expired sign-in code.' }, 401)
+  }
+  if (!env.AUTH_JWT_SECRET || env.AUTH_JWT_SECRET.length < 32) {
+    return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
+  }
+
+  // Consume the short-lived, purpose-bound code before issuing credentials.
+  // KV does not provide compare-and-delete, so this follows the same one-use
+  // semantics as the existing verification OTP flow.
+  await env.AUTH_KV.delete(key)
+  await Promise.all([
+    env.AUTH_KV.delete(\`secure_otp_attempt:login:\${email}:\${ip}\`),
+    env.AUTH_KV.delete(\`secure_otp_attempt_global:login:\${email}\`),
+  ])
+
+  const now = Math.floor(Date.now() / 1000)
+  const accessToken = await signJwt({
+    sub: user.id,
+    email: user.email,
+    iat: now,
+    exp: now + ACCESS_TOKEN_TTL,
+  }, env.AUTH_JWT_SECRET)
+  const refreshToken = generateRefreshToken()
+  try {
+    await Promise.all([
+      env.AUTH_KV.put(\`rt:\${refreshToken}\`, user.id, { expirationTtl: REFRESH_TOKEN_TTL }),
+      env.AUTH_KV.put(\`rt_user:\${user.id}:\${refreshToken}\`, '1', { expirationTtl: REFRESH_TOKEN_TTL }),
+    ])
+  } catch (error) {
+    await Promise.all([
+      env.AUTH_KV.delete(\`rt:\${refreshToken}\`),
+      env.AUTH_KV.delete(\`rt_user:\${user.id}:\${refreshToken}\`),
+    ])
+    console.error('[auth/otp] Email login session creation failed:', (error as Error)?.message)
+    return json({ error: 'Sign-in is temporarily unavailable.' }, 503)
+  }
+
+  return json({
+    ok: true,
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    user: {
+      id: user.id,
+      otya_id: user.otya_id,
+      email: user.email,
+      name: user.name,
+      avatar_url: user.avatar_url,
+      is_verified: user.is_verified,
+    },
+  })
+}
+
 export async function handleSecureOtpRoute(request: Request, env: SecureOtpEnv): Promise<Response | null> {
   const url = new URL(request.url)
   const path = url.pathname
-  if (!['/auth/forgot-password', '/auth/reset-password', '/auth/send-verification', '/auth/verify-email'].includes(path)) {
+  if (!['/auth/login/otp/request', '/auth/login/otp/verify', '/auth/forgot-password', '/auth/reset-password', '/auth/send-verification', '/auth/verify-email'].includes(path)) {
     return null
   }
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
+
+  if (path === '/auth/login/otp/request') return requestLoginOtp(request, env)
+  if (path === '/auth/login/otp/verify') return verifyLoginOtp(request, env)
 
   if (path === '/auth/forgot-password') {
     let body: { email?: string }
