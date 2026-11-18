@@ -810,8 +810,6 @@ async function handleVerifyEmailLoginOtp(req: Request, env: Env): Promise<Respon
     env.AUTH_KV.delete('email_login_otp_verify_ip:' + ipKey),
   ])
 
-  checkAndAlertNewDeviceLogin(env.AUTH_KV, env, user.id, user.email, req).catch(() => {})
-
   return jsonOk({
     ok: true,
     access_token: accessToken,
