@@ -74,7 +74,7 @@ All endpoints return `{ error: string }` on failure.
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | POST | `/auth/register` | None | Email + password signup |
-| POST | `/auth/login` | None | Email + password login |
+| POST | `/auth/login` | None | Email + password login |\n| POST | `/auth/login/otp/request` | None | Request a verified-email sign-in code |\n| POST | `/auth/login/otp/verify` | None | Redeem an email sign-in code and create a session |
 | POST | `/auth/refresh` | Refresh token | Issue a new access token |
 | POST | `/auth/logout` | Refresh token | Revoke refresh token |
 | POST | `/auth/google` | Google token | Google login/signup |
@@ -107,7 +107,7 @@ Do not collect date of birth, gender, physical address, national ID/passport dat
 - **Access token:** HS256 JWT, 15-minute TTL. Payload: `{ sub, email, iat, exp }`.
 - **Refresh token:** random token stored in KV with a 30-day TTL.
 - **Email verification/password-reset OTP:** exactly **5 characters** matching `^[A-Z][0-9]{4}$`.
-- OTPs are single-use and rate-limited.
+- OTPs are single-use and rate-limited. OtyaPoint email-login challenges store only a purpose-bound HMAC digest in `auth_email_login_challenges`; a single D1 `DELETE ... RETURNING` statement atomically claims each code once. Apply the corresponding dated migration before enabling the new endpoint on an existing D1 database.
 
 ## Branding
 
