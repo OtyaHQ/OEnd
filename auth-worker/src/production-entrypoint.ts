@@ -249,7 +249,7 @@ async function ensureIdentitySchema(env: ProductionEnv): Promise<Response | null
 }
 
 function createsIdentitySession(request: Request, url: URL): boolean {
-  return request.method === 'POST' && ['/auth/register', '/auth/login', '/auth/google'].includes(url.pathname)
+  return request.method === 'POST' && ['/auth/register', '/auth/login', '/auth/login/otp/verify', '/auth/google'].includes(url.pathname)
 }
 
 async function verifiedGooglePayload(request: Request, env: ProductionEnv): Promise<GoogleTokenPayload | Response> {
@@ -418,9 +418,9 @@ export default {
       })
     }
 
-    if (request.method === 'POST' && url.pathname === '/auth/login' && response.ok) {
+    if (request.method === 'POST' && ['/auth/login', '/auth/login/otp/verify'].includes(url.pathname) && response.ok) {
       await deliverNewDeviceAlert(request, response, env).catch(error => {
-        console.error('[auth/email] Password new-device alert failed:', (error as Error)?.message)
+        console.error('[auth/email] Sign-in new-device alert failed:', (error as Error)?.message)
       })
     }
 
