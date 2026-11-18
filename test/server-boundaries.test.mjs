@@ -122,7 +122,7 @@ test('direct push batches continue after network failure with bounded concurrenc
     return new Response(null, { status: token === '2' ? 429 : 200 })
   }
   const tokens = Array.from({ length: 20 }, (_, i) => String(i))
-  const result = await sendFcmWithToken([...tokens, '0'], 'Title', 'Body', 'https://petersmartlink.com', 'mock', 'mock')
+  const result = await sendFcmWithToken([...tokens, '0'], 'Title', 'Body', 'https://otya.site', 'mock', 'mock')
   assert.deepEqual(result, { sent: 18, failed: 2 })
   assert.equal(seen.length, 20)
   assert.ok(peak <= 8 && peak > 1)
@@ -191,10 +191,10 @@ test('admin notification URLs reject embedded credentials and nonstandard ports'
   const helper = source.slice(source.indexOf('function officialNotificationUrl'), source.indexOf('const CORS_HEADERS'))
   const { outputText } = ts.transpileModule(helper + '\nexport { officialNotificationUrl }', { compilerOptions: { module: ts.ModuleKind.ESNext } })
   const { officialNotificationUrl } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
-  for (const url of ['https://user:password@petersmartlink.com/', 'https://petersmartlink.com:8443/', 'https://petersmartlink.com.evil.example/']) {
+  for (const url of ['https://user:password@petersmartlink.com/', 'https://otya.site:8443/', 'https://otya.site.evil.example/']) {
     assert.equal(officialNotificationUrl(url), null)
   }
-  assert.equal(officialNotificationUrl('https://petersmartlink.com/help'), 'https://petersmartlink.com/help')
+  assert.equal(officialNotificationUrl('https://otya.site/help'), 'https://otya.site/help')
 })
 
 test('admin notification URLs accept both official domains and still reject lookalikes', async () => {
@@ -204,7 +204,7 @@ test('admin notification URLs accept both official domains and still reject look
   const { officialNotificationUrl } = await import(`data:text/javascript;base64,${Buffer.from(outputText).toString('base64')}`)
   assert.equal(officialNotificationUrl('https://otya.site/help'), 'https://otya.site/help')
   assert.equal(officialNotificationUrl('https://space.otya.site/account'), 'https://space.otya.site/account')
-  assert.equal(officialNotificationUrl('https://petersmartlink.com/help'), 'https://petersmartlink.com/help')
+  assert.equal(officialNotificationUrl('https://otya.site/help'), 'https://otya.site/help')
   for (const url of ['https://otya.site.evil.example/', 'https://evilotya.site/', 'https://otya.site:8443/', 'https://user:pw@otya.site/', 'http://otya.site/']) {
     assert.equal(officialNotificationUrl(url), null, url)
   }
