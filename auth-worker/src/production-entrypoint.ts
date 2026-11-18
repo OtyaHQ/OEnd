@@ -249,7 +249,7 @@ async function ensureIdentitySchema(env: ProductionEnv): Promise<Response | null
 }
 
 function createsIdentitySession(request: Request, url: URL): boolean {
-  return request.method === 'POST' && ['/auth/register', '/auth/login', '/auth/login/otp/verify', '/auth/google'].includes(url.pathname)
+  return request.method === 'POST' && ['/auth/register', '/auth/login', '/auth/login/otp/request', '/auth/login/otp/verify', '/auth/google'].includes(url.pathname)
 }
 
 async function verifiedGooglePayload(request: Request, env: ProductionEnv): Promise<GoogleTokenPayload | Response> {
