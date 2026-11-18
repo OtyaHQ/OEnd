@@ -8,6 +8,9 @@ const adminLayout = read('src/app/admin/layout.tsx')
 const router = read('src/production-router.mjs')
 const home = read('src/app/page.tsx')
 const telegramBot = read('src/telegram-entrypoint.mjs')
+const adminPage = read('src/app/admin/page.tsx')
+const methodsPage = read('src/app/account/sign-in-methods/page.tsx')
+const retiredWidgetPage = read('src/app/telegram-login/page.tsx')
 
 test('owner factors are resolved by the authenticated Otya sign-in journey', () => {
   assert.match(signIn, /async function routeAuthenticatedSession\(\)/)
@@ -19,6 +22,22 @@ test('owner factors are resolved by the authenticated Otya sign-in journey', () 
   assert.match(signIn, /I've confirmed in Telegram/)
   assert.doesNotMatch(signIn, /startOwnerTelegram|startTelegram\(/)
   assert.doesNotMatch(signIn, /\/api\/auth\/telegram\/start\?mode=(?:login|admin)/)
+})
+
+test('Admin owner step-up uses the same linked Telegram bot challenge, not Telegram OAuth', () => {
+  assert.match(adminPage, /telegram_challenge/)
+  assert.match(adminPage, /https:\/\/t\.me\/OtyaPlayerBot\?start=owner_/)
+  assert.match(adminPage, /action: 'complete'/)
+  assert.match(adminPage, /I've confirmed in Telegram/)
+  assert.doesNotMatch(adminPage, /mode=admin|Continue with Telegram/)
+})
+
+test('Telegram linking is separate from email and Google sign-in', () => {
+  assert.match(methodsPage, /Email and Google are sign-in methods/)
+  assert.match(methodsPage, /Telegram is a linked identity/)
+  assert.match(methodsPage, /accountFetch\('telegram\/start'/)
+  assert.match(retiredWidgetPage, /Telegram is not a sign-in method/)
+  assert.doesNotMatch(retiredWidgetPage, /telegram-widget\.js|data-telegram-login/)
 })
 
 test('owner second factor uses a linked Telegram bot challenge, not Telegram OAuth sign-in', () => {
