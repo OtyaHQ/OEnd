@@ -39,7 +39,7 @@ test('Google linking stays a protected account action instead of a session-creat
 
 test('account workspace makes sign-in and linked identities discoverable without a duplicate layout nav', () => {
   assert.match(layout, /<OtyaSpaceGate>\{children\}<\/OtyaSpaceGate>/)
-  assert.match(chrome, /label: 'Sign-in methods', section: 'providers', fallback: '\/account\/sign-in-methods\/'/)
+  assert.match(chrome, /label: 'Sign-in & linked identities', section: 'providers', fallback: '\\/account\\/sign-in-methods\\/'/)
   assert.match(account, /title="Sign-in & linked identities"/)
   assert.match(account, /href=\{`\$\{base\}\/providers`\}/)
 })
