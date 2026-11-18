@@ -38,3 +38,17 @@ test('Telegram linked-account callback can only update the already authenticated
   assert.match(source, /const userId = stored\.userId/)
   assert.doesNotMatch(source, /telegram_login: true/)
 })
+
+const wrapper = readFileSync(new URL('../src/production-entrypoint-miniapp.ts', import.meta.url), 'utf8')
+const miniapp = readFileSync(new URL('../src/telegram-miniapp.ts', import.meta.url), 'utf8')
+const browserProxy = readFileSync(new URL('../../src/app/api/auth/telegram/[...path]/route.ts', import.meta.url), 'utf8')
+
+test('production Auth does not wire Telegram primary OIDC and Mini App cannot issue sessions', () => {
+  assert.match(wrapper, /handleTelegramMiniApp/)
+  assert.doesNotMatch(wrapper, /handleTelegramPrimaryLogin/)
+  assert.match(miniapp, /OTYA_ACCOUNT_REQUIRED/)
+  assert.match(miniapp, /currentUserId\(request, env\)/)
+  assert.match(miniapp, /INSERT INTO linked_identities/)
+  assert.doesNotMatch(miniapp, /createOrGetTelegramUser|generateRefreshToken|signJwt|issueSession/)
+  assert.doesNotMatch(browserProxy, /response\.cookies\.set/)
+})
