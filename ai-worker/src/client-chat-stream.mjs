@@ -113,7 +113,7 @@ async function releaseVersion(env,message,base){
 }
 
 async function liveContext(env,message){
-  const base=(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')
+  const base=(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')
   const facts=[
     'Otya Media is an offline-first Android media app in the Otya ecosystem.',
     'OTYA has three permanent top-level destinations: Video, Music and Me.',
