@@ -6,8 +6,8 @@ import { decodeWorkflowPayload } from './lib/workflow_payload.mjs'
 
 const TAG_RE = /^v\d+\.\d+\.\d+\+[1-9]\d*$/
 const VERSION_RE = /^\d+\.\d+\.\d+$/
-const DEFAULT_WORKER_URL = 'https://petersmartlink.com'
-const OFFICIAL_RELEASE_HOSTS = new Set(['petersmartlink.com', 'www.petersmartlink.com'])
+const DEFAULT_WORKER_URL = 'https://otya.site'
+const OFFICIAL_RELEASE_HOSTS = new Set(['otya.site', 'www.otya.site'])
 
 function requireString(value, name) {
   if (typeof value !== 'string' || !value.trim()) {
