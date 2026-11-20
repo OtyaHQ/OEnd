@@ -71,7 +71,7 @@ export async function sendTelegramReleaseCard(chatId, caption, env) {
     photo: 'https://otya.site/otya-release-card.jpg',
     caption,
     reply_markup: { inline_keyboard: [
-      [{ text: 'Download Otya', url: 'https://otya.site/download/otya-player' }],
+      [{ text: 'Download Omy Play', url: 'https://otya.site/download/omy-play' }],
       [{ text: 'Help & feedback', url: 'https://t.me/OtyaPlayerBot' }],
     ] },
   }, env)
