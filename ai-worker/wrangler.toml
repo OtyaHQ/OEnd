@@ -20,7 +20,7 @@ enabled = true
 
 [vars]
 ENVIRONMENT = "production"
-APP_NAME = "Next by Otya"
+APP_NAME = "Otya Next"
 WEBSITE_URL = "https://otya.site"
 ADMIN_REPORT_EMAIL = "otyahq@gmail.com"
 ADMIN_CRASH_ALERT_THRESHOLD = "5"
