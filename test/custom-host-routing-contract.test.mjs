@@ -24,13 +24,8 @@ test('custom domains are canonical public entry points', () => {
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/')"))
 })
 
-test('retired petersmartlink hostnames preserve methods and redirect to Otya canonical hosts', () => {
-  assert.ok(router.includes("['petersmartlink.com', APP_HOST]"))
-  assert.ok(router.includes("['www.petersmartlink.com', 'www.otya.site']"))
-  assert.ok(router.includes("['docs.petersmartlink.com', DOCS_HOST]"))
-  assert.ok(router.includes("['status.petersmartlink.com', STATUS_HOST]"))
-  assert.ok(router.includes("['space.petersmartlink.com', SPACE_HOST]"))
-  assert.match(router, /status:\s*308/)
+test('retired petersmartlink hostnames are absent from the canonical OEnd runtime', () => {
+  assert.doesNotMatch(router, /petersmartlink\\.com/)
 })
 
 test('Space root is a product home while Account and Admin remain Space sections', () => {
@@ -46,8 +41,6 @@ test('Space root is a product home while Account and Admin remain Space sections
 
 test('Space allows approved signed-in product routes instead of redirecting them away', () => {
   assert.ok(router.includes("pathname.startsWith('/account/')"))
-  assert.ok(router.includes("pathname === '/ask'"))
-  assert.ok(router.includes("pathname.startsWith('/ask/')"))
   assert.ok(router.includes("pathname === '/telegram/'"))
   assert.ok(router.includes("pathname === '/admin'"))
   assert.ok(router.includes('isSpaceSurfacePath(url.pathname)'))
