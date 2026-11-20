@@ -21,7 +21,8 @@ test('production deployment uploads the canonical router as a version without re
   assert.doesNotMatch(pkg.scripts.deploy, /wrangler deploy src\/production-router/)
 
   assert.match(wrangler, /^main = "src\/production-router\.mjs"$/m)
-  assert.match(wrangler, /custom_domain = true/)
+  assert.match(wrangler, /^workers_dev = false$/m)
+  assert.doesNotMatch(wrangler, /custom_domain = true|^routes\\s*=/m)
   assert.match(router, /import openNextWorker from '\.\.\/\.open-next\/worker\.js'/)
   assert.match(router, /headers\.set\('Content-Security-Policy', CANONICAL_CSP\)/)
 })
