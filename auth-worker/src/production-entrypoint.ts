@@ -9,9 +9,9 @@ import { handleSecureAccountRoute, type SecureAccountEnv } from './secure-accoun
 import { withAuthSecurityEvent } from './security-events'
 import { sendResendEmail } from './resend'
 import {
-  isAllowedOtyaPointStaffInvitationRole,
-  isOtyaPointStaffInvitationPath,
-} from './otyapoint-staff-invitation'
+  isAllowedOpointStaffInvitationRole,
+  isOpointStaffInvitationPath,
+} from './opoint-staff-invitation'
 
 interface GoogleTokenPayload {
   sub?: string
@@ -29,7 +29,7 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
   GOOGLE_CLIENT_ID?: string
   GOOGLE_WEB_CLIENT_ID?: string
   RESEND_API_KEY?: string
-  OTYAPOINT_INVITE_SERVICE_TOKEN?: string | { get(): Promise<string> }
+  OPOINT_INVITE_SERVICE_TOKEN?: string | { get(): Promise<string> }
   OTYA_O_MAIL_SERVICE_TOKEN?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
 }
@@ -90,14 +90,14 @@ async function matchesInternalServiceSecret(provided: string, expected: string):
   return difference === 0
 }
 
-async function handleOtyaPointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
+async function handleOpointStaffInvitation(request: Request, env: ProductionEnv): Promise<Response | null> {
   const url = new URL(request.url)
-  if (!isOtyaPointStaffInvitationPath(url.pathname)) return null
+  if (!isOpointStaffInvitationPath(url.pathname)) return null
   if (request.method !== 'POST') return authError('Method not allowed', 405)
   // The service binding is the network boundary; the shared secret is a second
-  // authorization boundary so another bound Worker cannot impersonate OtyaPoint.
-  const expectedServiceSecret = await resolveSecretStoreValue(env.OTYAPOINT_INVITE_SERVICE_TOKEN)
-  if (request.headers.get('x-otya-service') !== 'otyapoint'
+  // authorization boundary so another bound Worker cannot impersonate Opoint.
+  const expectedServiceSecret = await resolveSecretStoreValue(env.OPOINT_INVITE_SERVICE_TOKEN)
+  if (request.headers.get('x-otya-service') !== 'opoint'
     || !(await matchesInternalServiceSecret(
       request.headers.get('x-otya-service-token') || '',
       expectedServiceSecret,
@@ -129,7 +129,7 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
     return authError('Invalid invitation email', 400)
   }
   if (!/^[a-f0-9]{64}$/.test(token)) return authError('Invalid invitation token', 400)
-  if (!isAllowedOtyaPointStaffInvitationRole(role)) {
+  if (!isAllowedOpointStaffInvitationRole(role)) {
     return authError('Invalid invitation role', 400)
   }
   if (!Number.isFinite(expiration) || expiration <= Date.now() || expiration > Date.now() + 49 * 60 * 60 * 1000) {
@@ -145,15 +145,15 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
       from: 'Otya <noreply@otya.site>',
       to: [email],
       replyTo: 'support@otya.site',
-      subject: 'You have been invited to OtyaPoint',
-      idempotencyKey: `otyapoint/staff-invitation/${invitationId}/${digestHex}`,
+      subject: 'You have been invited to Opoint',
+      idempotencyKey: `opoint/staff-invitation/${invitationId}/${digestHex}`,
       text: [
         `Hi ${safeName},`,
         '',
-        'You have been invited to join the OtyaPoint shop operations workspace.',
+        'You have been invited to join the Opoint shop operations workspace.',
         `Your invitation role: ${role}.`,
         '',
-        'Sign in to your Otya Account, then enter this one-time invitation code in OtyaPoint:',
+        'Sign in to your Otya Account, then enter this one-time invitation code in Opoint:',
         '',
         token,
         '',
@@ -358,7 +358,7 @@ export default {
   async fetch(request: Request, env: ProductionEnv): Promise<Response> {
     const url = new URL(request.url)
 
-    const invitationResponse = await handleOtyaPointStaffInvitation(request, env)
+    const invitationResponse = await handleOpointStaffInvitation(request, env)
     if (invitationResponse) return invitationResponse
     const opsEmailResponse = await handleOtyaNextOpsEmail(request, env)
     if (opsEmailResponse) return opsEmailResponse
