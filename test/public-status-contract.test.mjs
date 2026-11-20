@@ -40,7 +40,7 @@ test('status host keeps the public status API same-origin', () => {
   assert.match(router, /host === STATUS_HOST/)
   assert.match(router, /url\.pathname === '\/api\/status' \|\| url\.pathname === '\/api\/status\/'/)
   assert.match(router, /dispatchSurface\(request, url, env, ctx, '\/api\/status\/'\)/)
-  assert.match(read('o.config.mjs'), /trailingSlash: true/)
+  assert.match(read('next.config.mjs'), /trailingSlash: true/)
 })
 
 test('status page uses live checks without exposing private operations', () => {
