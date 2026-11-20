@@ -14,7 +14,7 @@ test('public status API exposes only sanitized component state', () => {
   assert.match(route, /new Set\(\[200\]\), true/)
   assert.match(route, /website: 'operational'/)
   assert.match(route, /accounts: accountsOk \? 'operational' : 'degraded'/)
-  assert.match(route, /next: nextOk \? 'operational' : 'degraded'/)
+  assert.match(route, /O: oOk \? 'operational' : 'degraded'/)
   assert.match(route, /checkedAt: new Date\(\)\.toISOString\(\)/)
   assert.match(route, /s-maxage=60/)
 
