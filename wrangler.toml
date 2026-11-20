@@ -10,7 +10,13 @@ routes = [
   { pattern = "www.otya.site", custom_domain = true },
   { pattern = "docs.otya.site", custom_domain = true },
   { pattern = "status.otya.site", custom_domain = true },
-  { pattern = "space.otya.site", custom_domain = true }
+  { pattern = "space.otya.site", custom_domain = true },
+  # Retired hostnames remain attached only to issue 308 redirects.
+  { pattern = "petersmartlink.com", custom_domain = true },
+  { pattern = "www.petersmartlink.com", custom_domain = true },
+  { pattern = "docs.petersmartlink.com", custom_domain = true },
+  { pattern = "status.petersmartlink.com", custom_domain = true },
+  { pattern = "space.petersmartlink.com", custom_domain = true }
 ]
 
 [observability]
@@ -28,7 +34,7 @@ enabled = true
 
 [vars]
 ENVIRONMENT = "production"
-APP_NAME    = "OTYA"
+APP_NAME    = "Otya"
 WEBSITE_URL = "https://otya.site"
 ADMIN_REPORT_EMAIL = "otyahq@gmail.com"
 FIREBASE_PROJECT_ID = "otya-player"
