@@ -25,8 +25,8 @@ test('custom domains are canonical public entry points', () => {
 })
 
 test('retired petersmartlink hostnames are absent from the canonical OEnd runtime', () => {
-  assert.doesNotMatch(router, /petersmartlink\.com/)
-  assert.doesNotMatch(router, /\/ask/)
+  assert.ok(!router.includes('petersmartlink.com'))
+  assert.ok(!router.includes('/ask'))
 })
 
 test('Space root is a product home while Account and Admin remain Space sections', () => {
