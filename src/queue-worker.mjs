@@ -18,7 +18,7 @@ export default {
   fetch: openNextWorker.fetch.bind(openNextWorker),
 
   async queue(batch, env) {
-    if (batch.queue !== 'otya-push') {
+    if (batch.queue !== 'oend-push') {
       throw new Error(`otya-core received unexpected queue: ${batch.queue}`)
     }
 
@@ -31,7 +31,7 @@ export default {
       } catch (error) {
         console.error('[PUSH_QUEUE] Failed to process message:', error?.message ?? error)
         await recordQueueDeliveryEvent(env, {
-          queueName: 'otya-push',
+          queueName: 'oend-push',
           messageType: canonicalPushCopy(message.body).messageType,
           scope: pushScope(message.body),
           sent: 0,
@@ -65,7 +65,7 @@ async function recordQueueDeliveryEvent(env, evidence) {
         transient_failed, removed_count, total_count, outcome
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      evidence.queueName ?? 'otya-push',
+      evidence.queueName ?? 'oend-push',
       evidence.messageType ?? null,
       evidence.scope ?? null,
       Number(evidence.sent ?? 0),
@@ -260,7 +260,7 @@ async function handlePushMessage(msg, env) {
   if (!topic && tokens.length === 0) {
     console.log('[PUSH_QUEUE] No matching registered devices — skipping.')
     return {
-      queueName: 'otya-push', messageType, scope,
+      queueName: 'oend-push', messageType, scope,
       sent: 0, failed: 0, transientFailed: 0, removed: 0, total: 0,
       outcome: 'no-targets', retry: false,
     }
@@ -306,7 +306,7 @@ async function handlePushMessage(msg, env) {
     } catch (error) {
       console.warn('[PUSH_QUEUE] FCM topic request failed:', error?.message ?? error)
       return {
-        queueName: 'otya-push', messageType, scope,
+        queueName: 'oend-push', messageType, scope,
         sent: 0, failed: 1, transientFailed: 1, removed: 0, total: 1,
         outcome: 'retry', retry: true,
       }
@@ -315,7 +315,7 @@ async function handlePushMessage(msg, env) {
     if (response.ok) {
       console.log(`[PUSH_QUEUE] FCM accepted topic fanout for ${scope}.`)
       return {
-        queueName: 'otya-push', messageType, scope,
+        queueName: 'oend-push', messageType, scope,
         sent: 1, failed: 0, transientFailed: 0, removed: 0, total: 1,
         outcome: 'accepted-topic', retry: false,
       }
@@ -325,7 +325,7 @@ async function handlePushMessage(msg, env) {
     const transient = TRANSIENT_FCM_STATUSES.has(response.status)
     console.warn('[PUSH_QUEUE] FCM topic send failed:', response.status, errorBody?.error?.status ?? 'unknown')
     return {
-      queueName: 'otya-push', messageType, scope,
+      queueName: 'oend-push', messageType, scope,
       sent: 0, failed: 1, transientFailed: transient ? 1 : 0, removed: 0, total: 1,
       outcome: transient ? 'retry' : 'failed', retry: transient,
     }
@@ -393,7 +393,7 @@ async function handlePushMessage(msg, env) {
   }
 
   return {
-    queueName: 'otya-push', messageType, scope,
+    queueName: 'oend-push', messageType, scope,
     sent, failed, transientFailed, removed, total,
     outcome, retry,
   }
