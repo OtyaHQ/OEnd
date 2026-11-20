@@ -82,7 +82,7 @@ export async function POST(request: NextRequest, context: Context) {
 
   try {
     const upstream = await recordEnv.AI_SUPPORT.fetch(new Request(
-      `https://otya-next/api/admin/ai/actions/${operation}`,
+      `https://o/api/admin/ai/actions/${operation}`,
       {
         method: 'POST',
         headers: {
