@@ -55,7 +55,7 @@ test('authentication replies use the current support address without moving lega
 
   assert.match(auth, /const OTYA_SUPPORT_EMAIL = 'support@otya\.site'/)
   assert.match(auth, /const PRIMARY_ORIGIN = 'https:\/\/otya\.site'/)
-  assert.match(auth, /'https:\/\/petersmartlink\.com'/)
+  assert.match(legacyAuth, /'https:\/\/petersmartlink\.com'/)
   assert.match(resend, /const OTYA_SUPPORT_EMAIL = 'support@otya\.site'/)
   assert.match(invite, /replyTo: 'support@otya\.site'/)
   assert.match(workflow, /https:\/\/otya\.site\/.well-known\/security\.txt/)
