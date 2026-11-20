@@ -58,3 +58,16 @@ CREATE TABLE IF NOT EXISTS linked_identities (
 );
 
 CREATE INDEX IF NOT EXISTS idx_linked_identities_user ON linked_identities(user_id, provider);
+ 
+-- Atomic, one-time email sign-in challenge. Only a keyed digest is persisted.
+CREATE TABLE IF NOT EXISTS auth_email_login_challenges (
+  user_id TEXT PRIMARY KEY,
+  code_digest TEXT NOT NULL,
+  issued_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_email_login_challenges_expires
+  ON auth_email_login_challenges(expires_at);
+
