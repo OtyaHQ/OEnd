@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#050510"/><circle cx="190" cy="315" r="105" fill="none" stroke="#7C3AED" stroke-width="28"/><path d="M168 255l92 60-92 60z" fill="#fff"/><text x="340" y="330" fill="#fff" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="700">OTYA</text><text x="344" y="390" fill="#c4b5fd" font-family="Arial,Helvetica,sans-serif" font-size="32">OTYA Player · OTYA AI · One account</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="brand" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#27E8FF"/><stop offset=".55" stop-color="#126BFF"/><stop offset="1" stop-color="#173BFF"/></linearGradient></defs>
+<rect width="1200" height="630" fill="#050812"/><circle cx="965" cy="110" r="390" fill="#126BFF" opacity=".12"/>
+<rect x="88" y="76" width="54" height="5" rx="2.5" fill="url(#brand)"/>
+<text x="88" y="164" fill="#F7FAFF" font-family="Arial,Helvetica,sans-serif" font-size="26" font-weight="700" letter-spacing="6">OTYA</text>
+<text x="88" y="300" fill="#F7FAFF" font-family="Arial,Helvetica,sans-serif" font-size="108" font-weight="800">Otya</text>
+<text x="94" y="370" fill="#D5E6FF" font-family="Arial,Helvetica,sans-serif" font-size="34">One connected product family.</text>
+<text x="94" y="525" fill="#9FB7D7" font-family="Arial,Helvetica,sans-serif" font-size="24">Digital products. Real-world services. Built in Uganda.</text>
+</svg>
