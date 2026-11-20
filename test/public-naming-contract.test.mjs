@@ -11,12 +11,12 @@ const adminAi = read('src/app/admin/ai/ConsoleClient.tsx')
 
 const publicVisible = `${constants}\n${product}\n${help}`
 
-test('public brand uses Otya and Otya Media with Send language', () => {
+test('public brand uses Otya and Omy Play with Send language', () => {
   assert.match(constants, /name: 'Otya'/)
-  assert.match(constants, /player: 'Otya Media'/)
+  assert.match(constants, /player: 'Omy Play'/)
   assert.match(constants, /auth: 'Otya Account'/)
   assert.match(constants, /nearby Send/)
-  assert.match(product, /Otya Media/)
+  assert.match(product, /Omy Play/)
   assert.match(product, /\['Send'/)
   assert.match(product, />Help & support</)
   assert.match(help, /Send is not connecting/)
@@ -32,5 +32,5 @@ test('consumer surfaces do not expose Next or public AI entry points', () => {
   assert.doesNotMatch(publicVisible, /auth: 'OTYA Account'/)
 
   // AI still exists behind the privileged admin console.
-  assert.match(adminAi, /Next/)
+  assert.match(adminAi, />O</)
 })
