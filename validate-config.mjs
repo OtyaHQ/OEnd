@@ -39,7 +39,7 @@ requireMatch('core deploy must pass the release-manifest secret from GitHub', de
 requireMatch('core deploy must store the release-manifest secret in Cloudflare', deploy, /wrangler secret put RELEASE_MANIFEST_HMAC_SECRET/)
 
 const router = read('src/production-router.mjs')
-requireMatch('legacy domains must redirect to the canonical Otya hosts', router, /LEGACY_HOST_REDIRECTS[\s\S]*?\['petersmartlink\.com', APP_HOST\][\s\S]*?\['space\.petersmartlink\.com', SPACE_HOST\]/m)
+forbidMatch('retired petersmartlink hostnames must not be active in the OEnd runtime', router, /petersmartlink\\.com/)
 requireMatch('legacy hostname redirects must preserve HTTP methods', router, /status:\s*308/)
 requireMatch('Core public website must use otya.site', core, /^WEBSITE_URL\s*=\s*"https:\/\/otya\.site"$/m)
 
