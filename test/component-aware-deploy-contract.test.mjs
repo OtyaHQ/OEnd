@@ -47,15 +47,15 @@ test('multi-component deploys remain ordered and fail closed', () => {
   )
   assert.match(
     workflow,
-    /deploy-otyapoint:[\s\S]*needs: \[validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core\]/,
+    /deploy-opoint:[\s\S]*needs: \[validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core\]/,
   )
   assert.match(
     workflow,
-    /verify-production:[\s\S]*needs: \[validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-otyapoint\]/,
+    /verify-production:[\s\S]*needs: \[validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-opoint\]/,
   )
   assert.match(workflow, /needs\.deploy-auth\.result == 'success' \|\| needs\.deploy-auth\.result == 'skipped'/)
   assert.match(workflow, /needs\.deploy-next\.result == 'success' \|\| needs\.deploy-next\.result == 'skipped'/)
-  assert.match(workflow, /needs\.deploy-otyapoint\.result == 'success' \|\| needs\.deploy-otyapoint\.result == 'skipped'/)
+  assert.match(workflow, /needs\.deploy-opoint\.result == 'success' \|\| needs\.deploy-opoint\.result == 'skipped'/)
 })
 
 test('live verification covers canonical and legacy Otya download paths after an authorized deploy', () => {
