@@ -64,7 +64,7 @@ function authBinding() {
 }
 
 function request(path, { method = 'GET', token = 'host', body } = {}) {
-  return new Request(`https://petersmartlink.com${path}`, {
+  return new Request(`https://otya.site${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
