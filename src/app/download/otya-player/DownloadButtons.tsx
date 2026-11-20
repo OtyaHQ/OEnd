@@ -90,7 +90,7 @@ export function DownloadPageClient() {
         </aside>
       </section>
 
-      <section className="otya-shell pb-12"><div className="border-t pt-5 flex flex-wrap gap-5 text-sm font-bold" style={{borderColor:'var(--cosmos-divider)'}}><Link href="/otya-player">About Omy Play</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link></div></section>
+      <section className="otya-shell pb-12"><div className="border-t pt-5 flex flex-wrap gap-5 text-sm font-bold" style={{borderColor:'var(--cosmos-divider)'}}><Link href="/omy-play">About Omy Play</Link><Link href="/help">Help</Link><Link href="/privacy">Privacy</Link></div></section>
     </main>
     <SiteFooter />
   </div>
