@@ -8,13 +8,13 @@ test('public status API exposes only sanitized component state', () => {
   const route = read('src/app/api/status/route.ts')
 
   assert.match(route, /SERVICE_TIMEOUT_MS = 4000/)
-  assert.match(route, /https:\/\/otya-auth\/auth\/me/)
+  assert.match(route, /https:\/\/oend-identity\/auth\/me/)
   assert.match(route, /new Set\(\[401\]\)/)
-  assert.match(route, /https:\/\/otya-next\/health/)
+  assert.match(route, /https:\/\/o\/health/)
   assert.match(route, /new Set\(\[200\]\), true/)
   assert.match(route, /website: 'operational'/)
   assert.match(route, /accounts: accountsOk \? 'operational' : 'degraded'/)
-  assert.match(route, /next: nextOk \? 'operational' : 'degraded'/)
+  assert.match(route, /o: oOk \? 'operational' : 'degraded'/)
   assert.match(route, /checkedAt: new Date\(\)\.toISOString\(\)/)
   assert.match(route, /s-maxage=60/)
 
@@ -40,7 +40,7 @@ test('status host keeps the public status API same-origin', () => {
   assert.match(router, /host === STATUS_HOST/)
   assert.match(router, /url\.pathname === '\/api\/status' \|\| url\.pathname === '\/api\/status\/'/)
   assert.match(router, /dispatchSurface\(request, url, env, ctx, '\/api\/status\/'\)/)
-  assert.match(read('next.config.mjs'), /trailingSlash: true/)
+  assert.match(read('o.config.mjs'), /trailingSlash: true/)
 })
 
 test('status page uses live checks without exposing private operations', () => {
