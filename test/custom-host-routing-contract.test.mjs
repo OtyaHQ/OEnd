@@ -30,7 +30,7 @@ test('retired petersmartlink hostnames preserve methods and redirect to Otya can
   assert.ok(router.includes("['docs.petersmartlink.com', DOCS_HOST]"))
   assert.ok(router.includes("['status.petersmartlink.com', STATUS_HOST]"))
   assert.ok(router.includes("['space.petersmartlink.com', SPACE_HOST]"))
-  assert.match(router, /status:\\s*308/)
+  assert.match(router, /status:\s*308/)
 })
 
 test('Space root is a product home while Account and Admin remain Space sections', () => {
