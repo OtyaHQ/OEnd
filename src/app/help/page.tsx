@@ -8,7 +8,7 @@ import { SITE_CONFIG } from '@/lib/constants'
 export const metadata: Metadata = {
   title: 'Help | Otya Media',
   description: 'Quick help for Otya Media accounts, local music and video, Send, Private and Android playback.',
-  alternates: { canonical: 'https://petersmartlink.com/help' },
+  alternates: { canonical: 'https://otya.site/help' },
 }
 
 const quickHelp = [

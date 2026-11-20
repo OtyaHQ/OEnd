@@ -6,12 +6,12 @@ import { SiteFooter } from '@/components/SiteFooter'
 export const metadata: Metadata = {
   title: 'Developers | Otya',
   description: 'Developer resources, documentation, status and integration guidance for Otya products.',
-  alternates: { canonical: 'https://petersmartlink.com/developers' },
+  alternates: { canonical: 'https://otya.site/developers' },
 }
 
 const resources = [
-  ['Documentation', 'Product behavior, account setup, troubleshooting and supported integration guidance.', 'https://docs.petersmartlink.com'],
-  ['Service status', 'Current operational state and incident information for public services.', 'https://status.petersmartlink.com'],
+  ['Documentation', 'Product behavior, account setup, troubleshooting and supported integration guidance.', 'https://docs.otya.site'],
+  ['Service status', 'Current operational state and incident information for public services.', 'https://status.otya.site'],
   ['Security', 'Responsible security guidance and safe ways to report a security concern.', '/help#security'],
   ['Contact', 'Reach Otya for product, support or developer questions.', '/contact'],
 ] as const

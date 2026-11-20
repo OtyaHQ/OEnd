@@ -9,7 +9,7 @@ function validWidgetAuthUrl(raw: string): string | null {
     const url = new URL(raw)
     if (
       url.protocol !== 'https:'
-      || url.hostname !== 'petersmartlink.com'
+      || url.hostname !== 'otya.site'
       || url.pathname !== '/api/auth/telegram/widget/callback'
       || !url.searchParams.get('state')
     ) return null

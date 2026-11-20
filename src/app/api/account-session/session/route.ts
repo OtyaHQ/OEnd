@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
-const COOKIE_DOMAIN = '.petersmartlink.com'
+const COOKIE_DOMAIN = '.otya.site'
 const ACCESS_MAX_AGE = 15 * 60
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 

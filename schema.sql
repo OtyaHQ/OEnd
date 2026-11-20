@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS downloads (
 --     (tag, version, version_code, date, changelog, force_update, download_url, arm64_url, arm32_url)
 --   VALUES
 --     ('v1.4.0','1.4.0',7,'2026-07-23','Bug fixes and performance improvements.',0,
---      'https://petersmartlink.com/download/otya-player',
---      'https://petersmartlink.com/apk/arm64',
---      'https://petersmartlink.com/apk/arm32');
+--      'https://otya.site/download/otya-player',
+--      'https://otya.site/apk/arm64',
+--      'https://otya.site/apk/arm32');
 CREATE TABLE IF NOT EXISTS releases (
   tag          TEXT    PRIMARY KEY,
   version      TEXT    NOT NULL,

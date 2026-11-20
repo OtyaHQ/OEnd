@@ -18,7 +18,7 @@ test('public Otya surfaces and Android download naming stay canonical', () => {
   assert.match(canonicalDownload, /title: 'Download Otya Media for Android'/)
   assert.match(
     canonicalDownload,
-    /canonical: 'https:\/\/petersmartlink\.com\/download\/otya-player'/,
+    /canonical: 'https:\/\/otya\.site\/download\/otya-player'/,
   )
   assert.match(legacyDownload, /redirect\('\/download\/otya-player'\)/)
 

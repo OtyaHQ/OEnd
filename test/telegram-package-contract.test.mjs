@@ -39,7 +39,7 @@ test('otya-core is the only public Telegram webhook gateway', () => {
   assert.doesNotMatch(bot, /telegram:update:/)
   assert.match(bot, /ctx\?\.waitUntil/)
   assert.match(bot, /https:\/\/api\.telegram\.org/)
-  assert.match(bot, /https:\/\/space\.petersmartlink\.com\/telegram/)
+  assert.match(bot, /https:\/\/space\.otya\.site\/telegram/)
   assert.match(bot, /text: 'Open Otya'/)
 })
 
@@ -70,7 +70,7 @@ test('Mini App auth establishes shared secure Otya browser cookies without expos
   assert.match(proxy, /endsWith\('\/miniapp'\)/)
   assert.match(proxy, /__Secure-otya_access/)
   assert.match(proxy, /__Secure-otya_refresh/)
-  assert.match(proxy, /COOKIE_DOMAIN = '\.petersmartlink\.com'/)
+  assert.match(proxy, /COOKIE_DOMAIN = '\.otya\.site'/)
   assert.match(proxy, /delete safe\.access_token/)
   assert.match(proxy, /delete safe\.refresh_token/)
   assert.match(proxy, /httpOnly: true/)

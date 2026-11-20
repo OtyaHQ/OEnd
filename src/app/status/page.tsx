@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Otya Status',
   description: 'Live public availability information for Otya services.',
   robots: { index: true, follow: true },
-  alternates: { canonical: 'https://status.petersmartlink.com' },
+  alternates: { canonical: 'https://status.otya.site' },
 }
 
 export default function StatusPage() {
@@ -15,12 +15,12 @@ export default function StatusPage() {
     <main className="min-h-screen bg-[color:var(--cosmos-scaffold)] text-[color:var(--cosmos-text-primary)]">
       <div className="mx-auto max-w-[980px] px-5 sm:px-7 py-8 sm:py-12">
         <header className="flex items-center justify-between gap-4">
-          <Link href="https://petersmartlink.com" className="inline-flex items-center gap-2" aria-label="Otya home">
+          <Link href="https://otya.site" className="inline-flex items-center gap-2" aria-label="Otya home">
             <OtyaBrandMark size={34} />
             <span className="text-lg font-black tracking-[-.04em]">Otya</span>
           </Link>
           <Link
-            href="https://petersmartlink.com/help"
+            href="https://otya.site/help"
             className="inline-flex min-h-10 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-4 text-sm font-black"
           >
             Help
@@ -43,9 +43,9 @@ export default function StatusPage() {
             These destinations expose only information intended for customers and can be checked without private admin access.
           </p>
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <Link href="https://petersmartlink.com" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Website</Link>
-            <Link href="https://petersmartlink.com/download/otya-player" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Downloads & updates</Link>
-            <Link href="https://docs.petersmartlink.com" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Documentation</Link>
+            <Link href="https://otya.site" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Website</Link>
+            <Link href="https://otya.site/download/otya-player" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Downloads & updates</Link>
+            <Link href="https://docs.otya.site" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Documentation</Link>
           </div>
         </section>
 

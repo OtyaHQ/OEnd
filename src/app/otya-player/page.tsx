@@ -21,10 +21,10 @@ export const metadata: Metadata = {
     'Android media player Uganda',
     'Otya Otya',
   ],
-  alternates: { canonical: 'https://petersmartlink.com/otya-player' },
+  alternates: { canonical: 'https://otya.site/otya-player' },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com/otya-player',
+    url: 'https://otya.site/otya-player',
     title: 'Otya — Offline Music & Video for Android',
     description:
       'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Otya by Otya.',

@@ -11,7 +11,7 @@ const clean=(v,max=5000)=>String(v??'').replace(/[\u0000-\u001f]/g,' ').trim().s
 const b64url=(bytes)=>{let s='';for(const b of bytes)s+=String.fromCharCode(b);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 const unb64=(s)=>{const p=String(s).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(p+'='.repeat((4-p.length%4)%4));return Uint8Array.from(raw,c=>c.charCodeAt(0))}
 function internalAuthorized(request,env){return Boolean(env.INTERNAL_SECRET)&&request.headers.get('X-OTYA-Internal-Secret')===env.INTERNAL_SECRET}
-function config(env){return{clientId:env.GMAIL_GOOGLE_CLIENT_ID||'',clientSecret:env.GMAIL_GOOGLE_CLIENT_SECRET||'',enc:env.CONNECTOR_ENCRYPTION_KEY||env.INTERNAL_SECRET||'',base:(env.WEBSITE_URL||'https://petersmartlink.com').replace(/\/$/,'')}}
+function config(env){return{clientId:env.GMAIL_GOOGLE_CLIENT_ID||'',clientSecret:env.GMAIL_GOOGLE_CLIENT_SECRET||'',enc:env.CONNECTOR_ENCRYPTION_KEY||env.INTERNAL_SECRET||'',base:(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')}}
 function configured(env){const c=config(env);return Boolean(c.clientId&&c.clientSecret&&c.enc&&env.KV)}
 function redirectUri(env){return`${config(env).base}/api/ai/oauth/google/callback`}
 async function cryptoKey(env){const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(config(env).enc));return crypto.subtle.importKey('raw',digest,{name:'AES-GCM'},false,['encrypt','decrypt'])}

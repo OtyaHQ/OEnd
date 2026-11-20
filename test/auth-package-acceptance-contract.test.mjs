@@ -6,7 +6,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 
 test('browser auth defaults to OTYA Space and only accepts safe same-site return paths', () => {
   const signIn = read('src/app/sign-in/page.tsx')
-  assert.match(signIn, /DEFAULT_AFTER_AUTH = 'https:\/\/space\.petersmartlink\.com\/'/)
+  assert.match(signIn, /DEFAULT_AFTER_AUTH = 'https:\/\/space\.otya\.site\/'/)
   assert.match(signIn, /requested\.startsWith\('\/'\)/)
   assert.match(signIn, /!requested\.startsWith\('\/\/'\)/)
   assert.match(signIn, /!requested\.includes\('\\\\'\)/)

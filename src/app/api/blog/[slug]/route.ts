@@ -36,7 +36,7 @@ export async function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin':  'https://petersmartlink.com',
+      'Access-Control-Allow-Origin':  'https://otya.site',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     },

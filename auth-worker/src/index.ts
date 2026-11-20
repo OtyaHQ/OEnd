@@ -123,11 +123,17 @@ const GOOGLE_VERIFY_TIMEOUT_MS = 8000
  * origin so the browser-side fetch polyfill (if any) still works.
  */
 const ALLOWED_ORIGINS = new Set([
+  'https://otya.site',
+  'https://www.otya.site',
+  // Retain old-host CORS during the redirect and cookie transition.
   'https://petersmartlink.com',
   'https://www.petersmartlink.com',
+  'https://docs.petersmartlink.com',
+  'https://status.petersmartlink.com',
+  'https://space.petersmartlink.com',
 ])
 
-const PRIMARY_ORIGIN = 'https://petersmartlink.com'
+const PRIMARY_ORIGIN = 'https://otya.site'
 
 /**
  * Return CORS headers for the given request.
@@ -308,7 +314,7 @@ async function checkAndAlertNewDeviceLogin(
           'If this was you, no action is needed.',
           '',
           'If you did NOT log in, please change your password immediately at:',
-          'https://petersmartlink.com',
+          'https://otya.site',
           '',
           '— The OTYA Player Security Team',
         ].join('\n'),

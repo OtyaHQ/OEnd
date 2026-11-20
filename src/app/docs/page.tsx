@@ -6,7 +6,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 export const metadata: Metadata = {
   title: 'Documentation | Otya',
   description: 'Official documentation for Otya Media, Otya accounts, Space, security and supported Otya services.',
-  alternates: { canonical: 'https://docs.petersmartlink.com' },
+  alternates: { canonical: 'https://docs.otya.site' },
 }
 
 const sections = [
@@ -18,7 +18,7 @@ const sections = [
   {
     title: 'Account & Space',
     description: 'One Otya identity can use multiple sign-in methods. Space is the signed-in environment for account and security controls.',
-    links: [['Sign in to Otya', 'https://space.petersmartlink.com/sign-in'], ['Open Space', 'https://space.petersmartlink.com'], ['Account help', '/help']],
+    links: [['Sign in to Otya', 'https://space.otya.site/sign-in'], ['Open Space', 'https://space.otya.site'], ['Account help', '/help']],
   },
   {
     title: 'Playback & local media',
@@ -28,7 +28,7 @@ const sections = [
   {
     title: 'Trust & operations',
     description: 'Use official support, public service status and legal information without exposing private production internals.',
-    links: [['Service status', 'https://status.petersmartlink.com'], ['Privacy', '/privacy'], ['Terms', '/terms']],
+    links: [['Service status', 'https://status.otya.site'], ['Privacy', '/privacy'], ['Terms', '/terms']],
   },
 ] as const
 
@@ -55,7 +55,7 @@ export default function DocumentationPage() {
 
         <div className="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-[24px] border border-black/[.06] dark:border-white/[.08] p-5 sm:p-6">
           <div><div className="font-black">Still need help?</div><p className="mt-1 text-sm otya-muted">Use human support or ask Next from your Otya environment.</p></div>
-          <div className="flex flex-wrap gap-3"><Link href="/help" className="inline-flex min-h-10 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-4 text-sm font-black">Support</Link><Link href="https://space.petersmartlink.com/ask" className="cosmos-button inline-flex min-h-10 items-center rounded-full px-4 text-sm font-black">Open Next</Link></div>
+          <div className="flex flex-wrap gap-3"><Link href="/help" className="inline-flex min-h-10 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-4 text-sm font-black">Support</Link><Link href="https://space.otya.site/ask" className="cosmos-button inline-flex min-h-10 items-center rounded-full px-4 text-sm font-black">Open Next</Link></div>
         </div>
       </section>
     </main>

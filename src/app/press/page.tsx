@@ -8,10 +8,10 @@ import { OTYA } from '@/lib/constants'
 export const metadata: Metadata = {
   title: 'Press & Media | Otya',
   description: 'Factual background, official links and media contact information for the Otya ecosystem.',
-  alternates: { canonical: 'https://petersmartlink.com/press' },
+  alternates: { canonical: 'https://otya.site/press' },
   openGraph: {
     type: 'website',
-    url: 'https://petersmartlink.com/press',
+    url: 'https://otya.site/press',
     title: 'Press & Media | Otya',
     description: 'Official media background and source links for the Otya ecosystem.',
   },

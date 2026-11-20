@@ -20,7 +20,7 @@ test('Telegram keeps paragraph breaks and sends the branded photo with buttons',
     await sendTelegramReleaseCard('@otyaplayer', 'Otya update', env)
     assert.equal(requests[0].body.text, 'First paragraph\n\nSecond paragraph')
     assert.match(requests[1].url, /\/sendPhoto$/)
-    assert.equal(requests[1].body.photo, 'https://petersmartlink.com/otya-release-card.jpg')
+    assert.equal(requests[1].body.photo, 'https://otya.site/otya-release-card.jpg')
     assert.equal(requests[1].body.reply_markup.inline_keyboard[0][0].text, 'Download Otya')
   } finally { globalThis.fetch = original }
 })
@@ -39,7 +39,7 @@ function database() {
   } }
 }
 
-const release = { tag: 'v1.0.0+3', version: '1.0.0', workerUrl: 'https://petersmartlink.com', changelog: 'Improved playback.' }
+const release = { tag: 'v1.0.0+3', version: '1.0.0', workerUrl: 'https://otya.site', changelog: 'Improved playback.' }
 
 test('release caption stays compact and omits contributor lists and links', () => {
   const text = releaseAnnouncementText({ ...release, changelog: '- Better playback\n- Clearer controls\n- Improved reliability\n- Fourth item\nCo-authored-by: Someone\nhttps://example.com' })

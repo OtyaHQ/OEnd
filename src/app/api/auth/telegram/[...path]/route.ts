@@ -10,8 +10,8 @@ const AUTH_PREFIX = '/auth/telegram/'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const REFRESH_COOKIE = '__Secure-otya_refresh'
 const ADMIN_RETURN_COOKIE = 'otya_admin_return'
-const COOKIE_DOMAIN = '.petersmartlink.com'
-const SPACE_URL = 'https://space.petersmartlink.com/'
+const COOKIE_DOMAIN = '.otya.site'
+const SPACE_URL = 'https://space.otya.site/'
 const ACCESS_MAX_AGE = 15 * 60
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60
 const ADMIN_RETURN_MAX_AGE = 10 * 60
@@ -36,7 +36,7 @@ function safeWidgetPage(request: NextRequest, data: Payload): string | null {
   if (!/^[A-Za-z0-9_]{5,32}$/.test(data.bot_username)) return null
   let callback: URL
   try { callback = new URL(data.widget_auth_url) } catch { return null }
-  if (callback.protocol !== 'https:' || callback.hostname !== 'petersmartlink.com' || callback.pathname !== '/api/auth/telegram/widget/callback' || !callback.searchParams.get('state')) return null
+  if (callback.protocol !== 'https:' || callback.hostname !== 'otya.site' || callback.pathname !== '/api/auth/telegram/widget/callback' || !callback.searchParams.get('state')) return null
   const page = new URL('/telegram-login', request.url)
   page.searchParams.set('bot', data.bot_username)
   page.searchParams.set('auth', callback.toString())

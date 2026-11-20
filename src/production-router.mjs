@@ -3,10 +3,21 @@ import backendWorker from './telegram-entrypoint.mjs'
 import { handleTogetherControl } from './together-control.mjs'
 export { OtyaReleaseWorkflow } from './telegram-entrypoint.mjs'
 
-const APP_HOST = 'petersmartlink.com'
-const DOCS_HOST = 'docs.petersmartlink.com'
-const STATUS_HOST = 'status.petersmartlink.com'
-const SPACE_HOST = 'space.petersmartlink.com'
+const APP_HOST = 'otya.site'
+const DOCS_HOST = 'docs.otya.site'
+const STATUS_HOST = 'status.otya.site'
+const SPACE_HOST = 'space.otya.site'
+
+// Keep the retired hostnames attached during migration and permanently redirect
+// every request to the matching canonical Otya host. A 308 preserves POST bodies
+// for OAuth callbacks and mobile/API requests while moving cookies to .otya.site.
+const LEGACY_HOST_REDIRECTS = new Map([
+  ['petersmartlink.com', APP_HOST],
+  ['www.petersmartlink.com', 'www.otya.site'],
+  ['docs.petersmartlink.com', DOCS_HOST],
+  ['status.petersmartlink.com', STATUS_HOST],
+  ['space.petersmartlink.com', SPACE_HOST],
+])
 
 const CANONICAL_CSP = [
   "default-src 'self'",
@@ -14,7 +25,7 @@ const CANONICAL_CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://challenges.cloudflare.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https: https://pagead2.googlesyndication.com",
-  "connect-src 'self' https://petersmartlink.com https://space.petersmartlink.com https://accounts.google.com https://telegram.org https://oauth.telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google-analytics.com",
+  "connect-src 'self' https://otya.site https://space.otya.site https://accounts.google.com https://telegram.org https://oauth.telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google-analytics.com",
   "frame-src https://accounts.google.com https://oauth.telegram.org https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com",
   "object-src 'none'",
   "base-uri 'self'",
@@ -169,6 +180,17 @@ async function dispatchSurface(request, url, env, ctx, pathname = url.pathname) 
 async function routeOtyaRequest(request, env, ctx) {
     const url = new URL(request.url)
     const host = url.hostname.toLowerCase()
+
+    const canonicalHost = LEGACY_HOST_REDIRECTS.get(host)
+    if (canonicalHost) {
+      url.protocol = 'https:'
+      url.hostname = canonicalHost
+      url.port = ''
+      return new Response(null, {
+        status: 308,
+        headers: { Location: url.toString(), 'Cache-Control': 'public, max-age=3600' },
+      })
+    }
 
     if (url.pathname.startsWith('/api/together/')) {
       if (!env.KV || !env.AUTH?.fetch) {

@@ -1,4 +1,4 @@
-const url = 'https://petersmartlink.com/api/admin/session'
+const url = 'https://otya.site/api/admin/session'
 
 for (let attempt = 1; attempt <= 6; attempt++) {
   try {

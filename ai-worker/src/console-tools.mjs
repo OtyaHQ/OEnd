@@ -12,7 +12,7 @@ import {
 } from './conversations.mjs'
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-const OTYA_CORE_URL = 'https://petersmartlink.com'
+const OTYA_CORE_URL = 'https://otya.site'
 
 const clean = (v, max = 5000) => String(v ?? '')
   .replace(/[\u0000-\u001f]/g, ' ')
