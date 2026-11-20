@@ -11,7 +11,7 @@ test('public support contact uses the Otya.site identity', async () => {
     read('../src/app/privacy/page.tsx'),
     read('../src/app/terms/page.tsx'),
     read('../src/app/delete-account/page.tsx'),
-    read('../src/app/otyapoint/page.tsx'),
+    read('../src/app/opoint/page.tsx'),
     read('../src/app/layout.tsx'),
     read('../public/.well-known/security.txt'),
   ])
@@ -27,7 +27,7 @@ test('public support contact uses the Otya.site identity', async () => {
   assert.match(security, /^Canonical: https:\/\/otya\.site\/.well-known\/security\.txt$/m)
 })
 
-test('support inbox accepts both the current address and legacy alias', async () => {
+test('support inbox accepts only the canonical company support address', async () => {
   const [support, consoleTools, scheduled, connections] = await Promise.all([
     read('../ai-worker/src/support-email.mjs'),
     read('../ai-worker/src/console-tools.mjs'),
@@ -45,12 +45,11 @@ test('support inbox accepts both the current address and legacy alias', async ()
 })
 
 test('authentication replies use the current support address without moving legacy CORS yet', async () => {
-  const [auth, resend, invite, workflow, legacyAuth] = await Promise.all([
+  const [auth, resend, invite, workflow] = await Promise.all([
     read('../auth-worker/src/entrypoint.ts'),
     read('../auth-worker/src/resend.ts'),
     read('../auth-worker/src/production-entrypoint.ts'),
     read('../.github/workflows/deploy.yml'),
-    read('../auth-worker/src/index.ts'),
   ])
 
   assert.match(auth, /const OTYA_SUPPORT_EMAIL = 'support@otya\.site'/)
