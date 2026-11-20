@@ -55,17 +55,17 @@ Never put Telegram client secrets or Gateway tokens in Flutter or browser code.
 
 OTYA uses **Resend** for verification, password reset, welcome and security email.
 
-### Private OtyaPoint staff invitations
+### Private Opoint staff invitations
 
-The Auth Worker owns the private `POST /internal/notifications/otyapoint/staff-invitation` service-binding route. It sends invitation messages on behalf of OtyaPoint using the existing Resend account; OtyaPoint does not receive a Resend API key. The route rejects requests without both the expected `x-otya-service: otyapoint` marker and a high-entropy shared service secret. The former private `/internal/notifications/omnipoint/staff-invitation` path remains as a transition alias for the retired Cloudflare API only and is not a public API. New callers must use the OtyaPoint path.
+The Auth Worker owns the private `POST /internal/notifications/opoint/staff-invitation` service-binding route. It sends invitation messages on behalf of Opoint using the existing Resend account; Opoint does not receive a Resend API key. The route rejects requests without both the expected `x-otya-service: opoint` marker and a high-entropy shared service secret. The former private `/internal/notifications/retired-internal-path` path remains as a transition alias for the retired Cloudflare API only and is not a public API. New callers must use the Opoint path.
 
-Invitation role values use OtyaPoint's canonical membership roles: `ADMIN`, `MANAGER`, `CASHIER`, `AGENT`, `ACCOUNTANT` and `AUDITOR`; `OWNER` is deliberately not an assignable invitation role and ownership changes require a separate controlled process. `ATTENDANT`, `MANAGING_DIRECTOR` and `CHAIRMAN` remain temporarily accepted only for the retired legacy caller and are not part of the canonical role model. To enable this integration after an approved isolated OtyaPoint deployment, generate a unique high-entropy value and set the exact same value as a Worker secret in both OtyaPoint and Otya Auth:
+Invitation role values use Opoint's canonical membership roles: `ADMIN`, `MANAGER`, `CASHIER`, `AGENT`, `ACCOUNTANT` and `AUDITOR`; `OWNER` is deliberately not an assignable invitation role and ownership changes require a separate controlled process. `ATTENDANT`, `MANAGING_DIRECTOR` and `CHAIRMAN` remain temporarily accepted only for the retired legacy caller and are not part of the canonical role model. To enable this integration after an approved isolated Opoint deployment, generate a unique high-entropy value and set the exact same value as a Worker secret in both Opoint and Otya Auth:
 
 ```sh
-wrangler secret put OTYAPOINT_INVITE_SERVICE_TOKEN
+wrangler secret put OPOINT_INVITE_SERVICE_TOKEN
 ```
 
-Do not use a Wrangler `[vars]` value, GitHub source file, app bundle, or browser storage for this secret. The invitation code is one-time, short-lived and stored only as a digest by OtyaPoint. Do not configure this secret or enable invitation delivery on production during the development freeze. The internal route is not a public API and must not be attached to a public route or workers.dev hostname.
+Do not use a Wrangler `[vars]` value, GitHub source file, app bundle, or browser storage for this secret. The invitation code is one-time, short-lived and stored only as a digest by Opoint. Do not configure this secret or enable invitation delivery on production during the development freeze. The internal route is not a public API and must not be attached to a public route or workers.dev hostname.
 
 ## API
 
