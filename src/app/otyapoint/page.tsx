@@ -5,17 +5,17 @@ import { SiteFooter } from '@/components/SiteFooter'
 
 const SITE_URL = 'https://otya.site'
 const MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Old%20Market%2C%20Mbirizi%2C%20Lwengo%20District%2C%20Uganda'
-const ENQUIRY_URL = 'mailto:support@otya.site?subject=OtyaPoint%20shop%20enquiry'
+const ENQUIRY_URL = 'mailto:support@otya.site?subject=Opoint%20shop%20enquiry'
 
 export const metadata: Metadata = {
-  title: 'OtyaPoint | Physical shop in Mbirizi, Lwengo',
-  description: 'Visit OtyaPoint in the Old Market area of Mbirizi, Lwengo, Uganda for phones and accessories, electronics, and mobile-money agency services.',
-  keywords: ['OtyaPoint', 'phones and accessories Mbirizi', 'electronics Mbirizi', 'mobile money agent Mbirizi', 'Old Market Mbirizi', 'Lwengo Uganda'],
-  alternates: { canonical: `${SITE_URL}/otyapoint` },
+  title: 'Opoint | Physical shop in Mbirizi, Lwengo',
+  description: 'Visit Opoint in the Old Market area of Mbirizi, Lwengo, Uganda for phones and accessories, electronics, and mobile-money agency services.',
+  keywords: ['Opoint', 'phones and accessories Mbirizi', 'electronics Mbirizi', 'mobile money agent Mbirizi', 'Old Market Mbirizi', 'Lwengo Uganda'],
+  alternates: { canonical: `${SITE_URL}/opoint` },
   openGraph: {
     type: 'website',
-    url: `${SITE_URL}/otyapoint`,
-    title: 'OtyaPoint | Visit our physical shop',
+    url: `${SITE_URL}/opoint`,
+    title: 'Opoint | Visit our physical shop',
     description: 'Phones and accessories, electronics, and mobile-money agency services in Mbirizi, Lwengo, Uganda.',
   },
 }
@@ -23,9 +23,9 @@ export const metadata: Metadata = {
 const businessSchema = {
   '@context': 'https://schema.org',
   '@type': 'RetailStore',
-  '@id': `${SITE_URL}/otyapoint#store`,
-  name: 'OtyaPoint',
-  url: `${SITE_URL}/otyapoint`,
+  '@id': `${SITE_URL}/opoint#store`,
+  name: 'Opoint',
+  url: `${SITE_URL}/opoint`,
   description: 'Physical retail shop offering phones and accessories, electronics, and mobile-money agency services.',
   address: {
     '@type': 'PostalAddress',
@@ -56,7 +56,7 @@ const services = [
   },
 ] as const
 
-export default function OtyaPointPage() {
+export default function OpointPage() {
   return <div className="min-h-screen flex flex-col bg-[color:var(--cosmos-scaffold)] text-[color:var(--cosmos-text-primary)]">
     <SiteNav />
     <main className="flex-1">
@@ -66,9 +66,9 @@ export default function OtyaPointPage() {
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_10%_12%,rgba(39,232,255,.12),transparent_30%),radial-gradient(circle_at_90%_18%,rgba(18,107,255,.12),transparent_32%)]" />
         <div className="otya-shell relative py-14 sm:py-20 lg:py-24">
           <div className="max-w-[900px]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/[.07] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] px-4 py-2 text-xs font-black tracking-[.08em] uppercase otya-muted">OtyaPoint · Physical shop</div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/[.07] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] px-4 py-2 text-xs font-black tracking-[.08em] uppercase otya-muted">Opoint · Physical shop</div>
             <h1 className="mt-7 max-w-[850px] text-[clamp(42px,7vw,82px)] font-black tracking-[-.065em] leading-[.98]">Everyday technology.<br/><span className="otya-muted">A real place to visit.</span></h1>
-            <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Visit OtyaPoint in the Old Market area of Mbirizi, Lwengo. Find phones and accessories, electronics, and mobile-money agency services at our physical shop.</p>
+            <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Visit Opoint in the Old Market area of Mbirizi, Lwengo. Find phones and accessories, electronics, and mobile-money agency services at our physical shop.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href={MAP_URL} target="_blank" rel="noopener noreferrer" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Find the shop area</a>
               <a href={ENQUIRY_URL} className="inline-flex min-h-12 items-center rounded-full border border-black/[.10] dark:border-white/[.12] bg-[color:var(--cosmos-surface)] px-5 text-sm font-black">Ask about availability</a>
@@ -101,7 +101,7 @@ export default function OtyaPointPage() {
           <div>
             <div className="otya-kicker">Visit us</div>
             <h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">Find us in Mbirizi.</h2>
-            <p className="mt-4 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">OtyaPoint is in the Old Market area of Mbirizi, Lwengo District, Uganda. The map link opens the Old Market area as a landmark; it is not a verified door-to-door pin.</p>
+            <p className="mt-4 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">Opoint is in the Old Market area of Mbirizi, Lwengo District, Uganda. The map link opens the Old Market area as a landmark; it is not a verified door-to-door pin.</p>
             <div className="mt-6 rounded-[24px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-5 sm:p-6">
               <div className="text-xs font-black uppercase tracking-[.12em] otya-muted">Shop location</div>
               <p className="mt-2 text-lg font-black">Old Market area</p>
@@ -124,7 +124,7 @@ export default function OtyaPointPage() {
           <div>
             <div className="otya-kicker">A physical-shop experience</div>
             <h2 className="mt-3 text-2xl sm:text-4xl font-black tracking-[-.05em]">This website helps you visit. It does not take online orders.</h2>
-            <p className="mt-4 max-w-[760px] text-sm sm:text-base leading-7 otya-muted">Browse the services, check the location and ask about availability. Purchases and mobile-money agency services are handled in person at OtyaPoint. There is no online cart, checkout or online payment on this site.</p>
+            <p className="mt-4 max-w-[760px] text-sm sm:text-base leading-7 otya-muted">Browse the services, check the location and ask about availability. Purchases and mobile-money agency services are handled in person at Opoint. There is no online cart, checkout or online payment on this site.</p>
           </div>
           <Link href="/apps" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/[.10] dark:border-white/[.12] px-5 text-sm font-black">Explore Otya products</Link>
         </div>
