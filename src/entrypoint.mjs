@@ -5,7 +5,7 @@ export { OtyaReleaseWorkflow } from './release-workflow.mjs'
 
 const HEALTH_CHECK_CRON = '*/5 * * * *'
 const HEALTH_INCIDENT_KEY = 'monitor:health:incident:v2'
-const HEALTH_PATHS = ['/', '/download/otya-player', '/api/version', '/latest']
+const HEALTH_PATHS = ['/', '/download/omy-play', '/api/omy-play/latest']
 const OTYA_NOREPLY_EMAIL = 'noreply@otya.site'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
@@ -102,9 +102,9 @@ async function runProductionHealthCheck(env,ctx){
   }
 
   results.push(await checkPrivateService(
-    'otya-id',
+    'oid',
     env.AUTH,
-    new Request('https://otya-id/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://oid/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([401]),
   ))
   results.push(await checkPrivateService(
