@@ -3,6 +3,7 @@ main = "src/scheduled-entry.mjs"
 compatibility_date = "2026-11-11"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = false
+tags = ["O", "owner-workspace", "production"]
 [observability]
 enabled = true
 redact_query_string = true
@@ -56,7 +57,7 @@ max_retries = 3
 dead_letter_queue = "o-jobs-dlq"
 [[services]]
 binding = "AUTH"
-service = "otya-id"
+service = "oid"
 [[services]]
 binding = "CORE"
-service = "otya-end"
+service = "oend"
