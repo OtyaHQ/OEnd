@@ -1,3 +1,5 @@
+import { coreRequest } from './core-client.mjs'
+
 const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast'
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
@@ -29,57 +31,35 @@ async function runAi(env, messages, model = DEFAULT_MODEL) {
 async function categorizeFeedback(msg, env) {
   const description = clean(msg.description, 1200)
   if (!msg.feedbackId || !description) return
-  let sentiment = 'NEUTRAL'
-  let category = 'complaint'
+  let sentiment = 'neutral'
+  let category = 'other'
   try {
     const result = await env.AI.run('@cf/huggingface/distilbert-sst-2-int8', { text: description.slice(0, 512) })
     const top = Array.isArray(result) ? [...result].sort((a, b) => b.score - a.score)[0] : null
-    if (top) sentiment = top.label === 'POSITIVE' ? 'POSITIVE' : 'NEGATIVE'
-  } catch (error) {
-    console.error('[ai] sentiment failed:', error?.message)
-  }
+    if (top) sentiment = top.label === 'POSITIVE' ? 'positive' : 'negative'
+  } catch (error) { console.error('[ai] sentiment failed:', error?.message) }
   try {
     const output = parseJson(await runAi(env, [
-      {
-        role: 'system',
-        content: 'Classify feedback as exactly one of bug, feature_request, complaint, praise, crash_report. Return JSON {"category":"value"} only.',
-      },
+      { role: 'system', content: 'Classify feedback as exactly one of bug, feature_request, support, billing, performance, complaint, praise, crash_report, other. Return JSON {"category":"value"} only.' },
       { role: 'user', content: description },
     ]))
-    if (['bug', 'feature_request', 'complaint', 'praise', 'crash_report'].includes(output?.category)) {
-      category = output.category
-    }
-  } catch (error) {
-    console.error('[ai] category failed:', error?.message)
-  }
-  await env.DB.prepare(
-    'UPDATE feedback SET category = ?, sentiment = ?, ai_processed = 1 WHERE id = ?',
-  ).bind(category, sentiment, msg.feedbackId).run()
+    if (['bug','feature_request','support','billing','performance','complaint','praise','crash_report','other'].includes(output?.category)) category = output.category
+  } catch (error) { console.error('[ai] category failed:', error?.message) }
+  await coreRequest(env, 'feedback/classify', { method: 'POST', body: { feedbackId: msg.feedbackId, category } })
+  await env.DB.prepare('INSERT INTO ai_feedback_annotations(feedback_id,category,sentiment,updated_at) VALUES(?1,?2,?3,CURRENT_TIMESTAMP) ON CONFLICT(feedback_id) DO UPDATE SET category=excluded.category,sentiment=excluded.sentiment,updated_at=CURRENT_TIMESTAMP').bind(String(msg.feedbackId),category,sentiment).run()
 }
-
 async function moderateFeedback(msg, env) {
   if (!msg.feedbackId || !msg.description) return
   let flagged = 0
   try {
     const output = parseJson(await runAi(env, [
-      {
-        role: 'system',
-        content: 'Moderate user feedback for spam, threats, harassment, hate or unsafe content. Return JSON only: {"flagged":true|false}.',
-      },
+      { role: 'system', content: 'Moderate user feedback for spam, threats, harassment, hate or unsafe content. Return JSON only: {"flagged":true|false}.' },
       { role: 'user', content: clean(msg.description, 1200) },
     ]))
     flagged = output?.flagged === true ? 1 : 0
-  } catch (error) {
-    console.error('[ai] moderation failed:', error?.message)
-  }
-  try {
-    await env.DB.prepare('UPDATE feedback SET ai_flagged = ? WHERE id = ?')
-      .bind(flagged, msg.feedbackId).run()
-  } catch (error) {
-    console.warn('[ai] ai_flagged column unavailable:', error?.message)
-  }
+  } catch (error) { console.error('[ai] moderation failed:', error?.message) }
+  await env.DB.prepare('INSERT INTO ai_feedback_annotations(feedback_id,flagged,updated_at) VALUES(?1,?2,CURRENT_TIMESTAMP) ON CONFLICT(feedback_id) DO UPDATE SET flagged=excluded.flagged,updated_at=CURRENT_TIMESTAMP').bind(String(msg.feedbackId),flagged).run()
 }
-
 function canonicalCrashText(msg) {
   return [msg.errorType, msg.description, msg.stackTrace]
     .filter(Boolean)
@@ -102,12 +82,7 @@ async function deterministicCrashGroup(msg) {
 
 async function processCrash(msg, env) {
   if (!msg.crashId) return
-  const text = clean(
-    [msg.errorType, msg.description, msg.stackTrace].filter(Boolean).join('\n'),
-    1400,
-  )
-  // A deterministic local fingerprint keeps identical crashes grouped even
-  // when Vectorize is absent, delayed, or temporarily unavailable.
+  const text = clean([msg.errorType, msg.description, msg.stackTrace].filter(Boolean).join('\n'), 1400)
   let groupId = await deterministicCrashGroup(msg)
   if (env.VECTORIZE?.query && text) {
     try {
@@ -116,77 +91,47 @@ async function processCrash(msg, env) {
       if (Array.isArray(vector)) {
         const match = (await env.VECTORIZE.query(vector, { topK: 3 }))?.matches?.[0]
         if (match?.score > 0.85) groupId = String(match.metadata?.groupId ?? match.id)
-        await env.VECTORIZE.upsert([{
-          id: String(msg.crashId),
-          values: vector,
-          metadata: { groupId, errorType: msg.errorType ?? 'unknown' },
-        }])
+        await env.VECTORIZE.upsert([{ id: String(msg.crashId), values: vector, metadata: { groupId, errorType: msg.errorType ?? 'unknown' } }])
       }
-    } catch (error) {
-      console.error('[ai] crash vector failed:', error?.message)
-    }
+    } catch (error) { console.error('[ai] crash vector failed:', error?.message) }
   }
-  await env.DB.prepare(
-    'UPDATE crash_reports SET group_id = ?, ai_processed = 1 WHERE id = ?',
-  ).bind(groupId, msg.crashId).run()
+  const summary = clean(text, 500)
+  await coreRequest(env, 'crashes/group', { method: 'POST', body: { reportId: msg.crashId, group: groupId } })
+  await env.DB.prepare('INSERT INTO ai_crash_annotations(crash_id,group_id,summary,updated_at) VALUES(?1,?2,?3,CURRENT_TIMESTAMP) ON CONFLICT(crash_id) DO UPDATE SET group_id=excluded.group_id,summary=excluded.summary,updated_at=CURRENT_TIMESTAMP').bind(String(msg.crashId),groupId,summary).run()
 }
-
 async function generateChangelog(msg, env) {
   if (!msg.tag) return
   const commits = Array.isArray(msg.commits) ? msg.commits.slice(0, 50) : []
-  let changelog = commits.map(commit => `- ${clean(commit, 300)}`).join('\n') || '- No changes recorded.'
+  let changelog = commits.map(commit => '- ' + clean(commit, 300)).join('\n') || '- No changes recorded.'
   try {
     const result = await runAi(env, [
-      {
-        role: 'system',
-        content: 'Convert git commit messages into a concise user-facing Markdown changelog grouped under Bug Fixes, New Features and Improvements. Do not invent changes.',
-      },
+      { role: 'system', content: 'Convert git commit messages into a concise user-facing Markdown changelog grouped under Bug Fixes, New Features and Improvements. Do not invent changes.' },
       { role: 'user', content: commits.join('\n') },
     ])
     if (result.length > 20) changelog = result
-  } catch (error) {
-    console.error('[ai] changelog failed:', error?.message)
-  }
-  await env.DB.prepare('UPDATE releases SET changelog = ? WHERE tag = ?')
-    .bind(changelog, msg.tag).run()
+  } catch (error) { console.error('[ai] changelog failed:', error?.message) }
+  await coreRequest(env, 'releases/changelog', { method: 'POST', body: { tag: msg.tag, changelog } })
 }
-
 async function analyzeAnomaly(_msg, env) {
-  const { results = [] } = await env.DB.prepare(
-    "SELECT strftime('%Y-%m-%d %H:00', created_at) hour, COUNT(*) count FROM downloads WHERE created_at >= datetime('now','-24 hours') GROUP BY hour ORDER BY hour",
-  ).all()
-  if (!results.length) return
+  const result = await coreRequest(env, 'downloads/hourly')
+  const rows = Array.isArray(result.items) ? result.items : []
+  if (!rows.length) return
   try {
     const output = parseJson(await runAi(env, [
-      {
-        role: 'system',
-        content: 'Analyze hourly download counts for abnormal spikes or bot patterns. Return JSON only: {"anomaly":true|false,"reason":"brief"}.',
-      },
-      { role: 'user', content: results.map(row => `${row.hour}: ${row.count}`).join('\n') },
+      { role: 'system', content: 'Analyze hourly download counts for abnormal spikes or bot patterns. Return JSON only: {"anomaly":true|false,"reason":"brief"}.' },
+      { role: 'user', content: rows.map(row => row.hour + ': ' + row.count).join('\n') },
     ]))
     if (output?.anomaly) console.warn('[ai] download anomaly:', clean(output.reason, 500))
-  } catch (error) {
-    console.error('[ai] anomaly failed:', error?.message)
-  }
+  } catch (error) { console.error('[ai] anomaly failed:', error?.message) }
 }
-
 async function smartReply(msg, env) {
   if (!msg.feedbackId || !msg.description) return
   const reply = await runAi(env, [
-    {
-      role: 'system',
-      content: 'Draft a concise, empathetic Otya support reply. Never claim a fix or account action unless provided. Never request passwords or OTPs.',
-    },
+    { role: 'system', content: 'Draft a concise, empathetic Otya support reply. Never claim a fix or account action unless provided. Never request passwords or OTPs.' },
     { role: 'user', content: clean(msg.description, 1200) },
   ])
-  try {
-    await env.DB.prepare('UPDATE feedback SET ai_suggested_reply = ? WHERE id = ?')
-      .bind(reply, msg.feedbackId).run()
-  } catch (error) {
-    console.warn('[ai] suggested reply column unavailable:', error?.message)
-  }
+  await env.DB.prepare('INSERT INTO ai_feedback_annotations(feedback_id,suggested_reply,updated_at) VALUES(?1,?2,CURRENT_TIMESTAMP) ON CONFLICT(feedback_id) DO UPDATE SET suggested_reply=excluded.suggested_reply,updated_at=CURRENT_TIMESTAMP').bind(String(msg.feedbackId),clean(reply,1200)).run()
 }
-
 async function predictChurn(msg, env) {
   if (!msg.userId) return
   const summary = clean(msg.summary || msg.signals || '', 1600)
@@ -229,7 +174,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url)
     if (url.pathname === '/' || url.pathname === '/health') {
-      return json({ ok: true, service: 'otya-ai', ai: Boolean(env.AI?.run) })
+      return json({ ok: true, service: 'O', ai: Boolean(env.AI?.run) })
     }
     return json({ error: 'Not found' }, 404)
   },
