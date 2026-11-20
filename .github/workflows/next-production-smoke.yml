@@ -1,4 +1,4 @@
-name: OTYA Next Production Smoke
+name: OTYA O Production Smoke
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: otya-next-production-smoke
+  group: o-production-smoke
   cancel-in-progress: true
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:
-      - name: Verify Next service catalog through OTYA core
+      - name: Verify O service catalog through OTYA core
         shell: bash
         run: |
           set -euo pipefail
@@ -27,7 +27,7 @@ jobs:
           grep -q '"models"' "$response"
           grep -q '"guest_model"' "$response"
 
-      - name: Verify Next can generate a live response
+      - name: Verify O can generate a live response
         shell: bash
         run: |
           set -euo pipefail
