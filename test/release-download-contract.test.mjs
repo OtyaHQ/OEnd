@@ -7,19 +7,19 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 test('generic release downloads never silently select ARM64', () => {
   const latest = read('src/app/latest/route.ts')
   const workflow = read('src/release-workflow.mjs')
-  const downloadPage = read('src/app/download/otya-player/DownloadButtons.tsx')
+  const downloadPage = read('src/app/download/omy-play/DownloadButtons.tsx')
 
-  assert.match(latest, /const DOWNLOAD_PAGE = 'https:\/\/otya\.site\/download\/otya-player'/)
+  assert.match(latest, /const DOWNLOAD_PAGE = 'https:\/\/otya\.site\/download\/omy-play'/)
   assert.match(latest, /auto:\s+DOWNLOAD_PAGE/)
   assert.doesNotMatch(latest, /auto:\s+ARM64_APK/)
 
-  assert.match(workflow, /auto: `\$\{release\.workerUrl\}\/download\/otya-player`/)
+  assert.match(workflow, /auto: `\$\{release\.workerUrl\}\/download\/omy-play`/)
   assert.match(workflow, /arm64: `\$\{release\.workerUrl\}\/apk\/arm64`/)
   assert.match(workflow, /arm32: `\$\{release\.workerUrl\}\/apk\/arm32`/)
 
   assert.match(downloadPage, /return \{isAndroid:true,abi:'unknown'\}/)
   assert.match(downloadPage, /Choose your Android build/)
-  assert.match(downloadPage, /Otya Media will not guess/)
+  assert.match(downloadPage, /Omy Play will not guess/)
   assert.match(downloadPage, /download\('arm64'\)/)
   assert.match(downloadPage, /download\('arm32'\)/)
   assert.doesNotMatch(downloadPage, /\/android\/i\.test\(ua\) \? 'arm64' : 'unknown'/)
@@ -59,7 +59,7 @@ test('missing immutable APKs fail closed instead of redirecting an updater to HT
   assert.match(route, /'X-Content-Type-Options': 'nosniff'/)
 
   const exactFailure = route.indexOf('if (tag || version)')
-  const humanFallback = route.indexOf("return NextResponse.redirect(\n        'https://otya.site/download/otya-player'")
+  const humanFallback = route.indexOf("return NextResponse.redirect(\n        'https://otya.site/download/omy-play'")
   assert.ok(exactFailure >= 0, 'exact missing-release guard must exist')
   assert.ok(humanFallback > exactFailure, 'HTML redirect must only remain after exact-release failure handling')
 })
