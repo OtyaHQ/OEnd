@@ -1,6 +1,6 @@
 # Otya End
 
-**Otya End** is the shared backend and integration layer for **Otya OS** and its connected products.
+**OEnd** is the shared backend and integration layer for **Otya OS** and its connected products.
 
 It provides reusable server-side identity, product-scoped APIs, integrations, delivery services, audit and operational capabilities. It is one shared backend—not a reason to merge every product's private data into one database.
 
@@ -17,11 +17,11 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 
 ## Shared responsibilities
 
-- Otya identity, session and account-security services.
+- OID identity, session and account-security services.
 - Server-side authorization and product-scoped service contracts.
 - Transactional email through the existing Resend integration.
 - Omy Play release delivery and supporting APIs.
-- Otya Next owner intelligence, support, incidents and approved actions.
+- O owner intelligence, support, incidents and approved actions.
 - Secure recovery, audit trails, monitoring and operational readiness.
 - Private service-to-service integration between ecosystem products.
 
@@ -41,10 +41,10 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 
 | Runtime | Responsibility |
 |---|---|
-| `otya-auth` | Shared identity, account security and Resend transport |
-| `otya-core` | Shared product APIs, release/notification transport and backend routing |
-| `otya-next` | Owner intelligence, scheduled operations and AI workflows |
-| OPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
+| `oid` | OID identity, account security and Resend transport |
+| `oend` | OEnd shared APIs, product gateways, notifications and integrations |
+| `o` | O private owner assistant, scheduled operations and AI workflows |
+| `opoint` | Opoint retail, inventory and agency operations, isolated from shared account data |
 
 These names describe separate runtime responsibilities; they are not duplicate backends. Do not add another Worker or database for a capability already owned by one of these services without a concrete isolation or scaling reason.
 
@@ -68,4 +68,4 @@ Report vulnerabilities privately through [SECURITY.md](SECURITY.md). This reposi
 
 ---
 
-**Otya End · Otya OS**
+**OEnd · Otya OS**
