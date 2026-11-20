@@ -38,7 +38,7 @@ binding = "AI"
 binding = "BROWSER"
 [[ai_search]]
 binding = "AI_SEARCH"
-instance_name = "otya-knowledge"
+instance_name = "o-knowledge"
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
 dataset = "o-analytics"
