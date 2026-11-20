@@ -52,7 +52,7 @@ async function authenticateTogetherUser(request, env) {
   const controller = new AbortController()
   const deadline = setTimeout(() => controller.abort(), 5000)
   try {
-    const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/verify', {
+    const response = await env.AUTH.fetch(new Request('https://otya-id/auth/verify', {
       method: 'GET',
       headers: { Authorization: authorization },
       signal: controller.signal,
