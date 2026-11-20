@@ -200,7 +200,7 @@ async function handleOwnerEnrollmentWebhook(request, env) {
   let verified = false
   if (env.AUTH?.fetch && env.INTERNAL_SECRET) {
     try {
-      const response = await env.AUTH.fetch(new Request('https://otya-id/auth/admin/telegram-challenge/confirm', {
+      const response = await env.AUTH.fetch(new Request('https://oid/auth/admin/telegram-challenge/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
