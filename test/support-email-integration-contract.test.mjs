@@ -19,7 +19,7 @@ test('O support inbox uses Cloudflare Email Routing into Gmail while Resend rema
     assert.ok(source.includes('listGmailMessages'))
     assert.ok(!source.includes('petersmartlink.com') && !source.includes('LEGACY_SUPPORT_ADDRESS'))
   }
-  assert.ok(support.includes('to:\${SUPPORT_ADDRESS} in:inbox'))
+  assert.ok(support.includes('to:${SUPPORT_ADDRESS} in:inbox'))
   assert.ok(support.includes("resend(env,'/emails'"))
   assert.ok(consoleTools.includes('to:support@otya.site in:inbox'))
   assert.ok(scheduled.includes('to:support@otya.site in:inbox'))
