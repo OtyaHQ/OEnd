@@ -9,7 +9,7 @@ test('full validation remains mandatory before production authorization and plan
   assert.match(workflow, /authorize-deploy:[\s\S]*needs: validate/)
   assert.match(workflow, /plan-deploy:[\s\S]*needs: \[validate, authorize-deploy\]/)
   assert.match(workflow, /Validate auth worker/)
-  assert.match(workflow, /Validate Next worker/)
+  assert.match(workflow, /Validate O worker/)
 })
 
 test('runtime deployment is selected explicitly instead of inferred from pushed paths', () => {
