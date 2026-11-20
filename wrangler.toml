@@ -52,7 +52,7 @@ bucket_name = "otya-player-releases"
 
 [[kv_namespaces]]
 binding = "KV"
-id      = "3f179286e0fc4dbfa2332884cdf81312"
+id      = "ce06178c9b7a43bd868e3119094d8d0c"
 
 [[d1_databases]]
 binding       = "DB"
