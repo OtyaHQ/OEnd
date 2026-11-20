@@ -74,7 +74,7 @@ export default function ConnectionsClient() {
 
       <article className="rounded-2xl border p-5" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>
         <div className="flex items-center justify-between gap-3"><h3 className="font-black">Support Gmail</h3><span className="text-xs font-bold">{loading ? 'Checking…' : gmailConnected ? 'Connected' : gmailReady ? 'Ready to connect' : 'Setup required'}</span></div>
-        <p className="mt-2 text-sm leading-6 otya-muted">Reads mail forwarded from support@otya.site and the legacy support alias for the private Next support inbox. Sending remains approval-gated.</p>
+        <p className="mt-2 text-sm leading-6 otya-muted">Reads mail forwarded to support@otya.site for the private O support inbox. Sending remains approval-gated.</p>
         {gmailConnected ? <p className="mt-3 text-xs otya-muted">Connected{status.gmail?.email ? ` as ${status.gmail.email}` : ''}.</p> : <button type="button" onClick={() => void connectGmail()} disabled={!gmailReady || busy || loading} className="cosmos-button mt-4 min-h-11 rounded-xl px-4 text-sm font-black disabled:opacity-50">{busy ? 'Opening Google…' : 'Connect Gmail'}</button>}
       </article>
     </div>
