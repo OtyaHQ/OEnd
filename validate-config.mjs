@@ -24,7 +24,7 @@ requireMatch('shared Worker must be oend', core, /^name\s*=\s*"oend"$/m)
 requireMatch('oend workers.dev must be disabled', core, /^workers_dev\s*=\s*false$/m)
 requireMatch('oend must redact query strings', core, /^redact_query_string\s*=\s*true$/m)
 for (const hostname of ['otya.site', 'www.otya.site', 'docs.otya.site', 'status.otya.site', 'space.otya.site', 'api.otya.site']) requireMatch(`canonical Otya hostname ${hostname}`, core, new RegExp(`pattern\\s*=\\s*"${hostname.replaceAll('.', '\\.') }"`))
-for (const binding of ['R2', 'KV', 'DB', 'ANALYTICS', 'OTYA_ANALYTICS', 'RATE_LIMITER', 'PUSH_QUEUE', 'AI_QUEUE', 'AUTH', 'AI_SUPPORT', 'OTYA_RELEASE_WORKFLOW']) requireMatch(`oend binding ${binding}`, core, new RegExp(`(?:binding|name)\\s*=\\s*"${binding}"`))
+for (const binding of ['R2', 'KV', 'DB', 'ANALYTICS', 'OTYA_ANALYTICS', 'RATE_LIMITER', 'PUSH_QUEUE', 'AI_QUEUE', 'AUTH', 'AI_SUPPORT', 'OPOINT_API', 'OMY_PLAY_API', 'OTYA_RELEASE_WORKFLOW']) requireMatch(`oend binding ${binding}`, core, new RegExp(`(?:binding|name)\\s*=\\s*"${binding}"`))
 requireMatch('oend Analytics Engine dataset', core, /^dataset\s*=\s*"oend-analytics"$/m)
 requireMatch('compatibility OTYA Analytics Engine dataset remains bound during migration', core, /^dataset\s*=\s*"oend_system_analytics"$/m)
 requireMatch('OEnd O service binding must target O', core, /binding\s*=\s*"AI_SUPPORT"[\s\S]*?service\s*=\s*"o"/m)
@@ -36,7 +36,7 @@ requireMatch('core deploy must pass the release-manifest secret from GitHub', de
 requireMatch('core deploy must store the release-manifest secret in Cloudflare', deploy, /wrangler secret put RELEASE_MANIFEST_HMAC_SECRET/)
 
 const router = read('src/production-router.mjs')
-forbidMatch('retired petersmartlink hostnames must not return', router, /petersmartlink\\.com|LEGACY_HOST_REDIRECTS/i)
+forbidMatch('retired petersmartlink hostnames must not return', router, /petersmartlink|LEGACY_HOST_REDIRECTS/i)
 requireMatch('Core public website must use otya.site', core, /^WEBSITE_URL\s*=\s*"https:\/\/otya\.site"$/m)
 
 requireMatch('physical v1 D1 name must remain unchanged during cutover', core, /^database_name\s*=\s*"otya-store-db"$/m)
