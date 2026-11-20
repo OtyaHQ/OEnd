@@ -72,10 +72,10 @@ database_id   = "ab157fc6-2cbb-4d46-9789-2e4392e16aea"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
-dataset = "otya-end-analytics"
+dataset = "oend-analytics"
 [[analytics_engine_datasets]]
 binding = "OTYA_ANALYTICS"
-dataset = "otya_end_system_analytics"
+dataset = "oend_system_analytics"
 
 [[unsafe.bindings]]
 type         = "ratelimit"
@@ -87,14 +87,14 @@ namespace_id = "1001"
 
 [[queues.producers]]
 binding = "PUSH_QUEUE"
-queue   = "otya-end-push"
+queue   = "oend-push"
 [[queues.consumers]]
-queue             = "otya-end-push"
+queue             = "oend-push"
 # Process one logical push at a time so one invocation cannot multiply direct
 # FCM fanout across a batch and exceed the Free Worker subrequest budget.
 max_batch_size    = 1
 max_retries       = 3
-dead_letter_queue = "otya-end-push-dlq"
+dead_letter_queue = "oend-push-dlq"
 
 [[queues.producers]]
 binding = "AI_QUEUE"
@@ -111,7 +111,7 @@ binding = "AI_SUPPORT"
 service = "o"
 
 [[workflows]]
-name = "otya-release"
+name = "oend-release"
 binding = "OTYA_RELEASE_WORKFLOW"
 class_name = "OtyaReleaseWorkflow"
 
