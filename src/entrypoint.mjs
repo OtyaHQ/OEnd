@@ -69,7 +69,7 @@ function writeRequestAnalytics(env,request,response,startedAt){if(!env.OTYA_ANAL
 async function readHealthIncident(env){try{return await env.KV?.get?.(HEALTH_INCIDENT_KEY)??null}catch{return null}}
 async function writeHealthIncident(env,value){try{await env.KV?.put?.(HEALTH_INCIDENT_KEY,value,{expirationTtl:86400})}catch{}}
 async function clearHealthIncident(env){try{await env.KV?.delete?.(HEALTH_INCIDENT_KEY)}catch{}}
-async function sendHealthEmail(env,subject,text){try{await env.EMAIL.send({from:{email:OTYA_NOREPLY_EMAIL,name:'OTYA Backend'},to:[{email:env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'}],subject,text})}catch(error){console.error('[health] Could not send Resend health notification:',error?.message??error)}}
+async function sendHealthEmail(env,subject,text){try{await env.EMAIL.send({from:{email:OTYA_NOREPLY_EMAIL,name:'OTYA Backend'},to:[{email:env.ADMIN_REPORT_EMAIL||'otyahq@gmail.com'}],subject,text})}catch(error){console.error('[health] Could not send Resend health notification:',error?.message??error)}}
 
 async function checkPrivateService(name,binding,request,healthyStatuses){
   const startedAt=Date.now()
@@ -85,7 +85,7 @@ async function checkPrivateService(name,binding,request,healthyStatuses){
 }
 
 async function runProductionHealthCheck(env,ctx){
-  const baseUrl=env.WEBSITE_URL||'https://petersmartlink.com'
+  const baseUrl=env.WEBSITE_URL||'https://otya.site'
   const results=[]
   for(const path of HEALTH_PATHS){
     const startedAt=Date.now()
