@@ -45,11 +45,12 @@ test('support inbox accepts both the current address and legacy alias', async ()
 })
 
 test('authentication replies use the current support address without moving legacy CORS yet', async () => {
-  const [auth, resend, invite, workflow] = await Promise.all([
+  const [auth, resend, invite, workflow, legacyAuth] = await Promise.all([
     read('../auth-worker/src/entrypoint.ts'),
     read('../auth-worker/src/resend.ts'),
     read('../auth-worker/src/production-entrypoint.ts'),
     read('../.github/workflows/deploy.yml'),
+    read('../auth-worker/src/index.ts'),
   ])
 
   assert.match(auth, /const OTYA_SUPPORT_EMAIL = 'support@otya\.site'/)
