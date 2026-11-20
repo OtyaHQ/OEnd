@@ -1,5 +1,5 @@
 /**
- * otya-auth — Cloudflare Worker
+ * oend-identity — Cloudflare Worker
  *
  * Handles all user authentication for the Otya ecosystem.
  * Called by the main otya-backend worker via Service Binding (env.AUTH).
@@ -126,11 +126,6 @@ const ALLOWED_ORIGINS = new Set([
   'https://otya.site',
   'https://www.otya.site',
   // Retain old-host CORS during the redirect and cookie transition.
-  'https://petersmartlink.com',
-  'https://www.petersmartlink.com',
-  'https://docs.petersmartlink.com',
-  'https://status.petersmartlink.com',
-  'https://space.petersmartlink.com',
 ])
 
 const PRIMARY_ORIGIN = 'https://otya.site'

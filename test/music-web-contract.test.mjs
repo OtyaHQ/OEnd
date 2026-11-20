@@ -9,9 +9,9 @@ test('Otya navigation uses the synced approved brand mark', () => {
   const mark = read('src/components/OtyaBrandMark.tsx')
   const sync = read('scripts/sync-brand-assets.mjs')
 
-  assert.match(nav, /Otya home — products and services/)
-  assert.doesNotMatch(nav, /PeterSmart Link/)
-  assert.match(nav, /\['Otya', '\/otya-player'\]/)
+  assert.ok(nav.includes("['Omy Play', '/omy-play']"))
+  assert.doesNotMatch(nav, /PeterSmart Link|Otya Media|Otya Player|otya-player/)
+  assert.ok(nav.includes("['Omy Play', '/omy-play']"))
   assert.match(mark, /otya-app-icon\.webp/)
   assert.doesNotMatch(mark, /otya-mark-current\.png|otya-icon\.svg|otya-icon-dark\.svg|otya-ai\.svg/)
   assert.match(sync, /assets\/branding\/otya_app_icon\.webp/)

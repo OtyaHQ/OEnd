@@ -9,7 +9,7 @@ test('full validation remains mandatory before production authorization and plan
   assert.match(workflow, /authorize-deploy:[\s\S]*needs: validate/)
   assert.match(workflow, /plan-deploy:[\s\S]*needs: \[validate, authorize-deploy\]/)
   assert.match(workflow, /Validate auth worker/)
-  assert.match(workflow, /Validate Next worker/)
+  assert.match(workflow, /Validate O worker/)
 })
 
 test('runtime deployment is selected explicitly instead of inferred from pushed paths', () => {
@@ -58,9 +58,9 @@ test('multi-component deploys remain ordered and fail closed', () => {
   assert.match(workflow, /needs\.deploy-otyapoint\.result == 'success' \|\| needs\.deploy-otyapoint\.result == 'skipped'/)
 })
 
-test('live verification covers canonical and legacy Otya download paths after an authorized deploy', () => {
-  assert.match(workflow, /https:\/\/otya\.site\/download\/otya /)
-  assert.match(workflow, /https:\/\/otya\.site\/download\/otya-player /)
+test('live verification covers canonical Omy Play and Opoint routes after an authorized deploy', () => {
+  assert.match(workflow, /https:\/\/otya\.site\/download\/omy-play /)
+  assert.match(workflow, /https:\/\/otya\.site\/omy-play /)
   assert.match(workflow, /needs\.plan-deploy\.outputs\.any_runtime == 'true'/)
   assert.match(workflow, /needs\.validate\.result == 'success'/)
   assert.match(workflow, /needs\.authorize-deploy\.result == 'success'/)

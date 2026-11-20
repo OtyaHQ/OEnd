@@ -49,15 +49,15 @@ function withAiGateway(env){
 async function email(env,subject,text,idempotencyKey){
   if(!env.AUTH?.fetch)throw new Error('Shared Otya Auth email service is unavailable')
   const serviceToken=String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN||'')
-  if(serviceToken.length<32)throw new Error('OTYA_NEXT_MAIL_SERVICE_TOKEN is not configured on otya-next')
+  if(serviceToken.length<32)throw new Error('OTYA_NEXT_MAIL_SERVICE_TOKEN is not configured on o')
   if(typeof idempotencyKey!=='string'||!idempotencyKey.trim()||idempotencyKey.length>256){
     throw new Error('A stable email idempotency key is required')
   }
-  const response=await env.AUTH.fetch(new Request('https://auth/internal/notifications/otya-next/ops-report',{
+  const response=await env.AUTH.fetch(new Request('https://auth/internal/notifications/o/ops-report',{
     method:'POST',
     headers:{
       'content-type':'application/json',
-      'x-otya-service':'otya-next',
+      'x-otya-service':'o',
       'x-otya-service-token':serviceToken,
     },
     body:JSON.stringify({subject,text,idempotencyKey}),
@@ -84,7 +84,7 @@ async function rows(env,sql,bindings=[]){
 async function supportInbox(env,limit=8){
   if(!(await gmailStatus(env)).connected)return[]
   try{
-    const messages=await listGmailMessages(env,'to:{support@otya.site support@petersmartlink.com} in:inbox',Math.max(1,Math.min(limit,20)))
+    const messages=await listGmailMessages(env,'to:support@otya.site in:inbox',Math.max(1,Math.min(limit,20)))
     return messages.map(x=>({from:clean(x.from,180),subject:clean(x.subject,220),created_at:x.date,provider:'gmail'}))
   }catch{return[]}
 }
@@ -162,7 +162,7 @@ async function daily(env,scheduledTime=Date.now()){
     env,
     `Otya · Morning operations · ${date}`,
     [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'),
-    `otya-next/daily-operations/${dateKey}`,
+    `o/daily-operations/${dateKey}`,
   )
 }
 
@@ -176,7 +176,7 @@ async function weekly(env,scheduledTime=Date.now()){
     env,
     `Otya · Weekly review · ${date}`,
     [summary||rawFallback(snapshot),'',`Generated ${snapshot.generated_at}`].join('\n'),
-    `otya-next/weekly-operations/${dateKey}`,
+    `o/weekly-operations/${dateKey}`,
   )
 }
 
@@ -242,7 +242,7 @@ async function urgent(env,scheduledTime=Date.now()){
     '',
     'Review the Otya Console before taking any destructive or customer-facing action.',
     `Generated ${new Date(scheduledTime).toISOString()}`,
-  ].join('\n'),`otya-next/crash-alert/${hour}`)
+  ].join('\n'),`o/crash-alert/${hour}`)
   if(env.KV)await env.KV.put(key,'1',{expirationTtl:7200})
 }
 

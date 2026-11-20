@@ -5,13 +5,13 @@ import { readFileSync } from 'node:fs'
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
 test('live APK routes enforce active abuse controls and cache latest builds briefly', () => {
-  const route = read('src/app/apk/[file]/route.ts')
-  assert.match(route, /RATE_LIMITER/)
-  assert.match(route, /blocked:\$\{ip\}/)
-  assert.match(route, /Retry-After/)
-  assert.match(route, /public, max-age=300, must-revalidate/)
-  assert.match(route, /public, max-age=31536000, immutable/)
-  assert.doesNotMatch(route, /headers\.set\('Cache-Control', 'public, max-age=3600'\)/)
+  const route = read('src/app/api/omy-play/[...path]/route.ts')
+  assert.match(route, /OMY_PLAY_API/)
+  assert.match(route, /ALLOWED_PATHS/)
+  assert.match(route, /same_origin_required/)
+  assert.match(route, /private, no-store/)
+  assert.match(route, /X-Content-Type-Options/)
+  assert.doesNotMatch(route, /Access-Control-Allow-Origin/)
 })
 
 test('production Google audience verification is bounded', () => {
@@ -30,13 +30,13 @@ test('push queue bounds upstream calls and avoids whole-broadcast replay after p
   assert.match(queue, /were not replayed because/)
 })
 
-test('production health checks include private auth and Next service bindings', () => {
+test('production health checks include OEnd identity and O service bindings', () => {
   const entry = read('src/entrypoint.mjs')
   assert.match(entry, /service:\$\{name\}/)
-  assert.match(entry, /'otya-auth'/)
-  assert.match(entry, /'otya-next'/)
-  assert.match(entry, /https:\/\/otya-auth\/auth\/me/)
-  assert.match(entry, /https:\/\/otya-next\/health/)
+  assert.match(entry, /'oend-identity'/)
+  assert.match(entry, /'o'/)
+  assert.match(entry, /https:\/\/oend-identity\/auth\/me/)
+  assert.match(entry, /https:\/\/o\/health/)
   assert.match(entry, /SERVICE_HEALTH_TIMEOUT_MS = 5000/)
 })
 

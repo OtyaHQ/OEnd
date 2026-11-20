@@ -71,17 +71,17 @@ async function publicOtyaContext(env){
   const facts=[
     'Otya Media is an offline-first Android media app in the Otya ecosystem.',
     'Otya has three permanent top-level destinations: Video, Music and Me. Advanced utilities should appear contextually or under organized Tools/Settings rather than as duplicate top-level screens.',
-    'Next is the friendly general assistant inside Otya. It can answer ordinary questions and has extra Otya product context when needed.',
+    'O is the friendly general assistant inside Otya. It can answer ordinary questions and has extra Otya product context when needed.',
     `Official website: ${base}.`,
-    `Official Next page: ${base}/ask.`,
+    `Official O page: ${base}/ask.`,
     `Official download page: ${base}/download/otya-player.`,
     `Official support page: ${base}/apps/otya-player/support.`,
     `Official Telegram: ${env.TELEGRAM_CHANNEL_URL||'https://t.me/otyaplayer'}.`,
     'Local playback, media scanning, local search and supported local transfer must keep working without signing in, Firebase or AI.',
     'Otya Music is local-first: songs, albums, artists, folders and playlists come from media already on the Android device.',
     'The built-in Online Music and Jamendo provider integration has been retired. Do not direct users to a Jamendo catalog, provider login, provider download action or Online Music screen.',
-    'Global Otya search must not contact a music-provider catalog while the user types. It searches local media/groups/playlists and can offer Otya help; Next is optional when the user explicitly asks.',
-    'If Cloudflare, Firebase or Next is unavailable, that must not make local music/video playback or local Search look broken.',
+    'Global Otya search must not contact a music-provider catalog while the user types. It searches local media/groups/playlists and can offer Otya help; O is optional when the user explicitly asks.',
+    'If Cloudflare, Firebase or O is unavailable, that must not make local music/video playback or local Search look broken.',
     'New audio and video received or downloaded on the phone should appear in the normal Music or Video library after scanning.',
   ]
   try{
@@ -102,15 +102,15 @@ async function publicOtyaContext(env){
 
 async function system(env){
   const live=await publicOtyaContext(env)
-  return `${CONVERSATION_TONE} You are Next, a friendly general-purpose AI assistant built into Otya.
+  return `${CONVERSATION_TONE} You are O, a friendly general-purpose AI assistant built into Otya.
 
 GENERAL BEHAVIOR: Answer the user's question directly, whether it is about Otya or a general topic. Be conversational, useful and concise by default. Explain more when the question needs it. Do not pretend you have live web access, current news, private account access, device access, or external tools unless the backend has explicitly supplied that information in the conversation or live context. For time-sensitive facts you cannot verify, say that they may have changed instead of inventing an answer.
 
-OTYA EXPERTISE: When the request concerns Otya, music/video playback, media library, files, Transfer, Converter, Private/vault, Tools, personalization/themes, storage, permissions, updates, downloads, account, security, backup, website, support, or release information, use the live Otya facts below and give product-specific guidance. Preserve Otya's offline-first hierarchy: local media and local Search are primary; Next and account/cloud services are optional enhancements. Online Music/Jamendo is retired and must not be presented as a current Otya feature. Never invent an Otya feature or claim an Otya/device/provider/account action happened unless the backend confirms it.
+OTYA EXPERTISE: When the request concerns Otya, music/video playback, media library, files, Transfer, Converter, Private/vault, Tools, personalization/themes, storage, permissions, updates, downloads, account, security, backup, website, support, or release information, use the live Otya facts below and give product-specific guidance. Preserve Otya's offline-first hierarchy: local media and local Search are primary; O and account/cloud services are optional enhancements. Online Music/Jamendo is retired and must not be presented as a current Otya feature. Never invent an Otya feature or claim an Otya/device/provider/account action happened unless the backend confirms it.
 
 HUMAN SUPPORT: Use the exact prefix [HANDOFF] on the first line only when the user explicitly asks for a human/support agent, or when an Otya account/support problem genuinely requires a human to continue. Do not use [HANDOFF] merely because a question is unrelated to Otya. Do not claim support has been notified until the backend confirms a handoff request.
 
-SAFETY & PRIVACY: Never request or expose passwords, OTPs, JWTs, API keys, private keys, payment credentials, provider refresh tokens, or admin-only data. Public Next cannot see the private Admin Assistant, admin email, GitHub, Cloudflare, private customer lists, or private support data. Refuse unsafe requests when necessary and offer a safer direction when useful.
+SAFETY & PRIVACY: Never request or expose passwords, OTPs, JWTs, API keys, private keys, payment credentials, provider refresh tokens, or admin-only data. Public O cannot see the private Admin Assistant, admin email, GitHub, Cloudflare, private customer lists, or private support data. Refuse unsafe requests when necessary and offer a safer direction when useful.
 
 LIVE OTYA CONTEXT:\n${live}`
 }
@@ -201,14 +201,14 @@ export async function handleSharedTelegram(request,env){
   if(!(await rate(env,key,45,60))){await telegram(env,'sendMessage',{chat_id:chatId,text:'Too many messages at once. Please wait a moment.'});return json({ok:true,rate_limited:true})}
   const selection=resolveModel(env,null,false)
   let answer
-  if(text==='/start')answer='Welcome to Next by Otya. Ask me a general question or ask about Otya playback, local music, files, Transfer, account, updates and troubleshooting.'
+  if(text==='/start')answer='Welcome to O by Otya. Ask me a general question or ask about Otya playback, local music, files, Transfer, account, updates and troubleshooting.'
   else if(text==='/download')answer=`Official Otya download: ${(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')}/download/otya-player`
   else if(text==='/privacy')answer='Never send passwords, OTPs, payment details or secret keys here.'
   else{
     try{
       const result=await temporaryReply(env,{message:text,selection})
       answer=result.handoff_available?`${result.answer}\n\nFor human Otya help, use the official support page: ${(env.WEBSITE_URL||'https://otya.site').replace(/\/$/,'')}/apps/otya-player/support`:result.answer
-    }catch(e){console.error('[telegram-shared]',e?.message);answer='Next is unavailable right now. Please try again shortly.'}
+    }catch(e){console.error('[telegram-shared]',e?.message);answer='O is unavailable right now. Please try again shortly.'}
   }
   await telegram(env,'sendMessage',{chat_id:chatId,text:clean(answer,3500),disable_web_page_preview:true})
   return json({ok:true})
@@ -266,6 +266,6 @@ export async function handlePublicChat(request,env){
     return json({ok:true,...result,scope:'general',quota:unlimitedStatus()})
   }catch(e){
     console.error('[public-ai]',selection.id,e?.message)
-    return json({error:'Next is unavailable right now. Please try again shortly.'},503)
+    return json({error:'O is unavailable right now. Please try again shortly.'},503)
   }
 }

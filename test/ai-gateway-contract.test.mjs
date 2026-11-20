@@ -8,9 +8,9 @@ test('Next routes every runtime surface through the named AI Gateway wrapper', (
   const wrangler = read('ai-worker/wrangler.toml')
   const entry = read('ai-worker/src/scheduled-entry.mjs')
 
-  assert.match(wrangler, /^name\s*=\s*"otya-next"$/m)
+  assert.match(wrangler, /^name\s*=\s*"o"$/m)
   assert.match(wrangler, /^main\s*=\s*"src\/scheduled-entry\.mjs"$/m)
-  assert.match(wrangler, /^AI_GATEWAY_ID\s*=\s*"otya-next-gateway"$/m)
+  assert.match(wrangler, /^AI_GATEWAY_ID\s*=\s*"o-gateway"$/m)
 
   assert.match(entry, /function withAiGateway\(env\)/)
   assert.match(entry, /gatewayId=String\(env\.AI_GATEWAY_ID/)

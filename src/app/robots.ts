@@ -16,7 +16,7 @@ export default function robots(): MetadataRoute.Robots {
           '/auth/',
           '/apk/',
           '/apps/played',
-          '/apps/otya-player/changelog',
+          '/apps/omy-play/changelog',
         ],
       },
     ],

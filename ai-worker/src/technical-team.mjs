@@ -1,5 +1,5 @@
 /**
- * Advisory specialist routing for the existing Otya Next owner assistant.
+ * Advisory specialist routing for the existing O owner assistant.
  *
  * These are logical roles in one runtime, not separate paid agents or
  * services. Routing never grants permissions; all data access and writes

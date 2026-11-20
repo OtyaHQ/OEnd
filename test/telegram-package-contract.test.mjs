@@ -28,7 +28,7 @@ test('Telegram credentials stay in the centralized Cloudflare Secrets Store', ()
   assert.doesNotMatch(authConfig, /TELEGRAM_MINIAPP_BOT_TOKEN\s*=\s*"[^"\n]+"/)
 })
 
-test('otya-core is the only public Telegram webhook gateway', () => {
+test('oend is the only public Telegram webhook gateway', () => {
   assert.match(core, /url\.pathname === '\/api\/telegram\/webhook'/)
   assert.match(core, /url\.pathname\.startsWith\('\/api\/telegram\/'\).*404/s)
   assert.match(bot, /X-Telegram-Bot-Api-Secret-Token/)

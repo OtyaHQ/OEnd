@@ -53,7 +53,7 @@ export async function controlPlaneStatus(env) {
       safety_config: 'cloudflare',
       client_experiments: 'firebase-remote-config-with-cloudflare-fallback',
       push_transport: 'firebase-fcm',
-      session_authority: 'otya-auth-cloudflare',
+      session_authority: 'oend-identity-cloudflare',
       otp_email: 'cloudflare-resend',
     },
   }

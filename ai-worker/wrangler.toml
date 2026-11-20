@@ -1,4 +1,4 @@
-name = "otya-next"
+name = "o"
 main = "src/scheduled-entry.mjs"
 compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
@@ -20,13 +20,13 @@ enabled = true
 
 [vars]
 ENVIRONMENT = "production"
-APP_NAME = "Otya Next"
+APP_NAME = "O"
 WEBSITE_URL = "https://otya.site"
 ADMIN_REPORT_EMAIL = "otyahq@gmail.com"
 ADMIN_CRASH_ALERT_THRESHOLD = "5"
 TELEGRAM_BOT_USERNAME = "OtyaPlayerBot"
 TELEGRAM_CHANNEL_URL = "https://t.me/otyaplayer"
-AI_GATEWAY_ID = "otya-next-gateway"
+AI_GATEWAY_ID = "o-gateway"
 AI_PUBLIC_MODELS = "llama-fast,otya-smart,gemma-4,granite,llama-70b,gpt-oss-20b,gpt-oss-120b,nemotron,llama-4-scout,qwen3,sea-lion"
 AI_GUEST_MODEL = "llama-fast"
 AI_DEFAULT_MODEL = "otya-smart"
@@ -46,26 +46,26 @@ instance_name = "otya-knowledge"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
-dataset = "otya-next-analytics"
+dataset = "o-analytics"
 
 # Keep the physical D1 name during the v1 cutover.
 [[d1_databases]]
 binding = "DB"
-database_name = "otya-store-db"
-database_id = "ab157fc6-2cbb-4d46-9789-2e4392e16aea"
+database_name = "o-prod-db"
+database_id = "92d2af72-bb6e-401c-8240-61a0a224ee64"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "3f179286e0fc4dbfa2332884cdf81312"
+id = "b0742c135e2243b9880bd83bf09504ad"
 
 # Next consumes intelligence jobs only. Otya Core is the sole owner of the
 # public push queue so an AI-worker compromise cannot broadcast notifications.
 [[queues.consumers]]
-queue = "otya-next-jobs"
+queue = "o-jobs"
 max_batch_size = 5
 max_batch_timeout = 30
 max_retries = 3
-dead_letter_queue = "otya-next-jobs-dlq"
+dead_letter_queue = "o-jobs-dlq"
 
 [triggers]
 # Hourly: lightweight admin-only exception check.
@@ -83,4 +83,4 @@ crons = ["0 * * * *", "0 5 * * *", "0 6 * * 1"]
 # Both Workers require the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN secret.
 [[services]]
 binding = "AUTH"
-service = "otya-auth"
+service = "oend-identity"

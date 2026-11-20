@@ -1,5 +1,5 @@
 /**
- * Server-side Resend transport for Otya authentication emails.
+ * Server-side Resend transport for OEnd identityentication emails.
  */
 
 export interface ResendEmail {

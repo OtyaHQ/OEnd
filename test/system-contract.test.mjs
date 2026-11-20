@@ -125,7 +125,7 @@ test('Production auth responses normalize the immutable public Otya ID before wr
   assert.match(source, /withAuthSecurityEvent/)
 })
 
-test('Next keeps a low-cost guest model and curated signed-in catalog', () => {
+test('O keeps a low-cost guest model and curated signed-in catalog', () => {
   const config = read('ai-worker/wrangler.toml')
   const chat = read('ai-worker/src/client-chat.mjs')
 
@@ -143,8 +143,8 @@ test('Next keeps a low-cost guest model and curated signed-in catalog', () => {
   for (const id of expected) assert.ok(configuredModels.includes(id), `${id} must remain in AI_PUBLIC_MODELS`)
 
   assert.match(chat, /if\(!signedIn\).*policy\.guest/)
-  assert.match(chat, /friendly general-purpose AI assistant built into Otya/)
-  assert.match(chat, /Public Next cannot see the private Admin Assistant/)
+  assert.match(chat, /friendly general-purpose AI assistant built into O/)
+  assert.match(chat, /Public O cannot see the private Admin Assistant/)
   assert.match(chat, /Online Music\/Jamendo is retired/)
 })
 

@@ -101,15 +101,15 @@ async function runProductionHealthCheck(env,ctx){
   }
 
   results.push(await checkPrivateService(
-    'otya-auth',
+    'oend-identity',
     env.AUTH,
-    new Request('https://otya-auth/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://oend-identity/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([401]),
   ))
   results.push(await checkPrivateService(
-    'otya-next',
+    'o',
     env.AI_SUPPORT,
-    new Request('https://otya-next/health',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://o/health',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([200]),
   ))
 

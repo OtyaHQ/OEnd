@@ -76,7 +76,7 @@ async function probeNext(env) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 3500)
   try {
-    const response = await env.AI_SUPPORT.fetch(new Request('https://otya-next/health', {
+    const response = await env.AI_SUPPORT.fetch(new Request('https://o/health', {
       method: 'GET',
       headers: { Accept: 'application/json' },
       signal: controller.signal,
@@ -200,7 +200,7 @@ async function handleOwnerEnrollmentWebhook(request, env) {
   let verified = false
   if (env.AUTH?.fetch && env.INTERNAL_SECRET) {
     try {
-      const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/admin/telegram-challenge/confirm', {
+      const response = await env.AUTH.fetch(new Request('https://oend-identity/auth/admin/telegram-challenge/confirm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

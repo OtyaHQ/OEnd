@@ -1,36 +1,31 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
-const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8')
 
 const constants = read('src/lib/constants.ts')
-const product = read('src/app/otya-player/page.tsx')
+const media = read('src/app/omy-play/page.tsx')
+const shop = read('src/app/opoint/page.tsx')
 const help = read('src/app/help/page.tsx')
-const adminAi = read('src/app/admin/ai/ConsoleClient.tsx')
+const adminO = read('src/app/admin/ai/ConsoleClient.tsx')
+const publicVisible = [constants, media, shop, help].join('\n')
 
-const publicVisible = `${constants}\n${product}\n${help}`
-
-test('public brand uses Otya and Otya Media with Send language', () => {
+test('public product names are Omy Play and Opoint, with O as a private owner assistant', () => {
   assert.match(constants, /name: 'Otya'/)
-  assert.match(constants, /player: 'Otya Media'/)
+  assert.match(constants, /player: 'Omy Play'/)
+  assert.match(constants, /ai: 'O'/)
   assert.match(constants, /auth: 'Otya Account'/)
-  assert.match(constants, /nearby Send/)
-  assert.match(product, /Otya Media/)
-  assert.match(product, /\['Send'/)
-  assert.match(product, />Help & support</)
-  assert.match(help, /Send is not connecting/)
-  assert.match(help, />Otya Account</)
+  assert.match(media, /Omy Play/)
+  assert.match(shop, /Opoint/)
+  assert.match(help, /Omy Play/)
+  assert.equal(existsSync(new URL('../src/app/ask/page.tsx', import.meta.url)), false)
+  assert.doesNotMatch(publicVisible, /Otya Media|OtyaPoint|Otya Next|Next/)
 })
 
-test('consumer surfaces do not expose Next or public AI entry points', () => {
-  assert.doesNotMatch(product, /href="\/ask"/)
-  assert.doesNotMatch(help, /href="\/ask"/)
-  assert.doesNotMatch(product, /\['Next'/)
-  assert.doesNotMatch(help, />Next</)
-  assert.doesNotMatch(publicVisible, /name: 'OTYA'/)
-  assert.doesNotMatch(publicVisible, /auth: 'OTYA Account'/)
-
-  // AI still exists behind the privileged admin console.
-  assert.match(adminAi, /Next/)
+test('O is visible only in the owner console, not as a public assistant entry point', () => {
+  assert.match(adminO, /O settings/)
+  assert.match(adminO, /What should O handle/)
+  assert.doesNotMatch(adminO, /Next/)
+  assert.doesNotMatch(publicVisible, /href="\/ask"/)
 })
