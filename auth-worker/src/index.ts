@@ -1,5 +1,5 @@
 /**
- * otya-auth — Cloudflare Worker
+ * oend-identity — Cloudflare Worker
  *
  * Handles all user authentication for the Otya ecosystem.
  * Called by the main otya-backend worker via Service Binding (env.AUTH).
