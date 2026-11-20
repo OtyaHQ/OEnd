@@ -50,7 +50,7 @@ async function email(env,subject,text,idempotencyKey){
   const serviceToken=String(env.OTYA_O_MAIL_SERVICE_TOKEN||'')
   if(serviceToken.length<32)throw new Error('OTYA_O_MAIL_SERVICE_TOKEN is not configured on O')
   if(typeof idempotencyKey!=='string'||!idempotencyKey.trim()||idempotencyKey.length>256)throw new Error('A stable email idempotency key is required')
-  const response=await env.AUTH.fetch(new Request('https://auth/internal/notifications/o/ops-report',{
+  const response=await env.AUTH.fetch(new Request('https://oid/internal/notifications/o/ops-report',{
     method:'POST',
     headers:{'content-type':'application/json','x-otya-service':'o','x-otya-service-token':serviceToken,'idempotency-key':idempotencyKey},
     body:JSON.stringify({subject:clean(subject,200),text:clean(text,12000)}),
