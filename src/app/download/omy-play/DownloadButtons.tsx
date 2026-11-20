@@ -47,7 +47,7 @@ export function DownloadPageClient() {
     const controller=new AbortController()
     const timeout=setTimeout(()=>controller.abort(),10000)
     setLoading(true);setLoadError('')
-    fetch('https://api.otya.site/omy-play/latest',{cache:'no-store',signal:controller.signal})
+    fetch('/api/omy-play/latest',{cache:'no-store',signal:controller.signal})
       .then(r=>r.ok?r.json() as Promise<LatestReleaseEnvelope>:Promise.reject(new Error('Release information is unavailable.')))
       .then(payload=>{
         const latest=payload.data
@@ -62,7 +62,7 @@ export function DownloadPageClient() {
   },[loadAttempt])
 
   function urlFor(targetAbi:'arm64'|'arm32'){
-    return `https://api.otya.site/omy-play/apk/${targetAbi}`
+    return `/api/omy-play/apk/${targetAbi}`
   }
 
   function download(requestedAbi?:'arm64'|'arm32'){
