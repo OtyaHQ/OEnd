@@ -9,7 +9,7 @@ import { getSystemStats, checkEndpointHealth } from '@/lib/monitor'
 import { verifyAdminSession } from '@/lib/admin_auth'
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  'https://petersmartlink.com',
+  'Access-Control-Allow-Origin':  'https://otya.site',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
@@ -46,9 +46,9 @@ export async function GET(req: NextRequest) {
       'SELECT AVG(stars) as avg, COUNT(*) as total FROM ratings'
     ).first<{ avg: number; total: number }>().catch(() => null),
     checkEndpointHealth([
-      'https://petersmartlink.com',
-      'https://petersmartlink.com/latest',
-      'https://petersmartlink.com/download/otya-player',
+      'https://otya.site',
+      'https://otya.site/latest',
+      'https://otya.site/download/otya-player',
     ]),
     db.prepare(`
       SELECT
