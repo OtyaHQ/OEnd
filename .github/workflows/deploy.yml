@@ -298,7 +298,7 @@ jobs:
 
   deploy-opoint:
     name: Deploy Opoint
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.opoint == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.opoint == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
     runs-on: ubuntu-latest
     timeout-minutes: 30
