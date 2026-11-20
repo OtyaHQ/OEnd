@@ -14,7 +14,7 @@ function officialNotificationUrl(value: string): string | null {
     const host = url.hostname.toLowerCase()
     if (url.protocol !== 'https:' || url.username || url.password ||
         (url.port && url.port !== '443') ||
-        !['petersmartlink.com', 'otya.site'].some(domain => host === domain || host.endsWith('.' + domain))) {
+        !['otya.site', 'otya.site'].some(domain => host === domain || host.endsWith('.' + domain))) {
       return null
     }
     return url.toString()
@@ -24,7 +24,7 @@ function officialNotificationUrl(value: string): string | null {
 }
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://petersmartlink.com',
+  'Access-Control-Allow-Origin': 'https://otya.site',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
