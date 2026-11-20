@@ -33,7 +33,7 @@ async function verifyOwnerGrant(request: NextRequest, env: OwnerEnv): Promise<{ 
   if (!authorization.startsWith('Bearer ') || !grant || !deviceId || !env.AUTH?.fetch) return { ok: false }
 
   try {
-    const upstream = await env.AUTH.fetch(new Request('https://auth/auth/admin/verify-grant', {
+    const upstream = await env.AUTH.fetch(new Request('https://oid/auth/admin/verify-grant', {
       method: 'POST',
       headers: {
         Authorization: authorization,
