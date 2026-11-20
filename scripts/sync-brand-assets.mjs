@@ -58,18 +58,34 @@ async function sync() {
     RETIRED_GENERATED_TARGETS.map(target => rm(resolve(process.cwd(), target), { force: true })),
   )
 
-  console.log(`Verified canonical Otya WebP from OtyaPlayer@${APPROVED_APP_COMMIT} at ${TARGET}.`)
-  const card = Buffer.from(`<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1200" height="630" fill="#07111f"/>
-    <rect x="72" y="70" width="64" height="5" rx="2" fill="#27e8ff"/>
-    <g fill="#f5f8ff" font-family="sans-serif">
-      <text x="72" y="140" font-size="24" letter-spacing="3">OTYA</text>
-      <text x="72" y="288" font-size="94" font-weight="700">Otya</text>
-      <text x="76" y="357" font-size="34">Your next update is here.</text>
-      <text x="76" y="523" font-size="23" fill="#b9cadd">Music. Video. Your way.</text>
-    </g></svg>`)
-  await sharp(card).composite([{ input: await sharp(bytes).resize(350, 350).toBuffer(), left: 778, top: 140 }])
-    .jpeg({ quality: 90 }).toFile(resolve(process.cwd(), 'public/otya-release-card.jpg'))
+  console.log(`Verified canonical Otya WebP at ${TARGET} (approved asset ${APPROVED_APP_COMMIT}).`)
+  const socialCard = Buffer.from(`<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#27E8FF"/>
+        <stop offset=".55" stop-color="#126BFF"/>
+        <stop offset="1" stop-color="#173BFF"/>
+      </linearGradient>
+      <radialGradient id="glow"><stop stop-color="#126BFF" stop-opacity=".36"/><stop offset="1" stop-color="#126BFF" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect width="1200" height="630" fill="#050812"/>
+    <circle cx="1000" cy="120" r="410" fill="url(#glow)"/>
+    <path d="M0 540C230 430 340 610 560 500S920 300 1200 360V630H0Z" fill="#0A1020"/>
+    <rect x="88" y="76" width="54" height="5" rx="2.5" fill="url(#brand)"/>
+    <g fill="#F7FAFF" font-family="Arial,Helvetica,sans-serif">
+      <text x="88" y="164" font-size="26" font-weight="700" letter-spacing="6">OTYA</text>
+      <text x="88" y="300" font-size="108" font-weight="800" letter-spacing="-5">Otya</text>
+      <text x="94" y="370" font-size="34" fill="#D5E6FF">One connected product family.</text>
+      <text x="94" y="525" font-size="24" fill="#9FB7D7">Digital products. Real-world services. Built in Uganda.</text>
+    </g>
+  </svg>`)
+  const composed = await sharp(socialCard)
+    .composite([{ input: await sharp(bytes).resize(300, 300).png().toBuffer(), left: 790, top: 168 }])
+    .jpeg({ quality: 92, mozjpeg: true }).toBuffer()
+  await Promise.all([
+    sharp(composed).toFile(resolve(process.cwd(), 'public/og-image.jpg')),
+    sharp(composed).toFile(resolve(process.cwd(), 'public/otya-release-card.jpg')),
+  ])
 }
 
 await sync()
