@@ -81,8 +81,6 @@ function isSpaceSurfacePath(pathname) {
     || pathname === '/space/'
     || pathname === '/telegram'
     || pathname === '/telegram/'
-    || pathname === '/ask'
-    || pathname.startsWith('/ask/')
     || pathname === '/account'
     || pathname.startsWith('/account/')
     || pathname === '/admin'
@@ -113,7 +111,6 @@ function matchSpaceConsoleRoute(pathname) {
     ['activity', '/account/activity/'],
     ['notifications', '/account/notifications/'],
     ['settings', '/account/settings/'],
-    ['next', '/ask/'],
     ['telegram', '/telegram/'],
     ['admin', '/admin'],
   ])
