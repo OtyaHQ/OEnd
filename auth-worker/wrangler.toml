@@ -1,4 +1,4 @@
-name = "otya-auth"
+name = "otya-id"
 main = "src/production-entrypoint-miniapp.ts"
 compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
@@ -48,7 +48,7 @@ GOOGLE_WEB_CLIENT_ID = "82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.google
 FIREBASE_PROJECT_ID = "otya-player"
 TELEGRAM_LOGIN_REDIRECT_URI = "https://otya.site/api/auth/telegram/callback"
 TELEGRAM_LOGIN_BOT_USERNAME = "OtyaPlayerBot"
-ADMIN_EMAILS = "otyahq@gmail.com"
+ADMIN_EMAILS = "petersmartlink@gmail.com"
 
 # Telegram browser sign-in stays OIDC + PKCE. Mini App signature verification
 # reads the same centralized Secrets Store entry through a purpose-specific
