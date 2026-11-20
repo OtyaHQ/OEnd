@@ -12,7 +12,7 @@ import {
 } from './conversations.mjs'
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-const OTYA_CORE_URL = 'https://petersmartlink.com'
+const OTYA_CORE_URL = 'https://otya.site'
 
 const clean = (v, max = 5000) => String(v ?? '')
   .replace(/[\u0000-\u001f]/g, ' ')
@@ -263,7 +263,7 @@ async function recentReleases(env) {
 async function supportInbox(env, limit = 12) {
   const gmail = await gmailStatus(env)
   if (!gmail.connected) return []
-  const rows = await listGmailMessages(env, 'to:{support@otya.site support@petersmartlink.com} in:inbox', Math.max(1, Math.min(limit, 20)))
+  const rows = await listGmailMessages(env, 'to:{support@otya.site support@otya.site} in:inbox', Math.max(1, Math.min(limit, 20)))
   return rows.map((x) => ({
     id: x.id,
     from: clean(x.from, 300),
