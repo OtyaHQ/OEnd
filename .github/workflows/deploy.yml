@@ -32,7 +32,7 @@ concurrency:
 permissions: { contents: read }
 jobs:
   validate:
-    name: Validate complete OTYA backend
+    name: Validate OID OEnd O Opoint and Omy Play
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
@@ -59,12 +59,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 --branch main https://github.com/PeterSmartLink/Opoint.git "$RUNNER_TEMP/Opoint"
-          OPOINT_SHA="$(git -C "$RUNNER_TEMP/Opoint" rev-parse HEAD)"
+          git clone --depth 1 --branch main https://github.com/OtyaHQ/OPoint.git "$RUNNER_TEMP/OPoint"
+          OPOINT_SHA="$(git -C "$RUNNER_TEMP/OPoint" rev-parse HEAD)"
           echo "sha=$OPOINT_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Validate Opoint backend, security boundaries and dashboard build
-        working-directory: ${{ runner.temp }}/Opoint
+        working-directory: ${{ runner.temp }}/OPoint
         run: |
           set -euo pipefail
           npm install --no-audit --no-fund --ignore-scripts
@@ -124,10 +124,10 @@ jobs:
     needs: [validate, authorize-deploy]
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.plan.outputs.auth }}
-      next: ${{ steps.plan.outputs.next }}
-      core: ${{ steps.plan.outputs.core }}
-      otyapoint: ${{ steps.plan.outputs.otyapoint }}
+      auth: ${{ steps.plan.outputs.oid }}
+      next: ${{ steps.plan.outputs.o }}
+      core: ${{ steps.plan.outputs.oend }}
+      opoint: ${{ steps.plan.outputs.opoint }}
       any_runtime: ${{ steps.plan.outputs.any_runtime }}
     steps:
       - name: Select requested runtime components
@@ -140,11 +140,13 @@ jobs:
           auth=false
           next=false
           core=false
-          otyapoint=false
+          opoint=false
           case "$COMPONENT" in
             oid) auth=true ;;
             o) next=true ;;
             oend) core=true ;;
+            opoint) opoint=true ;;
+            omy-play) omy_play=true ;;
             all)
               auth=true
               next=true
@@ -157,10 +159,11 @@ jobs:
               exit 1
               ;;
           esac
-          echo "auth=$auth" >> "$GITHUB_OUTPUT"
-          echo "next=$next" >> "$GITHUB_OUTPUT"
-          echo "core=$core" >> "$GITHUB_OUTPUT"
+          echo "oid=$auth" >> "$GITHUB_OUTPUT"
+          echo "o=$next" >> "$GITHUB_OUTPUT"
+          echo "oend=$core" >> "$GITHUB_OUTPUT"
           echo "opoint=$opoint" >> "$GITHUB_OUTPUT"
+          echo "omy_play=$omy_play" >> "$GITHUB_OUTPUT"
           echo "omy_play=$omy_play" >> "$GITHUB_OUTPUT"
           echo "any_runtime=true" >> "$GITHUB_OUTPUT"
           echo "Deploy plan: OID=$auth O=$next OEnd=$core Opoint=$opoint OmyPlay=$omy_play"
@@ -217,7 +220,7 @@ jobs:
 
   deploy-next:
     name: Deploy O
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
     runs-on: ubuntu-latest
     environment: production
@@ -295,7 +298,7 @@ jobs:
   deploy-opoint:
     name: Deploy Opoint
     if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.opoint == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
+    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
@@ -316,19 +319,19 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$OPOINT_SHA"
-          git init "$RUNNER_TEMP/Opoint"
-          git -C "$RUNNER_TEMP/Opoint" remote add origin https://github.com/PeterSmartLink/Opoint.git
-          git -C "$RUNNER_TEMP/Opoint" fetch --depth 1 origin "$OPOINT_SHA"
-          git -C "$RUNNER_TEMP/Opoint" checkout --detach FETCH_HEAD
-          test "$(git -C "$RUNNER_TEMP/Opoint" rev-parse HEAD)" = "$OPOINT_SHA"
-          test -f "$RUNNER_TEMP/Opoint/wrangler.toml"
+          git init "$RUNNER_TEMP/OPoint"
+          git -C "$RUNNER_TEMP/OPoint" remote add origin https://github.com/OtyaHQ/OPoint.git
+          git -C "$RUNNER_TEMP/OPoint" fetch --depth 1 origin "$OPOINT_SHA"
+          git -C "$RUNNER_TEMP/OPoint" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/OPoint" rev-parse HEAD)" = "$OPOINT_SHA"
+          test -f "$RUNNER_TEMP/OPoint/wrangler.opoint-production.toml"
 
       - name: Install Opoint dependencies
-        working-directory: ${{ runner.temp }}/Opoint
+        working-directory: ${{ runner.temp }}/OPoint
         run: npm install --no-audit --no-fund --ignore-scripts
 
       - name: Test and validate Opoint release
-        working-directory: ${{ runner.temp }}/Opoint
+        working-directory: ${{ runner.temp }}/OPoint
         run: |
           set -euo pipefail
           npm run check:worker
@@ -358,7 +361,7 @@ jobs:
           echo "Cloudflare deployment credentials are present; application secrets are read from the account Secrets Store."
 
       - name: Deploy the private Opoint API
-        working-directory: ${{ runner.temp }}/Opoint
+        working-directory: ${{ runner.temp }}/OPoint
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -382,9 +385,64 @@ jobs:
           echo "Opoint API deployment is present and receives 100% of its Worker traffic."
           echo "The Worker remains private: workers.dev is disabled and no public custom route is attached."
 
+
+  deploy-omy-play:
+    name: Deploy Omy Play
+    if: \${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.omy_play == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Check out Omy Play
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: OtyaHQ/Omy_Play
+          ref: main
+          path: Omy_Play
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
+
+      - name: Verify Omy Play backend source and schema contract
+        working-directory: Omy_Play
+        run: |
+          set -euo pipefail
+          npm ci --prefix backend --ignore-scripts
+          npm --prefix backend run check
+          npm --prefix backend test
+          npm --prefix backend run verify:schema
+
+      - name: Deploy Omy Play production API
+        working-directory: Omy_Play
+        env:
+          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.omy-play-production.toml
+          npx --yes wrangler@4.159.0 deploy --config wrangler.omy-play-production.toml
+
+      - name: Verify Omy Play private production Worker and OID binding
+        env:
+          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          base="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/omy-play"
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/settings")"
+          printf '%s' "$settings" | jq -e '
+            .success == true and
+            any(.result.bindings[]; .name == "OID" and .type == "service" and .service == "oid") and
+            any(.result.bindings[]; .name == "DB" and .type == "d1") and
+            any(.result.bindings[]; .name == "ASSETS" and .type == "r2_bucket")
+          ' >/dev/null
+
   verify-production:
-    name: Verify live OTYA after deploy
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') }}
+    name: Verify live Otya platform after deploy
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-opoint]
     runs-on: ubuntu-latest
     timeout-minutes: 7
