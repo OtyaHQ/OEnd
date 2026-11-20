@@ -1,5 +1,5 @@
 const TELEGRAM_API = 'https://api.telegram.org'
-const MINI_APP_URL = 'https://space.petersmartlink.com/telegram/'
+const MINI_APP_URL = 'https://space.otya.site/telegram/'
 const CHANNEL = '@otyaplayer'
 const CHANNEL_USERNAME = 'otyaplayer'
 const BOT_USERNAME = 'OtyaPlayerBot'
@@ -68,10 +68,10 @@ export async function sendTelegramMessage(chatId, text, env, options = {}) {
 export async function sendTelegramReleaseCard(chatId, caption, env) {
   return telegramApi('sendPhoto', {
     chat_id: chatId,
-    photo: 'https://petersmartlink.com/otya-release-card.jpg',
+    photo: 'https://otya.site/otya-release-card.jpg',
     caption,
     reply_markup: { inline_keyboard: [
-      [{ text: 'Download Otya', url: 'https://petersmartlink.com/download/otya-player' }],
+      [{ text: 'Download Otya', url: 'https://otya.site/download/otya-player' }],
       [{ text: 'Help & feedback', url: 'https://t.me/OtyaPlayerBot' }],
     ] },
   }, env)
@@ -80,7 +80,7 @@ export async function sendTelegramReleaseCard(chatId, caption, env) {
 export async function setTelegramWebhook(env) {
   const secret = await secretValue(env.TELEGRAM_WEBHOOK_SECRET, 'Telegram webhook secret')
   return telegramApi('setWebhook', {
-    url: 'https://petersmartlink.com/api/telegram/webhook',
+    url: 'https://otya.site/api/telegram/webhook',
     secret_token: secret,
     allowed_updates: ['message', 'edited_message', 'channel_post', 'callback_query'],
   }, env)
@@ -151,7 +151,7 @@ function commandReply(text) {
     text: 'Ask Next anything, use /account for your Otya Account, /updates for release status, or /privacy for privacy information. Music playback and library search are local to the Android app.',
   }
   if (text === '/account') return { text: `Open your Otya Account: ${MINI_APP_URL}` }
-  if (text === '/privacy') return { text: 'Otya Privacy: https://petersmartlink.com/privacy' }
+  if (text === '/privacy') return { text: 'Otya Privacy: https://otya.site/privacy' }
   if (text === '/music' || text.startsWith('/music ')) return {
     text: 'Otya Music is local-first. Open the Android app to search and play music already on your device; the built-in Online Music catalog has been retired.',
   }
@@ -160,7 +160,7 @@ function commandReply(text) {
 
 async function dynamicCommandReply(text) {
   if (text === '/updates') {
-    const response = await fetch('https://petersmartlink.com/api/bootstrap', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000) })
+    const response = await fetch('https://otya.site/api/bootstrap', { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(8000) })
     if (!response.ok) return 'Otya update information is temporarily unavailable.'
     const data = await response.json().catch(() => ({}))
     const release = data?.release ?? data?.latest ?? data
