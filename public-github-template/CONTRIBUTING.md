@@ -6,7 +6,7 @@ This public repository is for documentation, reproducible public bug reports, fe
 
 ## Before opening an issue
 
-- Check the current Otya Docs: https://petersmartlink.com/docs
+- Check the current Otya Docs: https://otya.site/docs
 - Use the latest supported Otya Media release when possible.
 - Do not include passwords, OTPs, access tokens, API keys, private files or personal account data.
 - Security vulnerabilities must be reported privately according to `SECURITY.md`.
