@@ -8,7 +8,7 @@ It provides reusable server-side identity, product-scoped APIs, integrations, de
 
 - **Otya OS** — the unified platform and shared experience.
 - **Otya End** — shared backend and integration layer.
-- **OPoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
+- **Opoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
 - **Omy Play** — local-first music and video. Core playback must remain available without the backend.
 - **OHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
 - **O / O** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
@@ -44,7 +44,7 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 | `oend-identity` | Shared identity, account security and Resend transport |
 | `oend` | Shared product APIs, release/notification transport and backend routing |
 | `o` | Owner intelligence, scheduled operations and AI workflows |
-| OPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
+| Opoint API source | Product-scoped shop and agency operations, isolated from shared account data |
 
 These names describe separate runtime responsibilities; they are not duplicate backends. Do not add another Worker or database for a capability already owned by one of these services without a concrete isolation or scaling reason.
 
