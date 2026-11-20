@@ -32,17 +32,12 @@ test('critical deployment stack is pinned instead of floating across deploys', (
     assert.equal(lock.packages['node_modules/wrangler'].version, '4.159.0', `${path} must lock Wrangler 4.159.0`)
   }
 
-  for (const path of ['wrangler.toml', 'auth-worker/wrangler.toml']) {
+  for (const path of ['wrangler.toml', 'auth-worker/wrangler.toml', 'ai-worker/wrangler.toml']) {
     const config = read(path)
     assert.match(config, /compatibility_date = "2026-11-09"/)
     assert.match(config, /\[observability\.issues\]\s*enabled = true/)
     assert.match(config, /redact_query_string = true/)
   }
-
-  const ownerRuntime = read('ai-worker/wrangler.toml')
-  assert.match(ownerRuntime, /compatibility_date = "2026-11-11"/)
-  assert.match(ownerRuntime, /\[observability\.issues\]\s*enabled = true/)
-  assert.match(ownerRuntime, /redact_query_string = true/)
 })
 
 test('high-severity dependency audits are deployment gates', () => {
