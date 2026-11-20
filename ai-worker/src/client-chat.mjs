@@ -154,7 +154,7 @@ async function temporaryReply(env,{message,history=[],selection}){
 async function sendAdminHandoff(env,{message,email,name,source,userId}){
   if(!env.RESEND_API_KEY)throw new Error('Support email is unavailable')
   const ticket=`OTYA-${Date.now().toString(36).toUpperCase()}`
-  const admin=env.ADMIN_REPORT_EMAIL||'petersmartlink@gmail.com'
+  const admin=env.ADMIN_REPORT_EMAIL||'otyahq@gmail.com'
   const lines=[
     `New Otya support handoff: ${ticket}`,
     '',
