@@ -97,8 +97,8 @@ async function pluginRegistry(env) {
       capabilities: ['transactional email via Otya Auth', 'outbound support replies', 'operational alerts'],
       write: true,
       setup_hint: emailGatewayReady
-        ? 'Otya Next can reach the private Otya Auth gateway. Resend credentials remain owned by Otya Auth; provider acceptance is verified there.'
-        : 'Configure the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN on Otya Next and Otya Auth. Do not add a direct RESEND_API_KEY to Otya Next.'
+        ? 'O can reach the private Otya Auth gateway. Resend credentials remain owned by Otya Auth; provider acceptance is verified there.'
+        : 'Configure the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN on O and Otya Auth. Do not add a direct RESEND_API_KEY to O.'
     },
     {
       id: 'telegram',
@@ -108,10 +108,10 @@ async function pluginRegistry(env) {
       capabilities: ['same OTYA AI', 'private support', 'server conversation memory', 'official channel publishing'],
       write: true,
       setup_hint: telegram.connected
-        ? 'Healthy through the canonical Otya Core webhook and Next readiness path.'
+        ? 'Healthy through the canonical Otya Core webhook and O readiness path.'
         : telegram.reachable
-          ? 'Otya Core is reachable, but the Telegram webhook or live Next dependency needs attention.'
-          : 'Telegram transport is owned by Otya Core; check the Core runtime rather than adding bot credentials to Next.',
+          ? 'Otya Core is reachable, but the Telegram webhook or live O dependency needs attention.'
+          : 'Telegram transport is owned by Otya Core; check the Core runtime rather than adding bot credentials to O.',
     },
     {
       id: 'otya',
