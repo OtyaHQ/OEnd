@@ -81,7 +81,7 @@ jobs:
           npm run build
           npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
-      - name: Validate Next worker
+      - name: Validate O worker
         working-directory: ai-worker
         run: |
           npm ci --ignore-scripts
