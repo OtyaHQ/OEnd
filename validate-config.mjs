@@ -25,10 +25,12 @@ requireMatch('oend workers.dev must be disabled', core, /^workers_dev\s*=\s*fals
 requireMatch('oend must redact query strings', core, /^redact_query_string\s*=\s*true$/m)
 forbidMatch('new OEnd Worker must remain unbound to public domains until verified cutover', core, /^routes\s*=/m)
 
-for (const binding of ['R2', 'KV', 'DB', 'ANALYTICS', 'OTYA_ANALYTICS', 'RATE_LIMITER', 'PUSH_QUEUE', 'AI_QUEUE', 'AUTH', 'AI_SUPPORT', 'OTYA_RELEASE_WORKFLOW']) requireMatch(`oend binding ${binding}`, core, new RegExp(`(?:binding|name)\\s*=\\s*"${binding}"`))
+for (const binding of ['R2', 'KV', 'DB', 'ANALYTICS', 'OTYA_ANALYTICS', 'RATE_LIMITER', 'PUSH_QUEUE', 'AI_QUEUE', 'AUTH', 'AI_SUPPORT', 'OPOINT_API', 'OMY_PLAY_API', 'OTYA_RELEASE_WORKFLOW']) requireMatch(`oend binding ${binding}`, core, new RegExp(`(?:binding|name)\\s*=\\s*"${binding}"`))
 requireMatch('oend Analytics Engine dataset', core, /^dataset\s*=\s*"oend-analytics"$/m)
 requireMatch('compatibility OTYA Analytics Engine dataset remains bound during migration', core, /^dataset\s*=\s*"otya_system_analytics"$/m)
 requireMatch('oend AI service must target o', core, /binding\s*=\s*"AI_SUPPORT"[\s\S]*?service\s*=\s*"o"/m)
+requireMatch('oend private Opoint API must target Opoint', core, /binding\\s*=\\s*\"OPOINT_API\"[\\s\\S]*?service\\s*=\\s*\"opoint\"/m)
+requireMatch('oend private Omy Play API must target Omy Play', core, /binding\\s*=\\s*\"OMY_PLAY_API\"[\\s\\S]*?service\\s*=\\s*\"omy-play\"/m)
 requireMatch('oend Next queue must use canonical name', core, /binding\s*=\s*"AI_QUEUE"[\s\S]*?queue\s*=\s*"o-jobs"/m)
 requireMatch('oend push queue must use canonical name', core, /binding\s*=\s*"PUSH_QUEUE"[\s\S]*?queue\s*=\s*"otya-push"/m)
 requireMatch('release workflow must use canonical name', core, /name\s*=\s*"otya-release"[\s\S]*?binding\s*=\s*"OTYA_RELEASE_WORKFLOW"/m)
