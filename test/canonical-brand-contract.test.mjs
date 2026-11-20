@@ -6,7 +6,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 
 const activeBrandConsumers = [
   'src/components/OtyaBrandMark.tsx',
-  'src/app/otya-player/page.tsx',
+  'src/app/omy-play/page.tsx',
   'src/app/layout.tsx',
   'auth-worker/src/resend.ts',
   'public/otya-ai.svg',
