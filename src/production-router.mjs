@@ -8,17 +8,6 @@ const DOCS_HOST = 'docs.otya.site'
 const STATUS_HOST = 'status.otya.site'
 const SPACE_HOST = 'space.otya.site'
 
-// Keep the retired hostnames attached during migration and permanently redirect
-// every request to the matching canonical Otya host. A 308 preserves POST bodies
-// for OAuth callbacks and mobile/API requests while moving cookies to .otya.site.
-const LEGACY_HOST_REDIRECTS = new Map([
-  ['petersmartlink.com', APP_HOST],
-  ['www.petersmartlink.com', 'www.otya.site'],
-  ['docs.petersmartlink.com', DOCS_HOST],
-  ['status.petersmartlink.com', STATUS_HOST],
-  ['space.petersmartlink.com', SPACE_HOST],
-])
-
 const CANONICAL_CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://accounts.google.com https://telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://tpc.googlesyndication.com",
@@ -180,17 +169,6 @@ async function dispatchSurface(request, url, env, ctx, pathname = url.pathname) 
 async function routeOtyaRequest(request, env, ctx) {
     const url = new URL(request.url)
     const host = url.hostname.toLowerCase()
-
-    const canonicalHost = LEGACY_HOST_REDIRECTS.get(host)
-    if (canonicalHost) {
-      url.protocol = 'https:'
-      url.hostname = canonicalHost
-      url.port = ''
-      return new Response(null, {
-        status: 308,
-        headers: { Location: url.toString(), 'Cache-Control': 'public, max-age=3600' },
-      })
-    }
 
     if (url.pathname.startsWith('/api/together/')) {
       if (!env.KV || !env.AUTH?.fetch) {
