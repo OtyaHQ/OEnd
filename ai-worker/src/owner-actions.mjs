@@ -76,7 +76,7 @@ function normalizeAction(type, payload, env) {
         ? `Reply to ${recipient}${subject ? ` about ${subject}` : ''}`
         : `Reply to support email${subject ? ` about ${subject}` : ''}`,
       // `text` mirrors the exact reply for generic owner-approval clients such
-      // as the Next HUD. Execution still uses the dedicated `reply` field.
+      // as the O HUD. Execution still uses the dedicated `reply` field.
       payload: { email_id: emailId, recipient, subject, reply, text: reply, risk },
     }
   }
