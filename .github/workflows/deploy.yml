@@ -145,10 +145,10 @@ jobs:
           omy_play=false
           case "$COMPONENT" in
             oid) auth=true ;;
-            o) next=true ;;
-            oend) core=true ;;
-            opoint) opoint=true ;;
-            omy-play) omy_play=true ;;
+            o) auth=true; core=true; next=true ;;
+            oend) auth=true; core=true; next=true ;;
+            opoint) auth=true; core=true; next=true; opoint=true ;;
+            omy-play) auth=true; core=true; next=true; omy_play=true ;;
             all)
               auth=true
               next=true
