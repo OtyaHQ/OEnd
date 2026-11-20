@@ -93,7 +93,7 @@ requireMatch('O AI Search binding', next, /\[\[ai_search\]\][\s\S]*?binding\s*=\
 requireMatch('O gateway id must use canonical name', next, /^AI_GATEWAY_ID\s*=\s*"o-gateway"$/m)
 requireMatch('admin assistant product name must use canonical Otya casing', next, /^APP_NAME\s*=\s*"O"$/m)
 requireMatch('O guest model remains low-cost default', next, /^AI_GUEST_MODEL\s*=\s*"llama-fast"$/m)
-requireMatch('O production D1 must use its isolated production database', next, /^database_name\s*=\s*"otya-store-db"$/m)
+requireMatch('O production D1 must use its isolated production database', next, /^database_name\s*=\s*"o-prod-db"$/m)
 requireMatch('O Gmail OAuth must use the verified Web client id', next, /^GMAIL_GOOGLE_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
 forbidMatch('O Gmail OAuth must not use the Android client id', next, /^GMAIL_GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 
