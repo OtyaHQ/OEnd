@@ -18,7 +18,7 @@ test('admin AI uses the approved Otya identity while generic loading stays quiet
 
   assert.match(consoleUi, /<OtyaBrandMark ai/)
   assert.match(consoleUi, /<OtyaBrandMark ai[^>]*thinking/)
-  assert.match(consoleUi, /Next/)
+  assert.match(consoleUi, />O</)
 
   assert.match(loading, />Loading<\/span>/)
   assert.match(loading, /animate-pulse/)
