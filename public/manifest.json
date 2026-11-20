@@ -1,7 +1,7 @@
 {
   "name": "Otya",
   "short_name": "Otya",
-  "description": "Otya — offline-first music and video, Otya Transfer, Watch Together, Private media and practical media tools.",
+  "description": "Otya — a connected family of digital products and real-world services.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050812",
