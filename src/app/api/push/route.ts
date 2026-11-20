@@ -14,7 +14,7 @@ function officialNotificationUrl(value: string): string | null {
     const host = url.hostname.toLowerCase()
     if (url.protocol !== 'https:' || url.username || url.password ||
         (url.port && url.port !== '443') ||
-        !['otya.site', 'otya.site'].some(domain => host === domain || host.endsWith('.' + domain))) {
+        !['otya.site'].some(domain => host === domain || host.endsWith('.' + domain))) {
       return null
     }
     return url.toString()
