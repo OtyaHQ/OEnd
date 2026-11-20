@@ -1,5 +1,6 @@
 import worker from './queue-worker.mjs'
 import { recordRuntimeOperationalEvent } from './lib/operational-events.mjs'
+import { handleAiInternalRequest } from './lib/ai-internal-api.mjs'
 export { OtyaReleaseWorkflow } from './release-workflow.mjs'
 
 const HEALTH_CHECK_CRON = '*/5 * * * *'
@@ -101,15 +102,15 @@ async function runProductionHealthCheck(env,ctx){
   }
 
   results.push(await checkPrivateService(
-    'otya-auth',
+    'otya-id',
     env.AUTH,
-    new Request('https://otya-auth/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://otya-id/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([401]),
   ))
   results.push(await checkPrivateService(
-    'otya-next',
+    'o',
     env.AI_SUPPORT,
-    new Request('https://otya-next/health',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://o/health',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([200]),
   ))
 
@@ -185,8 +186,12 @@ export default {
  ...worker,
  async fetch(request,env,ctx){
   const runtimeEnv=withProductionAdapters(env);const startedAt=Date.now();const url=new URL(request.url);let response
+  if(url.pathname.startsWith('/internal/ai/')){
+    response=await handleAiInternalRequest(request,runtimeEnv)
+    return response
+  }
   if(url.pathname.startsWith('/api/ai/chat')){
-    response=await forwardClientAi(request,runtimeEnv)
+    response=json({error:'owner_only',message:'O is a private owner workspace.'},410)
     writeRequestAnalytics(runtimeEnv,request,response,startedAt);return response
   }
   if(url.pathname==='/api/ai/oauth/google/callback'){
