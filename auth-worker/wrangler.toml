@@ -40,7 +40,7 @@ id      = "6b9faff751724fdb86c16452b9c99cf6"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
-dataset = "otya-auth-analytics"
+dataset = "oid-analytics"
 
 [vars]
 CORS_ORIGIN = "https://otya.site"
