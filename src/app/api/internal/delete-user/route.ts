@@ -1,7 +1,7 @@
 // app/api/internal/delete-user/route.ts
 // POST /api/internal/delete-user
 //
-// Internal account-cleanup endpoint called by otya-auth before the identity row
+// Internal account-cleanup endpoint called by oend-identity before the identity row
 // is removed. Cleanup is fail-closed: any real D1 error returns a non-2xx
 // response so auth keeps the account recoverable and the user can retry.
 
