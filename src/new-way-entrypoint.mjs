@@ -19,7 +19,7 @@ async function authenticateTogetherUser(request, env) {
   if (!authorization.startsWith('Bearer ') || !env.AUTH?.fetch) return null
 
   try {
-    const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/verify', {
+    const response = await env.AUTH.fetch(new Request('https://oend-identity/auth/verify', {
       method: 'GET',
       headers: { Authorization: authorization },
     }))
