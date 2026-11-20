@@ -160,7 +160,7 @@ export async function sendAlertEmail(
   const apiKey = typeof binding === 'string' ? binding : await binding?.get?.()
   if (!apiKey) throw new Error('RESEND_API_KEY is not configured')
 
-  const to = env.ALERT_EMAIL_TO || 'petersmartlink@gmail.com'
+  const to = env.ALERT_EMAIL_TO || 'otyahq@gmail.com'
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
