@@ -46,8 +46,8 @@ export async function GET() {
   const [accountsOk, nextOk] = await Promise.all([
     // An unauthenticated /auth/me returning 401 proves the Auth Worker is
     // reachable and enforcing its boundary without exposing account data.
-    probeService(auth, 'https://otya-auth/auth/me', new Set([401])),
-    probeService(next, 'https://otya-next/health', new Set([200]), true),
+    probeService(auth, 'https://otya-id/auth/me', new Set([401])),
+    probeService(next, 'https://o/health', new Set([200]), true),
   ])
 
   const components: Record<string, PublicState> = {
