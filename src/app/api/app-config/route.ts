@@ -90,7 +90,7 @@ const DEFAULT_CONFIG = {
     optionalForPlayback: true,
   },
   auth: {
-    authority: 'otya-auth',
+    authority: 'oend-identity',
     emailPassword: 'cloudflare',
     otp: 'cloudflare-resend',
     firebaseIdentity: true,
