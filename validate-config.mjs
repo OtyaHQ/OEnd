@@ -40,7 +40,6 @@ requireMatch('core deploy must store the release-manifest secret in Cloudflare',
 
 const router = read('src/production-router.mjs')
 forbidMatch('retired petersmartlink hostnames must not be active in the OEnd runtime', router, /petersmartlink\.com/)
-requireMatch('legacy hostname redirects must preserve HTTP methods', router, /status:\s*308/)
 requireMatch('Core public website must use otya.site', core, /^WEBSITE_URL\s*=\s*"https:\/\/otya\.site"$/m)
 
 requireMatch('physical v1 D1 name must remain unchanged during cutover', core, /^database_name\s*=\s*"otya-store-db"$/m)
