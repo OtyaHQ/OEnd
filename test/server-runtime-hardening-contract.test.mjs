@@ -33,10 +33,10 @@ test('push queue bounds upstream calls and avoids whole-broadcast replay after p
 test('production health checks include private auth and Next service bindings', () => {
   const entry = read('src/entrypoint.mjs')
   assert.match(entry, /service:\$\{name\}/)
-  assert.match(entry, /'otya-auth'/)
-  assert.match(entry, /'otya-next'/)
-  assert.match(entry, /https:\/\/otya-auth\/auth\/me/)
-  assert.match(entry, /https:\/\/otya-next\/health/)
+  assert.match(entry, /'oend-identity'/)
+  assert.match(entry, /'o'/)
+  assert.match(entry, /https:\/\/oend-identity\/auth\/me/)
+  assert.match(entry, /https:\/\/o\/health/)
   assert.match(entry, /SERVICE_HEALTH_TIMEOUT_MS = 5000/)
 })
 
