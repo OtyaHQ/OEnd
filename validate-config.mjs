@@ -35,6 +35,12 @@ requireMatch('release workflow must use canonical name', core, /name\s*=\s*"otya
 forbidMatch('release event consumer must stay detached until source handler lands', core, /\[\[queues\.consumers\]\][\s\S]*?queue\s*=\s*"otya-release-events"/m)
 requireMatch('core deploy must pass the release-manifest secret from GitHub', deploy, /RELEASE_MANIFEST_HMAC_SECRET:\s*\$\{\{ secrets\.RELEASE_MANIFEST_HMAC_SECRET \}\}/)
 requireMatch('core deploy must store the release-manifest secret in Cloudflare', deploy, /wrangler secret put RELEASE_MANIFEST_HMAC_SECRET/)
+
+const router = read('src/production-router.mjs')
+requireMatch('legacy domains must redirect to the canonical Otya hosts', router, /LEGACY_HOST_REDIRECTS[\\s\\S]*?\\['petersmartlink\\.com', APP_HOST\\][\\s\\S]*?\\['space\\.petersmartlink\\.com', SPACE_HOST\\]/m)
+requireMatch('legacy hostname redirects must preserve HTTP methods', router, /status:\\s*308/)
+requireMatch('Core public website must use otya.site', core, /^WEBSITE_URL\\s*=\\s*"https:\\/\\/otya\\.site"$/m)
+
 requireMatch('physical v1 D1 name must remain unchanged during cutover', core, /^database_name\s*=\s*"otya-store-db"$/m)
 requireMatch('Firebase project id must be otya-player', core, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
 requireMatch('Firebase project number must be verified', core, /^FIREBASE_PROJECT_NUMBER\s*=\s*"82776565585"$/m)
@@ -62,7 +68,7 @@ requireMatch('otya-auth live analytics dataset', auth, /^dataset\s*=\s*"otya-aut
 requireMatch('Android Google client id must be verified', auth, /^GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 requireMatch('Web Google client id must be verified', auth, /^GOOGLE_WEB_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
 requireMatch('otya-auth Firebase project id', auth, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
-requireMatch('Telegram redirect must match live canonical API callback', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\s*=\s*"https:\/\/petersmartlink\.com\/api\/auth\/telegram\/callback"$/m)
+requireMatch('Telegram redirect must match live canonical API callback', auth, /^TELEGRAM_LOGIN_REDIRECT_URI\\s*=\\s*"https:\\/\\/otya\\.site\\/api\\/auth\\/telegram\\/callback"$/m)
 requireMatch('Telegram Mini App auth uses purpose-specific Secrets Store alias', auth, /binding\s*=\s*"TELEGRAM_MINIAPP_BOT_TOKEN"[\s\S]*?secret_name\s*=\s*"TELEGRAM_BOT_TOKEN"/m)
 requireMatch('Telegram Mini App derives WebAppData HMAC', telegramMini, /WebAppData/)
 requireMatch('Telegram Mini App validates auth_date freshness', telegramMini, /MAX_AGE_SECONDS/)
