@@ -7,7 +7,7 @@ import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 export const metadata: Metadata = {
   title: 'Otya Media Music — Local Android Music Player',
   description: 'Play and organize music already on your Android device with Otya Media. Local songs, albums, artists, folders and playlists work without a streaming provider.',
-  alternates: { canonical: 'https://petersmartlink.com/music' },
+  alternates: { canonical: 'https://otya.site/music' },
 }
 
 const features = [
