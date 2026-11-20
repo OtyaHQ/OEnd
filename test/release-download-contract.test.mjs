@@ -7,7 +7,7 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 test('generic release downloads never silently select ARM64', () => {
   const latest = read('src/app/latest/route.ts')
   const workflow = read('src/release-workflow.mjs')
-  const downloadPage = read('src/app/download/omy-play/DownloadButtons.tsx')
+  const downloadPage = read('src/app/download/otya-player/DownloadButtons.tsx')
 
   assert.match(latest, /const DOWNLOAD_PAGE = 'https:\/\/otya\.site\/download\/omy-play'/)
   assert.match(latest, /auto:\s+DOWNLOAD_PAGE/)
