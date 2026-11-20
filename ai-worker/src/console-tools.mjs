@@ -1,4 +1,5 @@
 import { CONVERSATION_TONE } from './conversation-tone.mjs'
+import { coreRequest } from './core-client.mjs'
 import { routeTechnicalTask } from './technical-team.mjs'
 import { gmailStatus, listGmailMessages } from './gmail-connector.mjs'
 import { controlPlaneStatus } from './control-plane.mjs'
@@ -75,7 +76,7 @@ async function telegramCoreStatus() {
 function sharedEmailGatewayReady(env) {
   return Boolean(
     env.AUTH?.fetch
-    && String(env.OTYA_NEXT_MAIL_SERVICE_TOKEN || '').length >= 32
+    && String(env.OTYA_O_MAIL_SERVICE_TOKEN || '').length >= 32
   )
 }
 
@@ -97,8 +98,8 @@ async function pluginRegistry(env) {
       capabilities: ['transactional email via Otya Auth', 'outbound support replies', 'operational alerts'],
       write: true,
       setup_hint: emailGatewayReady
-        ? 'Otya Next can reach the private Otya Auth gateway. Resend credentials remain owned by Otya Auth; provider acceptance is verified there.'
-        : 'Configure the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN on Otya Next and Otya Auth. Do not add a direct RESEND_API_KEY to Otya Next.'
+        ? 'O can reach the private Otya Auth gateway. Resend credentials remain owned by Otya Auth; provider acceptance is verified there.'
+        : 'Configure the same high-entropy OTYA_O_MAIL_SERVICE_TOKEN on O and Otya Auth. Do not add a direct RESEND_API_KEY to O.'
     },
     {
       id: 'telegram',
@@ -194,76 +195,71 @@ async function scalar(env, sql, bindings = []) {
 }
 
 async function systemSnapshot(env) {
-  const out = {
-    generated_at: new Date().toISOString(),
+  const core = await coreRequest(env, 'operations-snapshot', { query: { window: '-7 days' } })
+  const metrics = core.metrics || {}
+  const ownSupportActions = await scalar(env, "SELECT COUNT(*) count FROM ai_support_audit WHERE created_at>=datetime('now','-7 days')")
+  return {
+    generated_at: core.generatedAt || new Date().toISOString(),
     database: Boolean(env.DB),
     kv: Boolean(env.KV),
     ai: Boolean(env.AI?.run),
     ai_search: Boolean(env.AI_SEARCH?.search),
     browser: Boolean(env.BROWSER),
     push: Boolean(env.PUSH_QUEUE?.send),
+    core_data_api: Array.isArray(core.queueDelivery),
     email: sharedEmailGatewayReady(env),
-    email_transport: 'Otya Auth (shared Resend gateway)',
+    email_transport: 'Otya ID (shared Resend gateway)',
     direct_email_provider_key_required: false,
     control_plane: await controlPlaneStatus(env),
+    feedback_7d: Number(metrics.feedback || 0),
+    crashes_7d: Number(metrics.crashes || 0),
+    downloads_7d: Number(metrics.downloads || 0),
+    users: Number(metrics.users || 0),
+    devices: Number(metrics.devices || 0),
+    support_actions_7d: Number(ownSupportActions || 0),
+    latest_release: core.latestRelease || null,
   }
-
+}
+async function recentFeedback(env) {
+  const core = await coreRequest(env, 'feedback', { query: { limit: '20' } })
+  const items = Array.isArray(core.items) ? core.items : []
+  let annotations = []
   if (env.DB?.prepare) {
-    out.feedback_7d = await scalar(env, "SELECT COUNT(*) count FROM feedback WHERE created_at>=datetime('now','-7 days')")
-    out.crashes_7d = await scalar(env, "SELECT COUNT(*) count FROM crash_reports WHERE created_at>=datetime('now','-7 days')")
-    out.downloads_7d = await scalar(env, "SELECT COUNT(*) count FROM downloads WHERE created_at>=datetime('now','-7 days')")
-    out.users = await scalar(env, 'SELECT COUNT(*) count FROM users')
-    out.devices = await scalar(env, 'SELECT COUNT(*) count FROM devices')
-    out.support_actions_7d = await scalar(env, "SELECT COUNT(*) count FROM ai_support_audit WHERE created_at>=datetime('now','-7 days')")
     try {
-      out.latest_release = await env.DB.prepare(
-        'SELECT tag,version,released_at FROM releases ORDER BY released_at DESC LIMIT 1',
-      ).first()
+      const result = await env.DB.prepare('SELECT feedback_id,category,sentiment,flagged,suggested_reply,updated_at FROM ai_feedback_annotations ORDER BY updated_at DESC LIMIT 100').all()
+      annotations = result.results || []
     } catch {}
   }
-  return out
+  const byId = new Map(annotations.map(row => [String(row.feedback_id), row]))
+  return items.map(item => {
+    const annotation = byId.get(String(item.id)) || {}
+    return { ...item, category: annotation.category || item.category, sentiment: annotation.sentiment || null, flagged: Number(annotation.flagged || 0) === 1, suggested_reply: annotation.suggested_reply || null, description: clean(item.description, 700) }
+  })
 }
-
-async function recentFeedback(env) {
-  if (!env.DB?.prepare) return []
-  try {
-    const { results = [] } = await env.DB.prepare(
-      'SELECT id,category,sentiment,description,created_at FROM feedback ORDER BY created_at DESC LIMIT 20',
-    ).all()
-    return results.map((x) => ({ ...x, description: clean(x.description, 700) }))
-  } catch {
-    return []
-  }
-}
-
 async function recentCrashes(env) {
-  if (!env.DB?.prepare) return []
-  try {
-    const { results = [] } = await env.DB.prepare(
-      "SELECT group_id,error_type,COUNT(*) count,MAX(created_at) latest FROM crash_reports WHERE created_at>=datetime('now','-14 days') GROUP BY group_id,error_type ORDER BY count DESC LIMIT 15",
-    ).all()
-    return results
-  } catch {
-    return []
+  const core = await coreRequest(env, 'crashes', { query: { window: '-14 days', limit: '15' } })
+  const groups = Array.isArray(core.groups) ? core.groups : []
+  let annotations = []
+  if (env.DB?.prepare) {
+    try {
+      const result = await env.DB.prepare('SELECT crash_id,group_id,summary,updated_at FROM ai_crash_annotations ORDER BY updated_at DESC LIMIT 100').all()
+      annotations = result.results || []
+    } catch {}
   }
+  const byId = new Map(annotations.map(row => [String(row.crash_id), row]))
+  return groups.map(group => {
+    const annotation = byId.get(String(group.sample_id)) || {}
+    return { ...group, summary: annotation.summary || null }
+  })
 }
-
 async function recentReleases(env) {
-  if (!env.DB?.prepare) return []
-  try {
-    const { results = [] } = await env.DB.prepare(
-      'SELECT tag,version,version_code,changelog,released_at FROM releases ORDER BY released_at DESC LIMIT 8',
-    ).all()
-    return results.map((x) => ({ ...x, changelog: clean(x.changelog, 1000) }))
-  } catch {
-    return []
-  }
+  const core = await coreRequest(env, 'releases', { query: { limit: '8' } })
+  return (Array.isArray(core.releases) ? core.releases : []).map(x => ({ ...x, changelog: clean(x.changelog, 1000) }))
 }
-
 async function supportInbox(env, limit = 12) {
   const gmail = await gmailStatus(env)
   if (!gmail.connected) return []
-  const rows = await listGmailMessages(env, 'to:{support@otya.site support@petersmartlink.com} in:inbox', Math.max(1, Math.min(limit, 20)))
+  const rows = await listGmailMessages(env, 'to:support@otya.site in:inbox', Math.max(1, Math.min(limit, 20)))
   return rows.map((x) => ({
     id: x.id,
     from: clean(x.from, 300),
