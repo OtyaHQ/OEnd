@@ -11,11 +11,11 @@ test('Opoint is discoverable from primary navigation, home, product directory an
   const footer = read('src/components/SiteFooter.tsx')
   const sitemap = read('src/app/sitemap.ts')
 
-  assert.match(navigation, /\['Opoint', '\/otyapoint'\]/)
-  assert.match(home, /href="\/otyapoint"/)
-  assert.match(products, /href="\/otyapoint"/)
-  assert.match(footer, /\['Opoint shop', '\/otyapoint'\]/)
-  assert.match(sitemap, /\$\{BASE\}\/otyapoint/)
+  assert.match(navigation, /\['Opoint', '\/opoint'\]/)
+  assert.match(home, /href="\/opoint"/)
+  assert.match(products, /href="\/opoint"/)
+  assert.match(footer, /\['Opoint shop', '\/opoint'\]/)
+  assert.match(sitemap, /\$\{BASE\}\/opoint/)
 })
 
 test('Opoint page describes the real physical shop and avoids invented contact/location details', () => {
@@ -33,7 +33,7 @@ test('Opoint page describes the real physical shop and avoids invented contact/l
 })
 
 test('Opoint website remains an information and visit page, not an online store', () => {
-  const page = read('src/app/otyapoint/page.tsx')
+  const page = read('src/app/opoint/page.tsx')
 
   assert.match(page, /There is no online cart, checkout or online payment/)
   assert.match(page, /Purchases and mobile-money agency services are handled in person/)
