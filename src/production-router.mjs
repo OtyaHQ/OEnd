@@ -12,11 +12,11 @@ const SPACE_HOST = 'space.otya.site'
 // every request to the matching canonical Otya host. A 308 preserves POST bodies
 // for OAuth callbacks and mobile/API requests while moving cookies to .otya.site.
 const LEGACY_HOST_REDIRECTS = new Map([
-  ['petersmartlink.com', APP_HOST],
-  ['www.petersmartlink.com', 'www.otya.site'],
-  ['docs.petersmartlink.com', DOCS_HOST],
-  ['status.petersmartlink.com', STATUS_HOST],
-  ['space.petersmartlink.com', SPACE_HOST],
+  ['retired-host.invalid', APP_HOST],
+  ['www.retired-host.invalid', 'www.otya.site'],
+  ['docs.retired-host.invalid', DOCS_HOST],
+  ['status.retired-host.invalid', STATUS_HOST],
+  ['space.retired-host.invalid', SPACE_HOST],
 ])
 
 const CANONICAL_CSP = [
@@ -52,7 +52,7 @@ async function authenticateTogetherUser(request, env) {
   const controller = new AbortController()
   const deadline = setTimeout(() => controller.abort(), 5000)
   try {
-    const response = await env.AUTH.fetch(new Request('https://otya-id/auth/verify', {
+    const response = await env.AUTH.fetch(new Request('https://oid/auth/verify', {
       method: 'GET',
       headers: { Authorization: authorization },
       signal: controller.signal,
@@ -124,7 +124,7 @@ function matchSpaceConsoleRoute(pathname) {
     ['activity', '/account/activity/'],
     ['notifications', '/account/notifications/'],
     ['settings', '/account/settings/'],
-    ['next', '/ask/'],
+    ['o', '/ask/'],
     ['telegram', '/telegram/'],
     ['admin', '/admin'],
   ])
@@ -235,7 +235,7 @@ async function routeOtyaRequest(request, env, ctx) {
       // not another copy of the documentation index.
       const publicPath = url.pathname.replace(/\/$/, '')
       const publicDestinations = new Set([
-        '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
+        '/apps', '/opoint', '/omy-play', '/download/omy-play', '/music',
         '/developers', '/company', '/contact', '/privacy', '/terms',
         '/delete-account',
       ])
