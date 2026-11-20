@@ -574,6 +574,254 @@ async function handleLogin(req: Request, env: Env): Promise<Response> {
   }, env)
 }
 
+const EMAIL_LOGIN_OTP_TTL_SECS = 10 * 60
+const EMAIL_LOGIN_OTP_SEND_TTL_SECS = 60 * 60
+const EMAIL_LOGIN_OTP_ATTEMPT_TTL_SECS = 15 * 60
+const EMAIL_LOGIN_OTP_MAX_SENDS = 3
+const EMAIL_LOGIN_OTP_MAX_SENDS_PER_IP = 12
+const EMAIL_LOGIN_OTP_MAX_ATTEMPTS = 5
+const EMAIL_LOGIN_OTP_MAX_VERIFY_PER_EMAIL = 10
+const EMAIL_LOGIN_OTP_MAX_VERIFY_PER_IP = 20
+const EMAIL_LOGIN_OTP_CODE_RE = /^[A-Z][0-9]{4}$/
+const EMAIL_LOGIN_OTP_GENERIC_MESSAGE = 'If an Otya account exists for that email, a sign-in code has been sent.'
+const EMAIL_LOGIN_OTP_INVALID_MESSAGE = 'Invalid or expired sign-in code.'
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
+async function emailLoginOtpDigest(
+  env: Env,
+  userId: string,
+  challengeId: string,
+  email: string,
+  code: string,
+): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(env.AUTH_JWT_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const payload = 'otya-email-login:' + userId + ':' + challengeId + ':' + email + ':' + code.trim().toUpperCase()
+  const digest = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
+  return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
+type EmailLoginChallengeRow = {
+  user_id: string
+  challenge_id: string
+  email_normalized: string
+  code_digest: string
+  attempt_count: number
+  expires_at: string
+  status: string
+  email: string
+  name: string | null
+  avatar_url: string | null
+}
+
+/** POST /auth/login/otp/request — request an inbox-bound Otya sign-in code. */
+async function handleRequestEmailLoginOtp(req: Request, env: Env): Promise<Response> {
+  let body: Record<string, unknown>
+  try {
+    const raw = await req.text()
+    if (new TextEncoder().encode(raw).byteLength > 2048) {
+      return jsonErr('Invalid request', env, 400, req)
+    }
+    body = JSON.parse(raw) as Record<string, unknown>
+  } catch {
+    return jsonErr('Invalid request', env, 400, req)
+  }
+
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+  if (!email || email.length > 254 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)) {
+    return jsonOk({ ok: true, message: EMAIL_LOGIN_OTP_GENERIC_MESSAGE }, env, 202, req)
+  }
+
+  // Hash identifiers before placing them in KV keys. KV contains only rate
+  // counters and never the user's email address, IP address or one-time code.
+  const [emailKey, ipKey] = await Promise.all([
+    sha256Hex(email),
+    sha256Hex(getClientIp(req)),
+  ])
+  const [emailAllowed, ipAllowed] = await Promise.all([
+    checkRateLimit(
+      env.AUTH_KV,
+      'email_login_otp_send_email:' + emailKey,
+      EMAIL_LOGIN_OTP_MAX_SENDS,
+      EMAIL_LOGIN_OTP_SEND_TTL_SECS,
+    ),
+    checkRateLimit(
+      env.AUTH_KV,
+      'email_login_otp_send_ip:' + ipKey,
+      EMAIL_LOGIN_OTP_MAX_SENDS_PER_IP,
+      EMAIL_LOGIN_OTP_SEND_TTL_SECS,
+    ),
+  ])
+  if (!emailAllowed.allowed || !ipAllowed.allowed) {
+    return jsonOk({ ok: true, message: EMAIL_LOGIN_OTP_GENERIC_MESSAGE }, env, 202, req)
+  }
+
+  const user = await getUserByEmail(env.AUTH_DB, email)
+  if (!user?.email || !env.EMAIL) {
+    return jsonOk({ ok: true, message: EMAIL_LOGIN_OTP_GENERIC_MESSAGE }, env, 202, req)
+  }
+
+  const challengeId = generateUuid()
+  const code = generateOtp()
+  const expiresAt = new Date(Date.now() + EMAIL_LOGIN_OTP_TTL_SECS * 1000).toISOString()
+  const codeDigest = await emailLoginOtpDigest(env, user.id, challengeId, email, code)
+
+  // One row per account makes a reissued code supersede the previous one.
+  // Verification consumes it with a single conditional D1 UPDATE, so concurrent
+  // requests cannot redeem the same challenge twice.
+  await env.AUTH_DB.prepare(
+    "INSERT INTO email_login_challenges (user_id,challenge_id,email_normalized,code_digest,attempt_count,expires_at,status,created_at,consumed_at) VALUES (?,?,?,?,0,?,'PENDING',datetime('now'),NULL) ON CONFLICT(user_id) DO UPDATE SET challenge_id=excluded.challenge_id,email_normalized=excluded.email_normalized,code_digest=excluded.code_digest,attempt_count=0,expires_at=excluded.expires_at,status='PENDING',created_at=datetime('now'),consumed_at=NULL",
+  ).bind(user.id, challengeId, email, codeDigest, expiresAt).run()
+
+  try {
+    await env.EMAIL.send({
+      from: { email: 'noreply@otya.site', name: 'OTYA' },
+      to: [{ email: user.email }],
+      subject: 'Your Otya sign-in code',
+      text: [
+        'Use this one-time code to sign in to your Otya Account:',
+        '',
+        code,
+        '',
+        'This code expires in 10 minutes and can be used once.',
+        'If you did not request this code, you can ignore this email.',
+        '— The Otya Team',
+      ].join('\n'),
+    })
+  } catch (error) {
+    await env.AUTH_DB.prepare(
+      "UPDATE email_login_challenges SET status='FAILED' WHERE user_id=? AND challenge_id=? AND status='PENDING'",
+    ).bind(user.id, challengeId).run().catch(() => undefined)
+    console.error('[auth/email-otp] Sign-in code delivery failed:', (error as Error)?.name || 'Error')
+  }
+
+  return jsonOk({ ok: true, message: EMAIL_LOGIN_OTP_GENERIC_MESSAGE }, env, 202, req)
+}
+
+/** POST /auth/login/otp/verify — consume a one-use email code and issue a normal Otya session. */
+async function handleVerifyEmailLoginOtp(req: Request, env: Env): Promise<Response> {
+  let body: Record<string, unknown>
+  try {
+    const raw = await req.text()
+    if (new TextEncoder().encode(raw).byteLength > 2048) {
+      return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+    }
+    body = JSON.parse(raw) as Record<string, unknown>
+  } catch {
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+  const code = typeof body.code === 'string' ? body.code.trim().toUpperCase() : ''
+  if (!email || email.length > 254 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email)) {
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  const [emailKey, ipKey] = await Promise.all([
+    sha256Hex(email),
+    sha256Hex(getClientIp(req)),
+  ])
+  const [emailAllowed, ipAllowed] = await Promise.all([
+    checkRateLimit(
+      env.AUTH_KV,
+      'email_login_otp_verify_email:' + emailKey,
+      EMAIL_LOGIN_OTP_MAX_VERIFY_PER_EMAIL,
+      EMAIL_LOGIN_OTP_ATTEMPT_TTL_SECS,
+    ),
+    checkRateLimit(
+      env.AUTH_KV,
+      'email_login_otp_verify_ip:' + ipKey,
+      EMAIL_LOGIN_OTP_MAX_VERIFY_PER_IP,
+      EMAIL_LOGIN_OTP_ATTEMPT_TTL_SECS,
+    ),
+  ])
+  if (!emailAllowed.allowed || !ipAllowed.allowed) {
+    return jsonErr('Too many sign-in attempts. Request a new code later.', env, 429, req)
+  }
+
+  const challenge = await env.AUTH_DB.prepare(
+    "SELECT c.user_id,c.challenge_id,c.email_normalized,c.code_digest,c.attempt_count,c.expires_at,c.status,u.email,u.name,u.avatar_url FROM email_login_challenges c JOIN users u ON u.id=c.user_id WHERE c.email_normalized=? AND lower(trim(COALESCE(u.email,'')))=c.email_normalized LIMIT 1",
+  ).bind(email).first<EmailLoginChallengeRow>()
+
+  if (!challenge || challenge.status !== 'PENDING') {
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  const expiresAt = Date.parse(challenge.expires_at)
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+    await env.AUTH_DB.prepare(
+      "UPDATE email_login_challenges SET status='EXPIRED' WHERE user_id=? AND challenge_id=? AND status='PENDING'",
+    ).bind(challenge.user_id, challenge.challenge_id).run()
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  if (challenge.attempt_count >= EMAIL_LOGIN_OTP_MAX_ATTEMPTS) {
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  const codeIsWellFormed = EMAIL_LOGIN_OTP_CODE_RE.test(code)
+  const suppliedDigest = codeIsWellFormed
+    ? await emailLoginOtpDigest(env, challenge.user_id, challenge.challenge_id, email, code)
+    : ''
+
+  const consumed = await env.AUTH_DB.prepare(
+    "UPDATE email_login_challenges SET status='CONSUMED',consumed_at=CURRENT_TIMESTAMP WHERE user_id=? AND challenge_id=? AND email_normalized=? AND code_digest=? AND status='PENDING' AND attempt_count < ? AND datetime(expires_at) > datetime('now')",
+  ).bind(
+    challenge.user_id,
+    challenge.challenge_id,
+    email,
+    suppliedDigest,
+    EMAIL_LOGIN_OTP_MAX_ATTEMPTS,
+  ).run()
+
+  if (consumed.meta.changes !== 1) {
+    await env.AUTH_DB.prepare(
+      "UPDATE email_login_challenges SET attempt_count=attempt_count+1,status=CASE WHEN attempt_count+1 >= ? THEN 'LOCKED' ELSE status END WHERE user_id=? AND challenge_id=? AND status='PENDING' AND attempt_count < ? AND datetime(expires_at) > datetime('now') AND code_digest <> ?",
+    ).bind(
+      EMAIL_LOGIN_OTP_MAX_ATTEMPTS,
+      challenge.user_id,
+      challenge.challenge_id,
+      EMAIL_LOGIN_OTP_MAX_ATTEMPTS,
+      suppliedDigest,
+    ).run()
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  const verified = await env.AUTH_DB.prepare(
+    "UPDATE users SET is_verified=1,updated_at=datetime('now') WHERE id=? AND lower(trim(COALESCE(email,'')))=?",
+  ).bind(challenge.user_id, email).run()
+  if (verified.meta.changes !== 1) {
+    return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+  }
+
+  const user = await getUserById(env.AUTH_DB, challenge.user_id)
+  if (!user?.email) return jsonErr(EMAIL_LOGIN_OTP_INVALID_MESSAGE, env, 401, req)
+
+  const accessToken = await issueAccessToken(user.id, user.email, env.AUTH_JWT_SECRET)
+  const refreshToken = await issueRefreshToken(env.AUTH_KV, user.id)
+  return jsonOk({
+    ok: true,
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      avatar_url: user.avatar_url,
+      is_verified: user.is_verified,
+    },
+  }, env, 200, req)
+}
+
 /** POST /auth/refresh */
 async function handleRefresh(req: Request, env: Env): Promise<Response> {
   let body: Record<string, unknown>
@@ -1137,6 +1385,12 @@ export default {
       }
       if (method === 'POST' && path === '/auth/login') {
         return handleLogin(request, env)
+      }
+      if (method === 'POST' && path === '/auth/login/otp/request') {
+        return handleRequestEmailLoginOtp(request, env)
+      }
+      if (method === 'POST' && path === '/auth/login/otp/verify') {
+        return handleVerifyEmailLoginOtp(request, env)
       }
       if (method === 'POST' && path === '/auth/refresh') {
         return handleRefresh(request, env)

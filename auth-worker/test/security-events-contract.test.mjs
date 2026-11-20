@@ -20,6 +20,8 @@ test('material identity transitions are audited without request bodies or creden
   for (const event of [
     'registration',
     'password_login',
+    'email_otp_login_requested',
+    'email_otp_login_verified',
     'google_login',
     'logout',
     'password_reset_requested',
@@ -36,7 +38,9 @@ test('material identity transitions are audited without request bodies or creden
   assert.doesNotMatch(events, /request\.json\(/)
   assert.doesNotMatch(events, /Authorization/)
   assert.doesNotMatch(events, /password_hash/)
-  assert.doesNotMatch(events, /otp/i)
+  assert.match(events, /'\/auth\/login\/otp\/request': 'email_otp_login_requested'/)
+  assert.match(events, /'\/auth\/login\/otp\/verify': 'email_otp_login_verified'/)
+  assert.doesNotMatch(events, /code_digest|otp_value|one_time_code|request\.text\(|request\.json\(/i)
   assert.doesNotMatch(events, /cf-connecting-ip/i)
 })
 

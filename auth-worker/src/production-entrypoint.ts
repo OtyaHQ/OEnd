@@ -1,5 +1,5 @@
 import authWorker from './entrypoint'
-import { assertSchemaReady } from './db'
+import { assertSchemaReady, assertEmailLoginOtpSchemaReady } from './db'
 import { handleAdminMfa, type AdminMfaEnv } from './admin-mfa'
 import { handleTelegramLogin, type TelegramLoginEnv } from './telegram-login'
 import { handleGoogleLink } from './google-link'
@@ -35,6 +35,7 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
 }
 
 let identitySchemaReady: Promise<void> | null = null
+let emailLoginOtpSchemaReady: Promise<void> | null = null
 const GOOGLE_VERIFY_TIMEOUT_MS = 8000
 
 function configuredGoogleAudiences(env: ProductionEnv): Set<string> {
@@ -248,6 +249,22 @@ async function ensureIdentitySchema(env: ProductionEnv): Promise<Response | null
   }
 }
 
+async function ensureEmailLoginOtpSchema(env: ProductionEnv): Promise<Response | null> {
+  try {
+    if (!emailLoginOtpSchemaReady) {
+      emailLoginOtpSchemaReady = assertEmailLoginOtpSchemaReady(env.AUTH_DB).catch(error => {
+        emailLoginOtpSchemaReady = null
+        throw error
+      })
+    }
+    await emailLoginOtpSchemaReady
+    return null
+  } catch (error) {
+    console.error('[auth] Email OTP schema unavailable:', (error as Error)?.message)
+    return authError('Email sign-in is temporarily unavailable. Please try again shortly.', 503, 'EMAIL_OTP_SCHEMA_UNAVAILABLE')
+  }
+}
+
 function createsIdentitySession(request: Request, url: URL): boolean {
   return request.method === 'POST' && ['/auth/register', '/auth/login', '/auth/google'].includes(url.pathname)
 }
@@ -387,6 +404,16 @@ export default {
       if (schemaError) return audited(request, schemaError, env)
     }
 
+    if (
+      request.method === 'POST'
+      && ['/auth/login/otp/request', '/auth/login/otp/verify'].includes(url.pathname)
+    ) {
+      const identitySchemaError = await ensureIdentitySchema(env)
+      if (identitySchemaError) return audited(request, identitySchemaError, env)
+      const otpSchemaError = await ensureEmailLoginOtpSchema(env)
+      if (otpSchemaError) return audited(request, otpSchemaError, env)
+    }
+
     if (request.method === 'POST' && url.pathname === '/auth/google') {
       const googlePayload = await verifiedGooglePayload(request, env)
       if (googlePayload instanceof Response) return audited(request, googlePayload, env)
@@ -418,9 +445,9 @@ export default {
       })
     }
 
-    if (request.method === 'POST' && url.pathname === '/auth/login' && response.ok) {
+    if (request.method === 'POST' && ['/auth/login', '/auth/login/otp/verify'].includes(url.pathname) && response.ok) {
       await deliverNewDeviceAlert(request, response, env).catch(error => {
-        console.error('[auth/email] Password new-device alert failed:', (error as Error)?.message)
+        console.error('[auth/email] Sign-in new-device alert failed:', (error as Error)?.message)
       })
     }
 

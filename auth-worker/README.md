@@ -1,6 +1,6 @@
 # OTYA Auth — Cloudflare Worker
 
-Authentication service for **OTYA**. It powers registration, login, Google sign-in, email verification, password recovery, optional phone verification, linked identities, JWT issuance, consent and account security.
+Authentication service for **OTYA**. It powers registration, passwordless email-code and password sign-in, Google sign-in, email verification, password recovery, optional phone verification, linked identities, JWT issuance, consent and account security.
 
 ## Architecture
 
@@ -75,6 +75,8 @@ All endpoints return `{ error: string }` on failure.
 |---|---|---|---|
 | POST | `/auth/register` | None | Email + password signup |
 | POST | `/auth/login` | None | Email + password login |
+| POST | `/auth/login/otp/request` | None | Request a short-lived email sign-in code; response does not disclose whether the account exists |
+| POST | `/auth/login/otp/verify` | One-time email code | Consume a code once and issue the standard Otya access/refresh session; existing 2FA checks still apply |
 | POST | `/auth/refresh` | Refresh token | Issue a new access token |
 | POST | `/auth/logout` | Refresh token | Revoke refresh token |
 | POST | `/auth/google` | Google token | Google login/signup |
@@ -107,6 +109,9 @@ Do not collect date of birth, gender, physical address, national ID/passport dat
 - **Access token:** HS256 JWT, 15-minute TTL. Payload: `{ sub, email, iat, exp }`.
 - **Refresh token:** random token stored in KV with a 30-day TTL.
 - **Email verification/password-reset OTP:** exactly **5 characters** matching `^[A-Z][0-9]{4}$`.
+- **Passwordless sign-in OTP:** exactly **5 characters** matching `^[A-Z][0-9]{4}$`, expires after 10 minutes, and is consumed once. A new request supersedes the prior code for that account. Only an HMAC digest is stored in Auth D1; KV stores rate counters under hashed identifiers. The code is never stored in plaintext. These two OTP routes fail closed until the additive `20261118_email_login_challenges.sql` migration is applied; legacy password, registration and Google sign-in do not depend on this migration.
+- **Rate limits:** sign-in code requests are capped per account and IP; verification attempts are capped per challenge, account and IP. The request response is generic to reduce account enumeration.
+- **Second factor:** accounts with Otya two-step verification enabled must still pass the configured authenticator/recovery check after email-code verification. The resulting session is recorded by the existing session manager.
 - OTPs are single-use and rate-limited.
 
 ## Branding
