@@ -3,11 +3,12 @@ import { SiteNav } from '@/components/SiteNav'
 import { OtyaAssistPrompt } from '../../components/OtyaAssistPrompt'
 
 export const metadata: Metadata = {
-  title: 'Next',
-  description: 'Talk with Next, the Otya assistant, for music ideas, support and everyday help.',
+  title: 'Otya Help',
+  description: 'Get public Otya product guidance, service information and support.',
+  robots: { index: false, follow: false },
 }
 
-export default function NextPage() {
+export default function OtyaHelpPage() {
   return <div className="h-dvh overflow-hidden flex flex-col" style={{ color:'var(--cosmos-text-primary)', background:'var(--cosmos-scaffold)' }}>
     <SiteNav />
     <main className="flex-1 min-h-0 px-3 sm:px-5 py-3 sm:py-4">
