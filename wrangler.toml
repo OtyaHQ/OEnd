@@ -1,10 +1,20 @@
 # Production release gate: deploy only after the mainline validation workflow succeeds.
-name = "otya-end"
+name = "oend"
 main = "src/production-router.mjs"
 compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 workers_dev = false
+tags = ["OEnd", "production"]
+routes = [
+  { pattern = "otya.site", custom_domain = true },
+  { pattern = "www.otya.site", custom_domain = true },
+  { pattern = "docs.otya.site", custom_domain = true },
+  { pattern = "status.otya.site", custom_domain = true },
+  { pattern = "space.otya.site", custom_domain = true },
+  { pattern = "api.otya.site", custom_domain = true }
+]
+
 
 
 [observability]
@@ -22,7 +32,7 @@ enabled = true
 
 [vars]
 ENVIRONMENT = "production"
-APP_NAME    = "Otya End"
+APP_NAME    = "OEnd"
 WEBSITE_URL = "https://otya.site"
 ADMIN_REPORT_EMAIL = "otyahq@gmail.com"
 FIREBASE_PROJECT_ID = "otya-player"
@@ -95,7 +105,7 @@ queue   = "o-jobs"
 
 [[services]]
 binding = "AUTH"
-service = "otya-id"
+service = "oid"
 [[services]]
 binding = "AI_SUPPORT"
 service = "o"
@@ -109,3 +119,11 @@ class_name = "OtyaReleaseWorkflow"
 crons = ["*/5 * * * *", "0 * * * *"]
 # Release note: Next.js 16.4.6 + OpenNext Cloudflare 1.20.16 were validated in PR #266.
 # This comment-only commit triggers the existing guarded [DEPLOY-ALL] release workflow; it does not alter runtime configuration.
+
+# Product-owned APIs remain private and are accessed only through OEnd gateways.
+[[services]]
+binding = "OPOINT_API"
+service = "opoint"
+[[services]]
+binding = "OMY_PLAY_API"
+service = "omy-play"
