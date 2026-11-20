@@ -16,7 +16,7 @@ test('Telegram runtime self-heals the canonical webhook and exposes dependency r
   assert.match(entry, /ai_service_bound/)
   assert.match(entry, /ai_service_ready/)
   assert.match(entry, /AI_SUPPORT\.fetch/)
-  assert.match(entry, /https:\/\/otya-next\/health/)
+  assert.match(entry, /https:\/\/o\/health/)
   assert.match(entry, /data\?\.ai === true/)
   assert.match(entry, /TELEGRAM_HEALTH_CRON = '\*\/5 \* \* \* \*'/)
   assert.match(entry, /ensureTelegramWebhook\(env\)/)
