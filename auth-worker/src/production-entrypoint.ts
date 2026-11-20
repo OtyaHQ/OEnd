@@ -30,7 +30,7 @@ type ProductionEnv = Record<string, unknown> & AdminMfaEnv & TelegramLoginEnv & 
   GOOGLE_WEB_CLIENT_ID?: string
   RESEND_API_KEY?: string
   OTYAPOINT_INVITE_SERVICE_TOKEN?: string | { get(): Promise<string> }
-  OTYA_NEXT_MAIL_SERVICE_TOKEN?: string
+  OTYA_O_MAIL_SERVICE_TOKEN?: string
   PREVERIFIED_GOOGLE_PAYLOAD?: GoogleTokenPayload
 }
 
@@ -179,12 +179,12 @@ async function handleOtyaPointStaffInvitation(request: Request, env: ProductionE
 
 async function handleOtyaNextOpsEmail(request: Request, env: ProductionEnv): Promise<Response | null> {
   const url = new URL(request.url)
-  if (url.pathname !== '/internal/notifications/otya-next/ops-report') return null
+  if (url.pathname !== '/internal/notifications/o/ops-report') return null
   if (request.method !== 'POST') return authError('Method not allowed', 405)
-  if (request.headers.get('x-otya-service') !== 'otya-next'
+  if (request.headers.get('x-otya-service') !== 'o'
     || !(await matchesInternalServiceSecret(
       request.headers.get('x-otya-service-token') || '',
-      env.OTYA_NEXT_MAIL_SERVICE_TOKEN || '',
+      env.OTYA_O_MAIL_SERVICE_TOKEN || '',
     ))) return authError('Service not allowed', 403)
 
   const rawBody = await request.text()
