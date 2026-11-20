@@ -4,17 +4,24 @@ import test from 'node:test'
 
 const read = path => readFileSync(path, 'utf8')
 
-test('Omy Play downloads use the product-owned production API', () => {
+test('Omy Play downloads use the product-owned same-origin release gateway', () => {
   const download = read('src/app/download/omy-play/DownloadButtons.tsx')
   const page = read('src/app/download/omy-play/page.tsx')
+  const gateway = read('src/app/api/omy-play/[...path]/route.ts')
+  const config = read('wrangler.toml')
   assert.match(page, /title: 'Download Omy Play for Android'/)
   assert.match(page, /canonical: 'https:\/\/otya\.site\/download\/omy-play'/)
-  assert.match(download, /https:\/\/api\.otya\.site\/omy-play\/latest/)
-  assert.match(download, /https:\/\/api\.otya\.site\/omy-play\/apk\//)
+  assert.match(download, /fetch\('\/api\/omy-play\/latest'/)
+  assert.match(download, /\/api\/omy-play\/apk\/\$\{targetAbi\}/)
   assert.match(download, /latest\.available === true/)
   assert.match(download, /No public Android release is available yet/)
-  assert.doesNotMatch(download, /fetch\('\/latest'/)
-  assert.doesNotMatch(download, /\/apk\/\$\{targetAbi\}/)
+  assert.match(gateway, /OMY_PLAY_API/)
+  assert.match(gateway, /latest/)
+  assert.match(gateway, /apk\/arm64/)
+  assert.match(gateway, /apk\/arm32/)
+  assert.match(gateway, /same_origin_required/)
+  assert.match(config, /binding = "OMY_PLAY_API"\s+service = "omy-play"/)
+  assert.doesNotMatch(download, /otya-player|Otya Media/)
 })
 
 test('Opoint shop and Omy Play product links use canonical public routes', () => {
@@ -23,6 +30,7 @@ test('Opoint shop and Omy Play product links use canonical public routes', () =>
   const navigation = read('src/components/SiteNav.tsx')
   const footer = read('src/components/SiteFooter.tsx')
   const apps = read('src/app/apps/page.tsx')
+  const router = read('src/production-router.mjs')
   assert.match(shop, /name: 'Opoint'/)
   assert.match(shop, /canonical: 'https:\/\/otya\.site\/opoint'/)
   assert.match(media, /canonical: 'https:\/\/otya\.site\/omy-play'/)
@@ -31,6 +39,8 @@ test('Opoint shop and Omy Play product links use canonical public routes', () =>
   assert.match(footer, /\['Opoint shop', '\/opoint'\]/)
   assert.match(footer, /\['Omy Play', '\/omy-play'\]/)
   assert.match(apps, />O<\/h2>/)
+  assert.match(router, /'\/opoint', '\/omy-play', '\/download\/omy-play'/)
   assert.doesNotMatch(shop, /OtyaPoint|\/otyapoint/)
   assert.doesNotMatch(media, /Otya Media|\/otya-player/)
+  assert.doesNotMatch(navigation, /otya-player|otyapoint/)
 })
