@@ -3,7 +3,7 @@ import { getGmailMessage, gmailStatus, listGmailMessages } from './gmail-connect
 const RESEND_API = 'https://api.resend.com'
 const SUPPORT_FROM = 'Otya Support <support@otya.site>'
 const SUPPORT_ADDRESS = 'support@otya.site'
-const LEGACY_SUPPORT_ADDRESS = 'support@petersmartlink.com'
+const LEGACY_SUPPORT_ADDRESS = 'support@otya.site'
 const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast'
 const PROVIDER_TIMEOUT_MS = 8000
 const SUPPORT_INBOX_LIMIT = 20
