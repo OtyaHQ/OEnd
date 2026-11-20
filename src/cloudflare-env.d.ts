@@ -36,7 +36,7 @@ declare interface VectorizeIndex {
 }
 
 // ── Auth Service Binding ──────────────────────────────────────────────────────
-// Service Binding to the otya-auth worker (configured in wrangler.toml).
+// Service Binding to the oend-identity worker (configured in wrangler.toml).
 // Called via env.AUTH.fetch() to verify JWTs without network round-trips.
 declare interface AuthService {
   fetch(request: Request): Promise<Response>
@@ -48,7 +48,7 @@ declare interface CloudflareEnvExtensions {
   AI:              AiBinding
   AI_QUEUE:        AiQueueProducer
   VECTORIZE:       VectorizeIndex
-  AUTH:            AuthService   // Service Binding to otya-auth worker
+  AUTH:            AuthService   // Service Binding to oend-identity worker
   RESEND_API_KEY?: string
   INTERNAL_SECRET?: string       // Shared secret for /internal/delete-user
   TURNSTILE_SITE_KEY?: string    // Public Cloudflare Turnstile site key
