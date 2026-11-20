@@ -43,7 +43,7 @@ Production runtime identities and API paths must use the canonical Otya product 
 |---|---|
 | `otya-auth` | Shared identity, account security and Resend transport |
 | `otya-core` | Shared product APIs, release/notification transport and backend routing |
-| `otya-next` | Owner intelligence, scheduled operations and AI workflows |
+| `O` | Private owner intelligence, scheduled operations and AI workflows |
 | `opoint` | Opoint company, retail and agency API, privately reached through the OEnd gateway |
 
 These are product responsibilities, not duplicate backends. The private Opoint API is product-owned; OEnd supplies shared identity and gateway services. O owns the private owner-facing assistant and does not share owner memory or tools with public products.
