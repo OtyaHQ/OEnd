@@ -11,7 +11,7 @@ It provides reusable server-side identity, product-scoped APIs, integrations, de
 - **OPoint** — retail, inventory and mobile-money agency operations. Its shop records and financial ledgers remain isolated in its own data store.
 - **Omy Play** — local-first music and video. Core playback must remain available without the backend.
 - **OHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
-- **O / Otya Next** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
+- **O / O** — the private owner-facing AI coordinator and intelligence experience. Privileged execution stays server-side and approval-gated.
 
 Legacy repository slugs, Worker names, API paths, and database identifiers may remain where required for compatibility. Do not rename or delete a deployed resource solely to make its name match the product label.
 
@@ -21,7 +21,7 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 - Server-side authorization and product-scoped service contracts.
 - Transactional email through the existing Resend integration.
 - Omy Play release delivery and supporting APIs.
-- Otya Next owner intelligence, support, incidents and approved actions.
+- O owner intelligence, support, incidents and approved actions.
 - Secure recovery, audit trails, monitoring and operational readiness.
 - Private service-to-service integration between ecosystem products.
 
@@ -41,9 +41,9 @@ Legacy repository slugs, Worker names, API paths, and database identifiers may r
 
 | Runtime | Responsibility |
 |---|---|
-| `otya-auth` | Shared identity, account security and Resend transport |
-| `otya-core` | Shared product APIs, release/notification transport and backend routing |
-| `otya-next` | Owner intelligence, scheduled operations and AI workflows |
+| `oend-identity` | Shared identity, account security and Resend transport |
+| `oend` | Shared product APIs, release/notification transport and backend routing |
+| `o` | Owner intelligence, scheduled operations and AI workflows |
 | OPoint API source | Product-scoped shop and agency operations, isolated from shared account data |
 
 These names describe separate runtime responsibilities; they are not duplicate backends. Do not add another Worker or database for a capability already owned by one of these services without a concrete isolation or scaling reason.
