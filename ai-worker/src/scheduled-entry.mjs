@@ -84,7 +84,7 @@ async function rows(env,sql,bindings=[]){
 async function supportInbox(env,limit=8){
   if(!(await gmailStatus(env)).connected)return[]
   try{
-    const messages=await listGmailMessages(env,'to:{support@otya.site support@petersmartlink.com} in:inbox',Math.max(1,Math.min(limit,20)))
+    const messages=await listGmailMessages(env,'to:support@otya.site in:inbox',Math.max(1,Math.min(limit,20)))
     return messages.map(x=>({from:clean(x.from,180),subject:clean(x.subject,220),created_at:x.date,provider:'gmail'}))
   }catch{return[]}
 }
