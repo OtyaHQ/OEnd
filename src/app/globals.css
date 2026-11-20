@@ -6,10 +6,10 @@
 html { scroll-behavior: smooth; color-scheme: light dark; }
 
 :root {
-  --cosmos-primary: #6B5CE7;
-  --cosmos-secondary: #486FE8;
-  --cosmos-accent: #C453D9;
-  --cosmos-cyan: #2EA8C9;
+  --cosmos-primary: #126BFF;
+  --cosmos-secondary: #173BFF;
+  --cosmos-accent: #27E8FF;
+  --cosmos-cyan: #27E8FF;
   --cosmos-error: #C83B4D;
   --cosmos-scaffold: #F7F7FA;
   --cosmos-surface: #FFFFFF;
@@ -19,7 +19,7 @@ html { scroll-behavior: smooth; color-scheme: light dark; }
   --cosmos-text-secondary: #6F6B78;
   --cosmos-divider: #E8E5EC;
   --cosmos-nav-selected: #16151B;
-  --cosmos-icon-tint: #6B5CE7;
+  --cosmos-icon-tint: #126BFF;
   --radius-card: 22px;
   --radius-control: 14px;
   --content-max: 1160px;
@@ -30,40 +30,40 @@ html { scroll-behavior: smooth; color-scheme: light dark; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --cosmos-primary: #A395FF;
-    --cosmos-secondary: #7DA7FF;
-    --cosmos-accent: #D980E9;
-    --cosmos-cyan: #62C5DA;
+    --cosmos-primary: #27E8FF;
+    --cosmos-secondary: #126BFF;
+    --cosmos-accent: #173BFF;
+    --cosmos-cyan: #27E8FF;
     --cosmos-error: #FF7080;
-    --cosmos-scaffold: #0C0C10;
-    --cosmos-surface: #121218;
-    --cosmos-card: #15151C;
+    --cosmos-scaffold: #050812;
+    --cosmos-surface: #0A1020;
+    --cosmos-card: #0C1426;
     --cosmos-app-bar: rgba(12,12,16,.86);
     --cosmos-text-primary: #F7F6FA;
     --cosmos-text-secondary: #AAA6B2;
     --cosmos-divider: #292830;
     --cosmos-nav-selected: #FFFFFF;
-    --cosmos-icon-tint: #A395FF;
+    --cosmos-icon-tint: #27E8FF;
     --text-muted: #85818C;
     --nav-bg: rgba(12,12,16,.87);
   }
 }
 
 :root[data-theme='dark'] {
-  --cosmos-primary: #A395FF;
-  --cosmos-secondary: #7DA7FF;
-  --cosmos-accent: #D980E9;
-  --cosmos-cyan: #62C5DA;
+  --cosmos-primary: #27E8FF;
+  --cosmos-secondary: #126BFF;
+  --cosmos-accent: #173BFF;
+  --cosmos-cyan: #27E8FF;
   --cosmos-error: #FF7080;
-  --cosmos-scaffold: #0C0C10;
-  --cosmos-surface: #121218;
-  --cosmos-card: #15151C;
+  --cosmos-scaffold: #050812;
+  --cosmos-surface: #0A1020;
+  --cosmos-card: #0C1426;
   --cosmos-app-bar: rgba(12,12,16,.86);
   --cosmos-text-primary: #F7F6FA;
   --cosmos-text-secondary: #AAA6B2;
   --cosmos-divider: #292830;
   --cosmos-nav-selected: #FFFFFF;
-  --cosmos-icon-tint: #A395FF;
+  --cosmos-icon-tint: #27E8FF;
   --text-muted: #85818C;
   --nav-bg: rgba(12,12,16,.87);
 }
