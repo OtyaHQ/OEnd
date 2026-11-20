@@ -86,7 +86,7 @@ async function currentPublicIdentity(request, env) {
   const controller = new AbortController()
   const deadline = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS)
   try {
-    const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/account', {
+    const response = await env.AUTH.fetch(new Request('https://oend-identity/auth/account', {
       method: 'GET',
       headers: { Authorization: authorization },
       signal: controller.signal,
@@ -120,7 +120,7 @@ async function lookupUsername(request, env, value) {
   const controller = new AbortController()
   const deadline = setTimeout(() => controller.abort(), AUTH_REQUEST_TIMEOUT_MS)
   try {
-    const url = new URL('https://otya-auth/auth/account')
+    const url = new URL('https://oend-identity/auth/account')
     url.searchParams.set('lookup_username', username)
     const response = await env.AUTH.fetch(new Request(url, {
       method: 'GET',
