@@ -18,7 +18,7 @@ const crashEmailDetail=(v,max=420)=>clean(v,max)
   .replace(/\/storage\/emulated\/\d+\/[^\s]+/g,'[redacted-device-path]')
 
 /**
- * Every Workers AI request from the otya-ai Worker is routed through the
+ * Every Workers AI request from the O Worker is routed through the
  * single production AI Gateway. Call sites keep using env.AI.run(), while this
  * wrapper injects the private gateway ID and disables response caching so
  * conversational/support content is never served from an inference cache.
@@ -54,6 +54,7 @@ async function email(env,subject,text,idempotencyKey){
     method:'POST',
     headers:{'content-type':'application/json','x-otya-service':'o','x-otya-service-token':serviceToken,'idempotency-key':idempotencyKey},
     body:JSON.stringify({subject:clean(subject,200),text:clean(text,12000)}),
+    signal:AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
   }))
   if(!response.ok)throw new Error('Otya ID email service HTTP '+response.status)
   const result=await response.json().catch(()=>null)
@@ -199,7 +200,7 @@ export default {
     if(url.pathname.startsWith('/api/admin/ai/console/')) return handleOwnerConsole(request,runtimeEnv)
     if(url.pathname==='/api/admin/ai/connectors/status'||url.pathname.startsWith('/api/admin/ai/connectors/gmail/')||url.pathname==='/api/ai/oauth/google/callback') return handleGmailConnector(request,runtimeEnv)
     if(url.pathname==='/api/ai/chat')return json({error:'owner_only',message:'O is a private owner workspace.'},410)
-    if(url.pathname.startsWith('/api/telegram/')) return new Response(JSON.stringify({error:'Telegram transport is owned by Otya Core'}),{status:404,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})
+    if(url.pathname.startsWith('/api/telegram/')) return new Response(JSON.stringify({error:'Telegram transport is owned by OEnd'}),{status:404,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})
     return aiWorker.fetch(request,runtimeEnv,ctx)
   },
   async queue(batch,env,ctx){
