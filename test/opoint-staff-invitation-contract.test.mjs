@@ -37,7 +37,7 @@ const productionEntrypoint = readFileSync(
 )
 
 test('private invitation route requires Opoint service identity and shared secret', () => {
-  assert.match(productionEntrypoint, /isOpointStaffInvitationPath\\(url\\.pathname\\)/)
+  assert.match(productionEntrypoint, /isOpointStaffInvitationPath\(url\.pathname\)/)
   assert.match(productionEntrypoint, /OPOINT_INVITE_SERVICE_TOKEN/)
   assert.match(productionEntrypoint, /x-otya-service.*opoint/)
   assert.match(productionEntrypoint, /x-otya-service-token/)
