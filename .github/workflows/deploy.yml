@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '22.23.4', package-manager-cache: false }
-      - name: Validate OTYA core/web
+      - name: Validate OEnd web
         run: |
           npm ci --ignore-scripts
           npm run validate:config
@@ -83,7 +83,7 @@ jobs:
           npm run build
           npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
-      - name: Validate Next worker
+      - name: Validate O worker
         working-directory: ai-worker
         run: |
           npm ci --ignore-scripts
@@ -201,7 +201,7 @@ jobs:
           TELEGRAM_GATEWAY_TOKEN: ${{ secrets.TELEGRAM_GATEWAY_TOKEN }}
           ACCOUNT_ENCRYPTION_KEY: ${{ secrets.ACCOUNT_ENCRYPTION_KEY }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
-          OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
+          OTYA_O_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_O_MAIL_SERVICE_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
@@ -216,7 +216,7 @@ jobs:
           if [ -n "${TELEGRAM_GATEWAY_TOKEN:-}" ]; then printf '%s' "$TELEGRAM_GATEWAY_TOKEN" | npx wrangler secret put TELEGRAM_GATEWAY_TOKEN; fi
           if [ -n "${ACCOUNT_ENCRYPTION_KEY:-}" ]; then printf '%s' "$ACCOUNT_ENCRYPTION_KEY" | npx wrangler secret put ACCOUNT_ENCRYPTION_KEY; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
-          if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
+          if [ -n "${OTYA_O_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_O_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_O_MAIL_SERVICE_TOKEN; fi
           npx wrangler deploy
 
   deploy-o:
@@ -235,7 +235,7 @@ jobs:
         working-directory: ai-worker
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
+          OTYA_O_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_O_MAIL_SERVICE_TOKEN }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
           GMAIL_GOOGLE_CLIENT_SECRET: ${{ secrets.GMAIL_GOOGLE_CLIENT_SECRET }}
           CONNECTOR_ENCRYPTION_KEY: ${{ secrets.CONNECTOR_ENCRYPTION_KEY }}
@@ -245,7 +245,7 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
           if [ -n "${RESEND_API_KEY:-}" ]; then printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY; fi
-          if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
+          if [ -n "${OTYA_O_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_O_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_O_MAIL_SERVICE_TOKEN; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
           if [ -n "${GMAIL_GOOGLE_CLIENT_SECRET:-}" ]; then printf '%s' "$GMAIL_GOOGLE_CLIENT_SECRET" | npx wrangler secret put GMAIL_GOOGLE_CLIENT_SECRET; fi
           if [ -n "${CONNECTOR_ENCRYPTION_KEY:-}" ]; then printf '%s' "$CONNECTOR_ENCRYPTION_KEY" | npx wrangler secret put CONNECTOR_ENCRYPTION_KEY; fi
@@ -266,7 +266,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '22.23.4', package-manager-cache: false }
       - run: npm ci --ignore-scripts
-      - name: Build and deploy OTYA core
+      - name: Build and deploy OEnd
         env:
           FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
