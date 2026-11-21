@@ -9,7 +9,9 @@ const statusClient = readFileSync(new URL('../src/app/status/StatusClient.tsx', 
 
 test('documentation product links and help preserve their destinations', () => {
   assert.ok(router.includes('publicDestinations.has(publicPath)'))
-  assert.match(router, /'\/otyapoint'/)
+  assert.ok(router.includes("'/opoint'"))
+  assert.ok(router.includes("'/omy-play'"))
+  assert.ok(router.includes("'/download/omy-play'"))
   assert.ok(router.includes('redirectToHost(url, APP_HOST, url.pathname)'))
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/help/')"))
 })
@@ -39,18 +41,17 @@ test('Space root is a product home while Account and Admin remain Space sections
   assert.ok(router.includes("url.pathname === '/account'"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/account/')"))
   assert.ok(router.includes("pathname.startsWith('/account/')"))
-  assert.ok(router.includes("pathname === '/admin'"))\n  assert.ok(router.includes("pathname.startsWith('/admin/')"))
+  assert.ok(router.includes("pathname === '/admin'"))
   assert.ok(router.includes("pathname.startsWith('/admin/')"))
   assert.ok(router.includes("['admin', '/admin']"))
 })
 
-test('Space allows approved signed-in product routes instead of redirecting them away', () => {
-  assert.ok(router.includes("pathname.startsWith('/account/')"))
+test('O stays private behind Space and the old ask URL redirects to its owner workspace', () => {
+  assert.ok(router.includes("pathname.startsWith('/admin/')"))
   assert.ok(router.includes("url.pathname === '/ask' || url.pathname === '/ask/'"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/admin/ai/')"))
-  assert.ok(router.includes("pathname === '/telegram/'"))
-  assert.ok(router.includes("pathname === '/admin'"))
-  assert.ok(router.includes('isSpaceSurfacePath(url.pathname)'))
+  assert.ok(!router.includes("pathname === '/ask'"))
+  assert.ok(router.includes("isSpaceSurfacePath(url.pathname)"))
 })
 
 test('Docs root is real documentation while Help and Status stay distinct surfaces', () => {
@@ -68,7 +69,7 @@ test('surface rewrites preserve browser hostname and Next trailing slash policy'
   assert.ok(nextConfig.includes('trailingSlash: true'))
   assert.ok(router.includes('async function dispatchSurface'))
   assert.ok(router.includes("headers.set('X-Forwarded-Host', url.hostname)"))
-  assert.ok(router.includes("target.pathname = pathname"))
+  assert.ok(router.includes('target.pathname = pathname'))
   assert.ok(!router.includes('target.hostname = APP_HOST'))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/space/')"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/account/')"))
