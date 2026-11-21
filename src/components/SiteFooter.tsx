@@ -1,5 +1,6 @@
 import { OTYA } from '@/lib/constants'
 import Link from 'next/link'
+import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 const GROUPS = [
   { title: 'Products', links: [['Omy Play', '/omy-play'], ['Download Omy Play', '/download/omy-play'], ['Otya shop', '/shop'], ['OID & Space', 'https://space.otya.site']] },
@@ -12,7 +13,7 @@ export function SiteFooter() {
     <div className="otya-shell py-7 sm:py-8">
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
         <div>
-          <Link href={OTYA.website} className="inline-block text-base font-black tracking-[-.035em]">Otya</Link>
+          <Link href={OTYA.website} className="inline-flex items-center gap-2.5 text-base font-black tracking-[-.035em]" aria-label="Otya home"><OtyaBrandMark size={30} label="Otya" /><span>Otya</span></Link>
           <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">A connected family of digital products and real-world services, built in Uganda.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 sm:gap-8">
