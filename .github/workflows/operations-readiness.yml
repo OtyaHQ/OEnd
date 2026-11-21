@@ -80,7 +80,10 @@ jobs:
           npx wrangler d1 time-travel info otya-end-db --config wrangler.toml --json > /tmp/oend-time-travel.json
           npx wrangler d1 time-travel info otya-id-db --config auth-worker/wrangler.toml --json > /tmp/oid-time-travel.json
           npx wrangler d1 time-travel info o-prod-db --config ai-worker/wrangler.toml --json > /tmp/o-time-travel.json
-          for file in /tmp/oend-time-travel.json /tmp/oid-time-travel.json /tmp/o-time-travel.json; do
+          # Retain the previous shared databases as rollback recovery points.
+          npx wrangler d1 time-travel info otya-store-db --json > /tmp/legacy-store-time-travel.json
+          npx wrangler d1 time-travel info otya-auth-db --config auth-worker/wrangler.toml --json > /tmp/legacy-auth-time-travel.json
+          for file in /tmp/oend-time-travel.json /tmp/oid-time-travel.json /tmp/o-time-travel.json /tmp/legacy-store-time-travel.json /tmp/legacy-auth-time-travel.json; do
             test -s "$file"
           done
           echo 'Canonical OEnd, OID and O D1 recovery points are available.'
