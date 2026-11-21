@@ -114,8 +114,8 @@ function splitTelegramText(text) {
   return chunks
 }
 
-async function askNext(text, env, { senderId = '', surface = 'telegram_private' } = {}) {
-  if (!env.AI_SUPPORT?.fetch) throw new Error('Next service unavailable')
+async function askO(text, env, { senderId = '', surface = 'telegram_private' } = {}) {
+  if (!env.AI_SUPPORT?.fetch) throw new Error('O service unavailable')
   const headers = new Headers({
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -207,7 +207,7 @@ async function processPrivateMessage(message, env) {
     if (dynamic) reply = { text: dynamic }
   }
   if (!reply) {
-    try { reply = { text: await askNext(text, env, { senderId, surface: 'telegram_private' }) } }
+    try { reply = { text: await askO(text, env, { senderId, surface: 'telegram_private' }) } }
     catch { reply = { text: 'Next is temporarily unavailable. Please try again shortly.' } }
   }
   const chunks = splitTelegramText(reply.text)
@@ -275,7 +275,7 @@ async function processDiscussionMessage(message, env) {
 
   const prompt = stripNextMention(rawText)
   const replyText = prompt
-    ? await askNext(prompt, env, { senderId, surface: 'telegram_discussion' }).catch(() => 'Next is temporarily unavailable. Please try again shortly.')
+    ? await askO(prompt, env, { senderId, surface: 'telegram_discussion' }).catch(() => 'Next is temporarily unavailable. Please try again shortly.')
     : 'How can I help with Otya?'
   const chunks = splitTelegramText(replyText)
   for (let i = 0; i < chunks.length; i++) {
