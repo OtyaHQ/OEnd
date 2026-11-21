@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 const GROUPS = [
   { title: 'Otya', links: [['Omy Play', '/omy-play'], ['Download Omy Play', '/download/omy-play'], ['Your Space', 'https://space.otya.site']] },
-  { title: 'Visit', links: [['Opoint shop', '/opoint'], ['Products', '/apps'], ['Company', '/company']] },
+  { title: 'Visit', links: [['Otya shop', '/shop'], ['Products', '/apps'], ['Company', '/company']] },
   { title: 'Support', links: [['Help', '/help'], ['Journal', '/blog'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Delete account', '/delete-account']] },
 ] as const
 
