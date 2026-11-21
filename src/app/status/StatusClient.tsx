@@ -8,7 +8,7 @@ type StatusPayload = {
   components: {
     website?: PublicState
     accounts?: PublicState
-    next?: PublicState
+    O?: PublicState
   }
   checkedAt: string
 }
@@ -77,9 +77,9 @@ export function LiveStatusPanel() {
         detail: 'Sign-in and account service reachability.',
       },
       {
-        title: 'Next',
-        state: snapshot?.components.next ?? fallback,
-        detail: 'Otya assistant service reachability.',
+        title: 'Assistance',
+        state: snapshot?.components.O ?? fallback,
+        detail: 'Otya assistance service reachability.',
       },
       {
         title: 'Local playback',
