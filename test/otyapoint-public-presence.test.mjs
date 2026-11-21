@@ -4,23 +4,27 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('OtyaPoint is discoverable from primary navigation, home, product directory and footer', () => {
+test('Otya is the public identity of the physical shop', () => {
   const navigation = read('src/components/SiteNav.tsx')
   const home = read('src/components/HomeStart.tsx')
   const products = read('src/app/apps/page.tsx')
   const footer = read('src/components/SiteFooter.tsx')
   const sitemap = read('src/app/sitemap.ts')
+  const homepage = read('src/app/page.tsx')
 
-  assert.match(navigation, /\['OtyaPoint', '\/otyapoint'\]/)
-  assert.match(home, /href="\/otyapoint"/)
-  assert.match(products, /href="\/otyapoint"/)
-  assert.match(footer, /\['OtyaPoint shop', '\/otyapoint'\]/)
-  assert.match(sitemap, /\$\{BASE\}\/otyapoint/)
+  assert.match(navigation, /\['Shop', '\/shop'\]/)
+  assert.match(home, /href="\/shop"/)
+  assert.match(products, /href="\/shop"/)
+  assert.match(footer, /\['Otya shop', '\/shop'\]/)
+  assert.match(sitemap, /\$\{BASE\}\/shop/)
+  for (const source of [navigation, home, products, footer, sitemap, homepage]) {
+    assert.doesNotMatch(source, /Opoint|OtyaPoint|\/opoint|\/otyapoint/)
+  }
 })
 
-test('OtyaPoint page describes the real physical shop and avoids invented contact/location details', () => {
-  const page = read('src/app/otyapoint/page.tsx')
-
+test('Otya shop page describes the real physical shop without invented contact details', () => {
+  const page = read('src/app/shop/page.tsx')
+  assert.match(page, /name: 'Otya'/)
   assert.match(page, /Old Market area/)
   assert.match(page, /Mbirizi/)
   assert.match(page, /Lwengo District/)
@@ -29,13 +33,16 @@ test('OtyaPoint page describes the real physical shop and avoids invented contac
   assert.match(page, /Mobile-money agency/)
   assert.match(page, /google\.com\/maps\/search/)
   assert.match(page, /support@otya\.site/)
-  assert.doesNotMatch(page, /tel:|wa\.me|openingHours|telephone:/i)
+  assert.doesNotMatch(page, /Opoint|OtyaPoint|tel:|wa\.me|openingHours|telephone:/i)
 })
 
-test('OtyaPoint website remains an information and visit page, not an online store', () => {
-  const page = read('src/app/otyapoint/page.tsx')
+test('legacy private application names never become a public storefront', () => {
+  const router = read('src/production-router.mjs')
+  const opoint = read('src/app/opoint/page.tsx')
+  const oldOpoint = read('src/app/otyapoint/page.tsx')
 
-  assert.match(page, /There is no online cart, checkout or online payment/)
-  assert.match(page, /Purchases and mobile-money agency services are handled in person/)
-  assert.doesNotMatch(page, /Add to cart|Buy now|Place order|Card number/i)
+  assert.match(router, /\['\/opoint', '\/shop'\]/)
+  assert.match(router, /\['\/otyapoint', '\/shop'\]/)
+  assert.match(opoint, /redirect\('\/shop'\)/)
+  assert.match(oldOpoint, /redirect\('\/shop'\)/)
 })

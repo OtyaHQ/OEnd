@@ -153,7 +153,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
           date,
           release.changelog,
           release.forceUpdate ? 1 : 0,
-          `${release.workerUrl}/download/otya-player`,
+          `${release.workerUrl}/download/omy-play`,
           immutableApkUrl(release.workerUrl, 'arm64', release.tag),
           immutableApkUrl(release.workerUrl, 'arm32', release.tag),
           release.minSdk,
@@ -174,7 +174,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
             arm64: 'Otya-arm64.apk',
             arm32: 'Otya-arm32.apk',
           },
-          changelog: release.changelog || `Otya Media ${release.version} is now available.`,
+          changelog: release.changelog || `Omy Play ${release.version} is now available.`,
           minSdk: release.minSdk,
           targetSdk: release.targetSdk,
           workerUrl: release.workerUrl,
@@ -183,8 +183,8 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
             arm32: `${release.workerUrl}/apk/arm32`,
             exactArm64: immutableApkUrl(release.workerUrl, 'arm64', release.tag),
             exactArm32: immutableApkUrl(release.workerUrl, 'arm32', release.tag),
-            auto: `${release.workerUrl}/download/otya-player`,
-            page: `${release.workerUrl}/download/otya-player`,
+            auto: `${release.workerUrl}/download/omy-play`,
+            page: `${release.workerUrl}/download/omy-play`,
           },
         }
         const body = JSON.stringify(value, null, 2) + '\n'
@@ -222,7 +222,7 @@ export class OtyaReleaseWorkflow extends WorkflowEntrypoint {
       const notification = await step.do('queue update notification once', async () => {
         try {
           const markerKey = `release:push:${release.tag}`
-          const url = `${release.workerUrl}/download/otya-player`
+          const url = `${release.workerUrl}/download/omy-play`
           return await queueReleaseOnce(this.env, release.tag, {
             title: `Otya ${release.version} is ready`,
             body: 'New features and improvements are ready. Tap to see what’s new.',

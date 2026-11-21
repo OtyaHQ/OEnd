@@ -11,7 +11,7 @@ test('Otya navigation uses the synced approved brand mark', () => {
 
   assert.match(nav, /Otya home — products and services/)
   assert.doesNotMatch(nav, /PeterSmart Link/)
-  assert.match(nav, /\['Otya', '\/otya-player'\]/)
+  assert.match(nav, /\['Omy Play', '\/omy-play'\]/)
   assert.match(mark, /otya-app-icon\.webp/)
   assert.doesNotMatch(mark, /otya-mark-current\.png|otya-icon\.svg|otya-icon-dark\.svg|otya-ai\.svg/)
   assert.match(sync, /assets\/branding\/otya_app_icon\.webp/)

@@ -11,7 +11,7 @@ test('public support contact uses the Otya.site identity', async () => {
     read('../src/app/privacy/page.tsx'),
     read('../src/app/terms/page.tsx'),
     read('../src/app/delete-account/page.tsx'),
-    read('../src/app/otyapoint/page.tsx'),
+    read('../src/app/shop/page.tsx'),
     read('../src/app/layout.tsx'),
     read('../public/.well-known/security.txt'),
   ])

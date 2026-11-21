@@ -177,6 +177,27 @@ async function dispatchSurface(request, url, env, ctx, pathname = url.pathname) 
   return dispatchOpenNext(new Request(target.toString(), init), env, ctx)
 }
 
+function redirectToCanonicalPath(url, pathname) {
+  const target = new URL(url)
+  target.protocol = 'https:'
+  target.pathname = pathname
+  return new Response(null, {
+    status: 308,
+    headers: { Location: target.toString(), 'Cache-Control': 'public, max-age=3600' },
+  })
+}
+
+const LEGACY_PRODUCT_PATHS = new Map([
+  ['/opoint', '/shop'],
+  ['/opoint/', '/shop'],
+  ['/otyapoint', '/shop'],
+  ['/otyapoint/', '/shop'],
+  ['/otya-player', '/omy-play'],
+  ['/otya-player/', '/omy-play'],
+  ['/download/otya-player', '/download/omy-play'],
+  ['/download/otya-player/', '/download/omy-play'],
+])
+
 async function routeOtyaRequest(request, env, ctx) {
     const url = new URL(request.url)
     const host = url.hostname.toLowerCase()
@@ -190,6 +211,10 @@ async function routeOtyaRequest(request, env, ctx) {
         status: 308,
         headers: { Location: url.toString(), 'Cache-Control': 'public, max-age=3600' },
       })
+    }
+
+    if ((request.method === 'GET' || request.method === 'HEAD') && LEGACY_PRODUCT_PATHS.has(url.pathname)) {
+      return redirectToCanonicalPath(url, LEGACY_PRODUCT_PATHS.get(url.pathname))
     }
 
     if (url.pathname.startsWith('/api/together/')) {
@@ -235,7 +260,7 @@ async function routeOtyaRequest(request, env, ctx) {
       // not another copy of the documentation index.
       const publicPath = url.pathname.replace(/\/$/, '')
       const publicDestinations = new Set([
-        '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
+        '/apps', '/opoint', '/omy-play', '/download/omy-play', '/music',
         '/developers', '/company', '/contact', '/privacy', '/terms',
         '/delete-account',
       ])
