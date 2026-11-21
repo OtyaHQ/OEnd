@@ -7,8 +7,8 @@ import { HomeStart } from '@/components/HomeStart'
 
 export const metadata: Metadata = {
   title: 'Otya — Digital products and real-world services',
-  description: 'Explore the Otya ecosystem: digital products, account services and Opoint shop services in Mbirizi, Lwengo, Uganda.',
-  keywords: ['Otya', 'Opoint', 'Omy Play', 'Otya ecosystem', 'Mbirizi electronics shop', 'mobile money agency Mbirizi', 'Uganda technology'],
+  description: 'Explore the Otya ecosystem: digital products, account services and Otya shop services in Mbirizi, Lwengo, Uganda.',
+  keywords: ['Otya', 'Otya shop', 'Omy Play', 'Otya ecosystem', 'Mbirizi electronics shop', 'mobile money agency Mbirizi', 'Uganda technology'],
   alternates: { canonical: 'https://otya.site' },
   openGraph: {
     type: 'website',
@@ -29,10 +29,10 @@ export default function HomePage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-black/[.06] dark:border-white/[.08] px-3 py-2 text-xs font-black bg-white/55 dark:bg-white/[.03]">Otya · Built in Uganda</div>
             <h1 className="mt-7 max-w-[800px] text-[clamp(44px,7vw,84px)] font-bold tracking-[-.055em] leading-[1.04]">Connected technology.<br/><span className="otya-muted">Made for everyday life.</span></h1>
-            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya, a connected product and services ecosystem built in Uganda. Explore useful digital products, private account services and Opoint&apos;s shop in Mbirizi, Lwengo.</p>
+            <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya, a connected product and services ecosystem built in Uganda. Explore useful digital products, private account services and Otya shop in Mbirizi, Lwengo.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/apps" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Explore products</Link>
-              <Link href="/opoint" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Visit Opoint</Link>
+              <Link href="/shop" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Visit Otya shop</Link>
             </div>
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Digital products</span><span>Physical shop in Mbirizi</span><span>Built in Uganda</span></div>
           </div>
