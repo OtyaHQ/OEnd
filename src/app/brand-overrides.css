@@ -35,10 +35,10 @@
 }
 
 :root[data-theme='light'] {
-  --cosmos-primary: #087EAE;
+  --cosmos-primary: var(--otya-cyan);
   --cosmos-secondary: var(--otya-blue);
   --cosmos-accent: var(--otya-deep-blue);
-  --cosmos-cyan: #087EAE;
+  --cosmos-cyan: var(--otya-cyan);
   --cosmos-error: #C9363D;
   --cosmos-scaffold: #F5FAFF;
   --cosmos-surface: #FFFFFF;
@@ -93,7 +93,7 @@ a { transition: color .16s ease, border-color .16s ease, background-color .16s e
 .bg-violet-500,
 .bg-violet-600,
 .otya-accent-button {
-  background: #175CD3 !important;
+  background: var(--otya-blue) !important;
   color: #FFFFFF !important;
   border-color: transparent !important;
   border-radius: 999px !important;
