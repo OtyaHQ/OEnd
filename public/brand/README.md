@@ -6,8 +6,7 @@ This folder contains public-facing brand template guidance. The approved visual 
 
 Base URL: https://assets.otya.site/brand/otya/v4/
 
-- Full artwork: `otya-full-artwork.webp`
-- Master wordmark and tagline: `otya-master-lockup.webp`
+- Complete master lockup including the full developer credit: `otya-master-lockup.webp`
 - Master orbital mark: `otya-orbital-mark.webp`
 - Product strip: `otya-product-strip.webp`
 - Company footer: `otya-company-footer.webp`
@@ -35,4 +34,4 @@ Base URL: https://assets.otya.site/brand/otya/v4/
 
 Use the master lockup for the public company wordmark. Use the orbital mark or square master icon in compact contexts. Use each product's own icon for product-specific placements. Do not use the full banner as an app icon.
 
-The WebP files are optimized source-derived exports. The untouched original 1536 × 1024 PNG remains the high-resolution reference and is not yet stored in R2.
+The WebP files are optimized source-derived crops. The untouched original 1536 × 1024 PNG remains the high-resolution reference and is not yet stored in R2.
