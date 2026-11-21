@@ -2,53 +2,61 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-const workflow = readFileSync(
-  new URL('../.github/workflows/deploy.yml', import.meta.url),
-  'utf8',
-)
+const workflow = readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8')
 
-function jobBlock(name, nextName) {
-  const start = workflow.indexOf(\`  \${name}:\`)
-  assert.ok(start >= 0, \`\${name} must exist\`)
-  const end = nextName ? workflow.indexOf(\`\\n  \${nextName}:\`, start + 1) : workflow.length
-  assert.ok(end > start, \`\${nextName ?? 'end of workflow'} must follow \${name}\`)
+function jobBlock(name) {
+  const start = workflow.indexOf(`  ${name}:\n`)
+  assert.ok(start >= 0, `job ${name} must exist`)
+  const remainder = workflow.slice(start + 1)
+  const next = /\n  [a-z][a-z0-9-]*:\n/.exec(remainder)
+  const end = next ? start + 1 + next.index : workflow.length
   return workflow.slice(start, end)
 }
 
-test('production deploys require validation and an exact deployment authorization', () => {
+test('production workflow defaults to validation-only and requires the exact DEPLOY confirmation', () => {
   assert.match(workflow, /workflow_dispatch:/)
   assert.match(workflow, /default: 'validate-only'/)
   assert.match(workflow, /Type DEPLOY to authorize the selected production release/)
-
-  const authorization = jobBlock('authorize-deploy', 'plan-deploy')
-  assert.match(authorization, /github\\.event_name == 'workflow_dispatch' && inputs\\.component != 'validate-only'/)
-  assert.match(authorization, /contains\\(github\\.event\\.head_commit\\.message, '\\[DEPLOY-ALL\\]'\\)/)
-  assert.match(authorization, /test "\\$TARGET_REF" = 'refs\\/heads\\/main'/)
-  assert.match(authorization, /test "\\$CONFIRM" = 'DEPLOY'/)
-  assert.match(authorization, /case "\\$COMPONENT" in/)
-
-  const plan = jobBlock('plan-deploy', 'deploy-oid')
-  assert.match(plan, /needs: \\[validate, authorize-deploy\\]/)
-  assert.match(plan, /oid=false/)
-  assert.match(plan, /o=false/)
-  assert.match(plan, /oend=false/)
-  assert.match(plan, /all\\)[\\s\\S]*oid=true[\\s\\S]*o=true[\\s\\S]*oend=true[\\s\\S]*opoint=true[\\s\\S]*omy_play=true/)
+  const authorize = jobBlock('authorize-deploy')
+  assert.match(authorize, /needs: validate/)
+  assert.match(authorize, /test "\$TARGET_REF" = 'refs\/heads\/main'/)
+  assert.match(authorize, /test "\$CONFIRM" = 'DEPLOY'/)
+  assert.match(authorize, /case "\$COMPONENT" in/)
 })
 
-test('every production component depends on validation, authorization and the component plan', () => {
-  const blocks = [
-    jobBlock('deploy-oid', 'deploy-o'),
-    jobBlock('deploy-o', 'deploy-oend'),
-    jobBlock('deploy-oend', 'deploy-o-final'),
-    jobBlock('deploy-o-final', 'deploy-opoint'),
-    jobBlock('deploy-opoint', 'deploy-omy-play'),
-    jobBlock('deploy-omy-play', 'verify-production'),
-    jobBlock('verify-production'),
-  ]
-  for (const block of blocks) {
-    assert.match(block, /github\\.ref == 'refs\\/heads\\/main'/)
-    assert.match(block, /needs\\.validate\\.result == 'success'/)
-    assert.match(block, /needs\\.authorize-deploy\\.result == 'success'/)
-    assert.match(block, /needs\\.plan-deploy\\.result == 'success'/)
+test('only canonical production component names may be selected', () => {
+  const authorize = jobBlock('authorize-deploy')
+  assert.match(authorize, /oid\|o\|oend\|opoint\|omy-play\|all/)
+  const plan = jobBlock('plan-deploy')
+  for (const component of ['oid', 'o', 'oend', 'opoint', 'omy_play']) {
+    assert.match(plan, new RegExp(`^${component}=false$`, 'm'))
+    assert.ok(plan.includes(`${component}=true`))
   }
+})
+
+test('every live deployment job requires main, successful validation, authorization and plan', () => {
+  const names = [
+    'deploy-oid',
+    'deploy-o',
+    'deploy-oend',
+    'deploy-o-final',
+    'deploy-opoint',
+    'deploy-omy-play',
+    'verify-production',
+  ]
+  for (const name of names) {
+    const block = jobBlock(name)
+    assert.match(block, /github\.ref == 'refs\/heads\/main'/, name)
+    assert.match(block, /needs\.validate\.result == 'success'/, name)
+    assert.match(block, /needs\.authorize-deploy\.result == 'success'/, name)
+    assert.match(block, /needs\.plan-deploy\.result == 'success'/, name)
+  }
+})
+
+test('dependency order cannot let a dependent product deploy before its shared services', () => {
+  assert.match(jobBlock('deploy-o'), /needs: \[validate, authorize-deploy, plan-deploy, deploy-oid\]/)
+  assert.match(jobBlock('deploy-oend'), /needs: \[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o\]/)
+  assert.match(jobBlock('deploy-o-final'), /needs: \[validate, authorize-deploy, plan-deploy, deploy-o, deploy-oend\]/)
+  assert.match(jobBlock('deploy-opoint'), /deploy-oid, deploy-oend/)
+  assert.match(jobBlock('deploy-omy-play'), /deploy-oid, deploy-oend/)
 })
