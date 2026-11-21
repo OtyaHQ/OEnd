@@ -8,7 +8,7 @@ Base URL: https://assets.otya.site/brand/otya/v4/
 
 - Complete master lockup including the full developer credit: `otya-master-lockup.webp`
 - Master orbital mark: `otya-orbital-mark.webp`
-- Product strip: `otya-product-strip.webp`
+- Product strip reference crop (archive only; labels predate current product names): `otya-product-strip.webp`
 - Company footer: `otya-company-footer.webp`
 - Master square icons: `otya-master-icon-192.webp` and `otya-master-icon-512.webp`
 - Product icons: `icons/opoint.webp`, `icons/omy-play.webp`, `icons/otya-os.webp`, `icons/ohub.webp`, `icons/oid.webp`
@@ -32,6 +32,6 @@ Base URL: https://assets.otya.site/brand/otya/v4/
 
 ## Usage
 
-Use the master lockup for the public company wordmark. Use the orbital mark or square master icon in compact contexts. Use each product's own icon for product-specific placements. Do not use the full banner as an app icon.
+Use the master lockup for the public company wordmark. Use the orbital mark or square master icon in compact contexts. Use each product's individual icon crop with its current product name and tagline. The original product-strip crop is archival only because its labels predate current product names. Do not use the full banner as an app icon.
 
 The WebP files are optimized source-derived crops. The untouched original 1536 × 1024 PNG remains the high-resolution reference and is not yet stored in R2.
