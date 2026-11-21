@@ -1,100 +1,45 @@
-# OTYA System Asset Kit
+# Otya Brand and Asset System
 
-This document is the single source of truth for OTYA website, app-store, social, APK-release and future marketing assets.
+The owner's supplied Otya banner is the single visual source of truth. Preserve the orbital symbol, original Otya wordmark, exact lettering, gradients, tagline, brand line, developer credit, product icons and corporate footer. Do not redraw or reinterpret them.
 
-## Non-negotiable OTYA identity
+## Brand wording
+- Otya
+- One ecosystem. Endless possibilities.
+- Innovate | Connect | Grow
+- Developed by OtyaHQ
+- Otya Holdings Limited
+- Powering a smarter, more connected world.
 
-- The canonical symbol is the approved **twisted O** supplied in the OTYA brand pack. Do not redraw it as a plain ring and do not substitute a play triangle.
-- The official color flow is **cyan/electric blue → violet/magenta → orange/yellow** on deep navy/black surfaces.
-- When the symbol and product name appear on the same line, render **symbol + TYA**, never **symbol + OTYA**. The symbol itself is the O.
-- Keep the symbol geometry unchanged across Android launcher/adaptive/themed icons, Flutter UI, website/favicon/PWA, Admin, Developer surfaces, emails, store assets and marketing art.
-- Single-color/monochrome variants may change color only; the geometry must remain the same.
-- User-facing screenshots and mockups must use the real current OTYA UI. Do not invent a second app interface inside a phone mockup and present it as the shipped product.
+## Canonical Cloudflare assets
+Public base: https://assets.otya.site/brand/otya/v4/
+- otya-full-artwork.webp — complete source-derived artwork (560 × 373).
+- otya-master-lockup.webp — exact master lockup crop (560 × 179).
+- otya-orbital-mark.webp — exact orbital mark crop (240 × 183).
+- otya-product-strip.webp — source-derived product strip (560 × 100).
+- otya-company-footer.webp — company footer crop (560 × 85).
+- icons/opoint.webp, icons/omy-play.webp, icons/otya-os.webp, icons/ohub.webp, icons/oid.webp — product icon crops.
 
-## Already wired assets
+These are web-optimized source-derived exports. The untouched 1536 × 1024 PNG remains the high-resolution source and is not yet in R2.
 
-- `public/otya-icon.svg` — canonical OTYA twisted-O symbol.
-- `public/android-chrome-192x192.png` — PWA icon.
-- `public/android-chrome-512x512.png` — PWA/app icon.
-- `public/apple-touch-icon.png` — Apple/iOS browser icon.
-- `public/favicon.ico`, `public/favicon-16x16.png`, `public/favicon-32x32.png` — browser tab icons.
-- `public/og-image.jpg` and `public/og-image.svg` — social preview.
-- `public/future-graphic.png` — existing future/hero graphic.
-- `public/manifest.json` and `public/site.webmanifest` — PWA manifest files.
+## Palette
+- Navy: #08265C
+- Royal blue: #1677FF
+- Cyan: #00BDEB
+- Turquoise: #14C7B8
+- White: #FFFFFF
 
-## New reusable brand assets
+## Product identity boundaries
+Current product and service identities remain Opoint, Omy Play, Otya OS, OEnd, OID, OHub and O. The banner is the visual reference; it does not authorize silent repository or technical identifier renames.
 
-- `public/brand/otya-feature-graphic.svg` — Google Play / website feature banner template.
-- `public/brand/otya-social-card.svg` — social sharing / announcement card template.
-- `public/brand/otya-release-poster.svg` — release/update poster template.
-- `public/brand/otya-screenshot-frame.svg` — screenshot frame for website and store listings.
-- `public/brand/README.md` — usage notes.
+## Implementation rules
+- Use the exact master lockup for brand wordmark placements.
+- Use the orbital mark for compact master-brand icon placements.
+- Use the individual exact product crops for the corresponding product.
+- Do not use a product icon as the master Otya logo.
+- Do not substitute fonts for the supplied wordmark.
+- Keep product interfaces accessible and usable in light and dark themes while retaining the approved palette.
+- Replace references only after the target asset has been uploaded and verified.
+- Do not claim app-wide rollout until website, email and application surfaces are checked.
 
-## Asset groups the system should maintain
-
-### Website
-
-- Favicon set.
-- PWA manifest icons.
-- OpenGraph image.
-- Twitter/social card image.
-- Hero/future graphic.
-- App download badges.
-- Release update poster.
-
-### Otya Media app store
-
-- App icon 512x512.
-- Feature graphic 1024x500.
-- Phone screenshots.
-- Tablet screenshots if supported.
-- Short description.
-- Long description.
-- Privacy policy page.
-- Support page.
-- Changelog page.
-
-### APK/self-update system
-
-- APK artifact names.
-- Version JSON.
-- Release notes.
-- SHA-256 checksum text.
-- Update dialog image/banner.
-- Download page hero graphic.
-
-### Auth/email system
-
-- Welcome email header image.
-- OTP/security email header image.
-- Password reset email header image.
-- Transactional email footer brand line.
-- Verified Resend sender domain: `petersmartlink.com`.
-
-### Future graphics
-
-- Major release poster.
-- New feature poster.
-- Security/privacy poster.
-- Update available poster.
-- Store banner.
-- Social launch card.
-
-## Real screenshots policy
-
-Do not fake final app screenshots. Use `public/brand/otya-screenshot-frame.svg` as a template only. Final screenshots should be captured from the real signed APK after the source, crash and physical-device gates pass.
-
-## Production verification checklist
-
-- App uses one canonical OTYA twisted-O geometry on every surface.
-- No old play-logo or generic-ring asset remains reachable in app or website UI.
-- GitHub `main` is green before release.
-- Cloudflare Worker deploy is green.
-- Auth Worker deploy is green.
-- D1/KV bindings are connected.
-- Resend domain is verified.
-- Website pages load.
-- API endpoints respond.
-- OTP/register/login/reset flows work.
-- APK artifact downloads.
-- App screenshots are captured from a real build.
+## Release verification
+The Cloudflare v4 web artwork and product icon crops are uploaded and verified. Website metadata and authentication email branding are being updated. The untouched high-resolution source PNG and offline app-bundled icon replacements remain pending.
