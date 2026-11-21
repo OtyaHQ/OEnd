@@ -238,7 +238,7 @@ img[src='/otya-icon-dark.svg'],
 img[src='/otya-ai.svg'],
 img[src='/otya-ai-thinking.svg'],
 img[src='/otya-ai-thinking-light.svg'] {
-  content: url('/otya-app-icon.webp');
+  content: url('https://assets.otya.site/brand/otya/v4/otya-master-icon-512.webp');
   object-fit: contain !important;
   background: transparent !important;
 }
