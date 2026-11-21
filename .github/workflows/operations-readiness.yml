@@ -69,7 +69,7 @@ jobs:
             echo 'WARNING: Auth D1 has migration-ledger drift; inspect before changing the repair path.'
           fi
 
-      - name: Verify D1 Time Travel is available for Core and Auth
+      - name: Verify canonical OEnd OID and O D1 Time Travel recovery points
         id: time_travel
         continue-on-error: true
         env:
@@ -77,14 +77,16 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          npx wrangler d1 time-travel info otya-store-db --json > /tmp/core-time-travel.json
-          npx wrangler d1 time-travel info otya-auth-db --config auth-worker/wrangler.toml --json > /tmp/auth-time-travel.json
-          test -s /tmp/core-time-travel.json
-          test -s /tmp/auth-time-travel.json
-          echo 'D1 Time Travel recovery points are available for Core and Auth.'
+          npx wrangler d1 time-travel info otya-end-db --config wrangler.toml --json > /tmp/oend-time-travel.json
+          npx wrangler d1 time-travel info otya-id-db --config auth-worker/wrangler.toml --json > /tmp/oid-time-travel.json
+          npx wrangler d1 time-travel info o-prod-db --config ai-worker/wrangler.toml --json > /tmp/o-time-travel.json
+          for file in /tmp/oend-time-travel.json /tmp/oid-time-travel.json /tmp/o-time-travel.json; do
+            test -s "$file"
+          done
+          echo 'Canonical OEnd, OID and O D1 recovery points are available.'
 
-      - name: Verify Opoint production D1 Time Travel recovery point
-        id: opoint_time_travel
+      - name: Verify Opoint and Omy Play product D1 Time Travel recovery points
+        id: product_time_travel
         continue-on-error: true
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -92,9 +94,12 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 --branch main https://github.com/OtyaHQ/OPoint.git "$RUNNER_TEMP/OPoint"
+          git clone --depth 1 --branch main https://github.com/OtyaHQ/Omy_Play.git "$RUNNER_TEMP/Omy_Play"
           npx --yes wrangler@4.159.0 d1 time-travel info opoint-prod-db --config "$RUNNER_TEMP/OPoint/wrangler.toml" --json > /tmp/opoint-time-travel.json
+          npx --yes wrangler@4.159.0 d1 time-travel info omy-play-prod-db --config "$RUNNER_TEMP/Omy_Play/wrangler.omy-play-production.toml" --json > /tmp/omy-play-time-travel.json
           test -s /tmp/opoint-time-travel.json
-          echo 'Opoint production D1 Time Travel recovery point is available.'
+          test -s /tmp/omy-play-time-travel.json
+          echo 'Opoint and Omy Play production D1 recovery points are available.'
 
       - name: Write readiness summary
         if: always()
@@ -103,7 +108,7 @@ jobs:
           CORE_MIGRATIONS: ${{ steps.core_migrations.outcome }}
           AUTH_MIGRATIONS: ${{ steps.auth_migrations.outcome }}
           TIME_TRAVEL: ${{ steps.time_travel.outcome }}
-          OPOINT_TIME_TRAVEL: ${{ steps.otyapoint_time_travel.outcome }}
+          PRODUCT_TIME_TRAVEL: ${{ steps.product_time_travel.outcome }}
         run: |
           {
             echo '## Otya production operations readiness'
@@ -111,8 +116,8 @@ jobs:
             echo "- Repository migration layout: ${MIGRATION_LAYOUT}."
             echo "- Core production migration drift check: ${CORE_MIGRATIONS}."
             echo "- Auth migration visibility check: ${AUTH_MIGRATIONS}."
-            echo "- Core/Auth D1 Time Travel availability check: ${TIME_TRAVEL}."
-            echo "- Opoint D1 Time Travel availability check: ${OPOINT_TIME_TRAVEL}."
+            echo "- Canonical OEnd/OID/O D1 Time Travel availability: ${TIME_TRAVEL}."
+            echo "- Opoint/Omy Play D1 Time Travel availability: ${PRODUCT_TIME_TRAVEL}."
             echo '- This workflow is diagnostic only: it never applies migrations or restores a database.'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -123,10 +128,10 @@ jobs:
           CORE_MIGRATIONS: ${{ steps.core_migrations.outcome }}
           AUTH_MIGRATIONS: ${{ steps.auth_migrations.outcome }}
           TIME_TRAVEL: ${{ steps.time_travel.outcome }}
-          OPOINT_TIME_TRAVEL: ${{ steps.otyapoint_time_travel.outcome }}
+          PRODUCT_TIME_TRAVEL: ${{ steps.product_time_travel.outcome }}
         run: |
           set -euo pipefail
-          for result in "$MIGRATION_LAYOUT" "$CORE_MIGRATIONS" "$AUTH_MIGRATIONS" "$TIME_TRAVEL" "$OPOINT_TIME_TRAVEL"; do
+          for result in "$MIGRATION_LAYOUT" "$CORE_MIGRATIONS" "$AUTH_MIGRATIONS" "$TIME_TRAVEL" "$PRODUCT_TIME_TRAVEL"; do
             if [ "$result" != 'success' ]; then
               echo 'ERROR: Otya production operations readiness is not green. Review the failed diagnostic above.'
               exit 1
