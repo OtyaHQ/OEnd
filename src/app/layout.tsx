@@ -6,7 +6,9 @@ import './brand-overrides.css'
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
 const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
-const OTYA_MARK = 'https://assets.otya.site/brand/otya/v3/otya-icon.svg'\nconst OTYA_SOCIAL_MARK = 'https://assets.otya.site/brand/otya/v3/otya-logo.svg'\nconst OTYA_PWA_MARK = '/otya-app-icon.webp'
+const OTYA_MARK = 'https://assets.otya.site/brand/otya/v3/otya-icon.svg'
+const OTYA_SOCIAL_MARK = 'https://assets.otya.site/brand/otya/v3/otya-logo.svg'
+const OTYA_PWA_MARK = '/otya-app-icon.webp'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -20,7 +22,6 @@ export const metadata: Metadata = {
     'Otya',
     'Omy Play',
     'Otya Android',
-    'Opoint',
     'Otya ecosystem',
     'Mbirizi physical shop',
     'Lwengo mobile money agency',
@@ -59,23 +60,23 @@ export const metadata: Metadata = {
       'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
       {
-        url: OTYA_MARK,
-        width: 512,
-        height: 512,
+        url: OTYA_SOCIAL_MARK,
+        width: 720,
+        height: 180,
         alt: 'Otya',
-        type: 'image/webp',
+        type: 'image/svg+xml',
       },
     ],
   },
   twitter: {
     card: 'summary',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'Otya — Digital products and real-world services',
     description: 'Official Otya for local Android media, Otya Transfer and Watch Together.',
     images: [OTYA_SOCIAL_MARK],
   },
   icons: {
-    icon: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
-    apple: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
+    icon: [{ url: OTYA_MARK, type: 'image/svg+xml' }],
+    apple: [{ url: OTYA_PWA_MARK, sizes: '512x512', type: 'image/webp' }],
     shortcut: OTYA_MARK,
   },
   manifest: '/manifest.json',
