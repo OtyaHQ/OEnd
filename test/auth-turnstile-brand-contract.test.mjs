@@ -70,7 +70,7 @@ test('sign-in UI supplies fresh Turnstile proof to every public provider path', 
 test('website brand tokens match the approved Otya cyan and blue identity', () => {
   const css = read('src/app/brand-overrides.css')
 
-  for (const color of ['#27E8FF', '#126BFF', '#173BFF', '#050812', '#0A1020', '#10182A', '#213454', '#F7FAFF']) {
+  for (const color of ['#00BDEB', '#1677FF', '#08265C', '#050812', '#0A1020', '#10182A', '#213454', '#F7FAFF']) {
     assert.match(css, new RegExp(color.replace('#', '\\#'), 'i'), `${color} must remain in the canonical website palette`)
   }
   assert.match(css, /background: #175CD3 !important/)
