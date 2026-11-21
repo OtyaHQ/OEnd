@@ -45,7 +45,7 @@ requireMatch('OEnd production D1 name', core, /^database_name\s*=\s*"otya-end-db
 requireMatch('Firebase project id must be otya-player', core, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
 requireMatch('Firebase project number must be verified', core, /^FIREBASE_PROJECT_NUMBER\s*=\s*"82776565585"$/m)
 requireMatch('Firebase Android app id must be verified', core, /^FIREBASE_ANDROID_APP_ID\s*=\s*"1:82776565585:android:085cf9b4eecb76e9535570"$/m)
-requireMatch('Android package must be verified', core, /^ANDROID_PACKAGE_NAME\s*=\s*"com\.otyaplayer\.app"$/m)
+requireMatch('Android package must be verified', core, /^ANDROID_PACKAGE_NAME\s*=\s*"com\.otya\.omyplay"$/m)
 requireMatch('App Check production mode must remain monitor', core, /^FIREBASE_APP_CHECK_MODE\s*=\s*"monitor"$/m)
 forbidMatch('App Check must not be pinned to enforce in Wrangler', core, /^FIREBASE_APP_CHECK_MODE\s*=\s*"enforce"$/m)
 
