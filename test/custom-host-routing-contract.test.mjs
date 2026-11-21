@@ -39,15 +39,15 @@ test('Space root is a product home while Account and Admin remain Space sections
   assert.ok(router.includes("url.pathname === '/account'"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/account/')"))
   assert.ok(router.includes("pathname.startsWith('/account/')"))
-  assert.ok(router.includes("pathname === '/admin'"))
+  assert.ok(router.includes("pathname === '/admin'"))\n  assert.ok(router.includes("pathname.startsWith('/admin/')"))
   assert.ok(router.includes("pathname.startsWith('/admin/')"))
   assert.ok(router.includes("['admin', '/admin']"))
 })
 
 test('Space allows approved signed-in product routes instead of redirecting them away', () => {
   assert.ok(router.includes("pathname.startsWith('/account/')"))
-  assert.ok(router.includes("pathname === '/ask'"))
-  assert.ok(router.includes("pathname.startsWith('/ask/')"))
+  assert.ok(router.includes("url.pathname === '/ask' || url.pathname === '/ask/'"))
+  assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/admin/ai/')"))
   assert.ok(router.includes("pathname === '/telegram/'"))
   assert.ok(router.includes("pathname === '/admin'"))
   assert.ok(router.includes('isSpaceSurfacePath(url.pathname)'))
