@@ -15,7 +15,7 @@ export function OtyaBrandMark({ size = 36, thinking = false, ai = false, classNa
     src="/otya-app-icon.webp"
     width={size}
     height={size}
-    alt={accessibleLabel}
+    alt={accessibleLabel || 'Otya'}
     aria-label={accessibleLabel || undefined}
     className={`block shrink-0 object-contain ${thinking ? 'otya-brand-thinking' : ''} ${className}`}
     style={{ width: size, height: size, background: 'transparent' }}
