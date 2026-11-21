@@ -30,7 +30,7 @@ export const metadata: Metadata = {
       'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Omy Play.',
     images: [
       {
-        url: '/otya-app-icon.webp',
+        url: 'https://assets.otya.site/brand/otya/v4/icons/omy-play.webp',
         width: 512,
         height: 512,
         alt: 'Omy Play',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Omy Play — Offline Music & Video for Android',
     description: 'Official Omy Play for local Android music and video.',
-    images: ['/otya-app-icon.webp'],
+    images: ['https://assets.otya.site/brand/otya/v4/icons/omy-play.webp'],
   },
 }
 
