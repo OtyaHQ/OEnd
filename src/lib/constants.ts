@@ -10,7 +10,7 @@ export const OTYA = {
   noReplyEmail: 'noreply@otya.site',
   telegramChannel: 'https://t.me/otyaplayer',
   telegramSupport: 'https://t.me/OtyaPlayerBot',
-  description: 'Otya connects Omy Play, Opoint, Otya Account and shared platform services under one trusted identity. Omy Play remains local-first and works offline for core playback.',
+  description: 'Otya brings together its public digital products, shop services and shared account experience. Omy Play remains local-first and works offline for core playback.',
 } as const;
 
 export const SITE_CONFIG = {
