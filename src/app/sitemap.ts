@@ -10,7 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/opoint`,             changeFrequency: 'monthly', priority: 0.85 },
     { url: `${BASE}/omy-play`,          changeFrequency: 'weekly',  priority: 0.95 },
     { url: `${BASE}/music`,                changeFrequency: 'daily',   priority: 0.9 },
-    { url: `${BASE}/ask`,                  changeFrequency: 'weekly',  priority: 0.85 },
     { url: `${BASE}/download/omy-play`, changeFrequency: 'weekly',  priority: 0.85 },
     { url: `${BASE}/official`,             changeFrequency: 'monthly', priority: 0.8 },
     { url: `${BASE}/press`,                changeFrequency: 'monthly', priority: 0.75 },
