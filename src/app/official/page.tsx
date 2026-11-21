@@ -54,7 +54,7 @@ export default function OfficialLinksPage() {
           </a>
 
           <Link href="/omy-play" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
-            <span className="w-12 h-12 shrink-0 rounded-2xl grid place-items-center border border-black/[.06] dark:border-white/[.08]"><OtyaBrandMark size={34}/></span>
+            <span className="w-12 h-12 shrink-0 rounded-2xl grid place-items-center border border-black/[.06] dark:border-white/[.08]"><OtyaBrandMark product="omy-play" size={34}/></span>
             <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official product page</span><strong className="block mt-1 text-xl">Omy Play</strong><span className="block mt-1 text-sm otya-muted">Product information and official distribution links on otya.site</span></span>
           </Link>
         </section>
