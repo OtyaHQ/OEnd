@@ -55,8 +55,8 @@ test('Resend webhook delivery handling is idempotent and privacy-minimal', () =>
   assert.doesNotMatch(route, /JSON\.stringify\(event\)|JSON\.stringify\(event\.data\)/)
 })
 
-test('future explicit core deploys provision the existing Resend API key without weakening deploy authority', () => {
-  assert.match(deploy, /deploy-core:/)
+test('future explicit OEnd deploys provision the existing Resend API key without weakening deploy authority', () => {
+  assert.match(deploy, /deploy-oend:/)
   assert.match(deploy, /RESEND_API_KEY: \$\{\{ secrets\.RESEND_API_KEY \}\}/)
   assert.match(deploy, /wrangler secret put RESEND_API_KEY/)
   assert.match(deploy, /check https:\/\/otya\.site\/webhooks\/ '\^405\$'/)
