@@ -19,14 +19,14 @@ export default function ProductsPage() {
         <div className="max-w-[820px]">
           <div className="otya-kicker">Otya ecosystem</div>
           <h1 className="mt-3 text-[clamp(42px,7vw,78px)] font-black tracking-[-.065em] leading-[.95]">Digital products and real-world services.</h1>
-          <p className="mt-5 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Explore our digital products and the physical Otya shop. Each experience has a clear purpose and its own customer journey.</p>
+          <p className="mt-5 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Explore our digital products and the Opoint shop. Each experience has a clear purpose and its own customer journey.</p>
         </div>
       </section>
 
       <section className="otya-shell pb-16 sm:pb-24 grid gap-4">
         <article className="overflow-hidden rounded-[32px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] grid lg:grid-cols-[.95fr_1.05fr] items-center">
           <div className="p-7 sm:p-10 lg:p-12">
-            <div className="flex items-center gap-3"><OtyaBrandMark size={44}/><div><div className="text-xs font-black otya-muted">Android</div><h2 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Omy Play</h2></div></div>
+            <div className="flex items-center gap-3"><OtyaBrandMark product="omy-play" size={44}/><div><div className="text-xs font-black otya-muted">Android</div><h2 className="text-3xl sm:text-4xl font-black tracking-[-.05em]">Omy Play</h2></div></div>
             <p className="mt-5 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">Offline-first local music and video playback, nearby Transfer, Private media and practical media tools.</p>
             <div className="mt-7 flex flex-wrap gap-3"><Link href="/omy-play" className="cosmos-button inline-flex min-h-11 items-center rounded-full px-5 text-sm font-black">Explore Omy Play</Link><Link href="/download/omy-play" className="inline-flex min-h-11 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black">Download</Link></div>
           </div>
@@ -56,7 +56,7 @@ export default function ProductsPage() {
             <p className="mt-4 max-w-[720px] text-sm sm:text-base leading-7 otya-muted">Phones and accessories, electronics, and mobile-money agency services at our physical shop in the Old Market area of Mbirizi. Check availability before visiting.</p>
             <p className="mt-4 text-xs otya-muted">This is an in-person shop, not an online checkout.</p>
           </div>
-          <Link href="/shop" className="cosmos-button inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-black">Visit Otya ↗</Link>
+          <Link href="/shop" className="cosmos-button inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-black">Visit Opoint ↗</Link>
         </article>
         </div>
       </section>
