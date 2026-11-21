@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: '%s | Otya',
   },
   description:
-    'Explore Otya digital products, account services, official support and Opoint physical shop services in Mbirizi, Lwengo, Uganda.',
+    'Explore Otya digital products, account services, official support and Otya shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
     'Omy Play',
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     locale: 'en_UG',
     url: SITE_URL,
     siteName: 'Otya',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'Otya — Digital products and real-world services',
     description:
       'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
@@ -99,7 +99,7 @@ const schemaOrg = {
       name: 'Otya',
       description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
-      logo: `${SITE_URL}${OTYA_MARK}`,
+      logo: OTYA_MARK,
       email: 'support@otya.site',
     },
     {
@@ -118,7 +118,7 @@ const schemaOrg = {
       publisher: { '@id': `${SITE_URL}/#organization` },
       description:
         'Offline-first Android music and video app for local media, Otya Transfer, Watch Together, Private media, playlists, subtitles and practical media tools.',
-      image: `${SITE_URL}${OTYA_MARK}`,
+      image: OTYA_MARK,
       featureList: [
         'Local music playback',
         'Local video playback',
