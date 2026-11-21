@@ -2,12 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8')
-test('Otya navigation uses the synced approved brand mark and current Omy Play route', () => {
-  const nav=read('src/components/SiteNav.tsx'), mark=read('src/components/OtyaBrandMark.tsx'), sync=read('scripts/sync-brand-assets.mjs')
+test('Otya navigation uses the approved brand mark and current public product routes', () => {
+  const nav=read('src/components/SiteNav.tsx')
+  const mark=read('src/components/OtyaBrandMark.tsx')
+  const sync=read('scripts/sync-brand-assets.mjs')
   assert.match(nav,/Otya home — products and services/)
   assert.doesNotMatch(nav,/PeterSmart Link/)
+  assert.match(nav,/\['Otya shop', '\/shop'\]/)
   assert.match(nav,/\['Omy Play', '\/omy-play'\]/)
-  assert.match(nav,/\['Opoint', '\/opoint'\]/)
   assert.match(mark,/otya-app-icon\.webp/)
   assert.doesNotMatch(mark,/otya-mark-current\.png|otya-icon\.svg|otya-icon-dark\.svg|otya-ai\.svg/)
   assert.match(sync,/assets\/branding\/otya_app_icon\.webp/)
