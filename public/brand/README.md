@@ -1,16 +1,38 @@
 # Otya Brand Templates
 
-These SVG files are reusable source templates for website, launch, update and store assets.
+This folder contains public-facing brand template guidance. The approved visual source is the owner-supplied Otya artwork; do not redraw it or substitute fonts.
 
-The canonical product mark is the current owner-approved Otya mark from the OtyaPlayer app. The server synchronizes that exact mark before development, build, preview and deployment so the website, favicons and install surfaces do not drift from the app.
+## Canonical Cloudflare assets
 
-The product palette is cyan → electric blue → deep blue. Red and yellow are functional status/compatibility colors, not the primary Otya identity.
+Base URL: https://assets.otya.site/brand/otya/v4/
 
-- `otya-feature-graphic.svg` — feature/banner artwork for app store and website headers.
-- `otya-social-card.svg` — social preview and announcement graphic.
-- `otya-release-poster.svg` — update/release poster.
-- `otya-screenshot-frame.svg` — frame for real app screenshots.
+- Full artwork: `otya-full-artwork.webp`
+- Master wordmark and tagline: `otya-master-lockup.webp`
+- Master orbital mark: `otya-orbital-mark.webp`
+- Product strip: `otya-product-strip.webp`
+- Company footer: `otya-company-footer.webp`
+- Master square icons: `otya-master-icon-192.webp` and `otya-master-icon-512.webp`
+- Product icons: `icons/opoint.webp`, `icons/omy-play.webp`, `icons/otya-os.webp`, `icons/ohub.webp`, `icons/oid.webp`
 
-Use these templates as source files. Export PNG/JPG variants from them when a platform requires raster images.
+## Exact brand language
 
-Final app screenshots should be captured from a real APK build, not mocked screenshots.
+- Otya
+- One ecosystem. Endless possibilities.
+- Innovate | Connect | Grow
+- Developed by OtyaHQ
+- Otya Holdings Limited
+- Powering a smarter, more connected world.
+
+## Approved colours
+
+- Navy #08265C
+- Royal blue #1677FF
+- Cyan #00BDEB
+- Turquoise #14C7B8
+- White #FFFFFF
+
+## Usage
+
+Use the master lockup for the public company wordmark. Use the orbital mark or square master icon in compact contexts. Use each product's own icon for product-specific placements. Do not use the full banner as an app icon.
+
+The WebP files are optimized source-derived exports. The untouched original 1536 × 1024 PNG remains the high-resolution reference and is not yet stored in R2.
