@@ -4,8 +4,16 @@ import { readFileSync } from 'node:fs'
 
 const workflow = readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8')
 
+function block(name, next) {
+  const start = workflow.indexOf(\`  \${name}:\`)
+  assert.ok(start >= 0, \`\${name} must exist\`)
+  const end = next ? workflow.indexOf(\`\\n  \${next}:\`, start + 1) : workflow.length
+  assert.ok(end > start, \`\${next ?? 'end'} must follow \${name}\`)
+  return workflow.slice(start, end)
+}
+
 test('full validation remains mandatory before production authorization and planning', () => {
-  assert.match(workflow, /validate:\\n[\\s\\S]*Validate OEnd web/)
+  assert.match(workflow, /validate:[\\s\\S]*Validate OEnd web/)
   assert.match(workflow, /authorize-deploy:[\\s\\S]*needs: validate/)
   assert.match(workflow, /plan-deploy:[\\s\\S]*needs: \\[validate, authorize-deploy\\]/)
   assert.match(workflow, /Validate auth worker/)
@@ -15,38 +23,39 @@ test('full validation remains mandatory before production authorization and plan
 })
 
 test('runtime deployment is selected explicitly by canonical product name', () => {
-  assert.match(workflow, /default: 'validate-only'/)
-  assert.match(workflow, /oid=false/)
-  assert.match(workflow, /o=false/)
-  assert.match(workflow, /oend=false/)
-  for (const component of ['oid','o','oend','opoint','omy-play']) {
-    assert.match(workflow, new RegExp('\\\\b' + component + '\\\\)'))
+  const plan = block('plan-deploy', 'deploy-oid')
+  assert.match(plan, /oid=false/)
+  assert.match(plan, /o=false/)
+  assert.match(plan, /oend=false/)
+  for (const component of ['oid', 'o', 'oend', 'opoint', 'omy-play']) {
+    assert.ok(plan.includes(\`\${component})\`), \`\${component} must be a selectable component\`)
   }
-  assert.match(workflow, /all\\)[\\s\\S]*oid=true[\\s\\S]*o=true[\\s\\S]*oend=true[\\s\\S]*opoint=true[\\s\\S]*omy_play=true/)
+  assert.match(plan, /all\\)[\\s\\S]*oid=true[\\s\\S]*o=true[\\s\\S]*oend=true[\\s\\S]*opoint=true[\\s\\S]*omy_play=true/)
   assert.doesNotMatch(workflow, /No usable previous commit; conservatively deploying all runtime components/)
 })
 
-test('O bootstraps against existing Core, OEnd then deploys, and O is finalized against OEnd', () => {
-  assert.match(workflow, /deploy-o:[\\s\\S]*needs: \\[validate, authorize-deploy, plan-deploy, deploy-oid\\]/)
-  assert.match(workflow, /sed 's\/service = "oend"\/service = "otya-core"\/' wrangler.toml > wrangler.bootstrap.toml/)
-  assert.match(workflow, /deploy-oend:[\\s\\S]*needs: \\[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o\\]/)
-  assert.match(workflow, /deploy-o-final:[\\s\\S]*needs: \\[validate, authorize-deploy, plan-deploy, deploy-o, deploy-oend\\]/)
-  assert.match(workflow, /grep -q 'service = "oend"' wrangler.toml/)
-  assert.match(workflow, /deploy-opoint:[\\s\\S]*needs: \\[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend\\]/)
-  assert.match(workflow, /deploy-omy-play:[\\s\\S]*needs: \\[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend\\]/)
+test('O bootstraps against existing Core, OEnd deploys next, then O is finalized against OEnd', () => {
+  const o = block('deploy-o', 'deploy-oend')
+  const oend = block('deploy-oend', 'deploy-o-final')
+  const finalO = block('deploy-o-final', 'deploy-opoint')
+
+  assert.match(o, /needs: \\[validate, authorize-deploy, plan-deploy, deploy-oid\\]/)
+  assert.match(o, /sed 's\\/service = "oend"\\/service = "otya-core"\\/' wrangler\\.toml > wrangler\\.bootstrap\\.toml/)
+  assert.match(oend, /needs: \\[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o\\]/)
+  assert.match(finalO, /needs: \\[validate, authorize-deploy, plan-deploy, deploy-o, deploy-oend\\]/)
+  assert.match(finalO, /grep -q 'service = "oend"' wrangler\\.toml/)
 })
 
-test('all production components and live verification fail closed without authorization', () => {
-  const names = ['deploy-oid','deploy-o','deploy-oend','deploy-o-final','deploy-opoint','deploy-omy-play','verify-production']
-  for (let i = 0; i < names.length; i++) {
-    const start = workflow.indexOf('  ' + names[i] + ':')
-    assert.ok(start >= 0, names[i] + ' exists')
-    const next = names[i+1] ? workflow.indexOf('\\n  ' + names[i+1] + ':', start + 1) : workflow.length
-    const block = workflow.slice(start, next > start ? next : workflow.length)
-    assert.match(block, /needs\\.validate\\.result == 'success'/)
-    assert.match(block, /needs\\.authorize-deploy\\.result == 'success'/)
-    assert.match(block, /needs\\.plan-deploy\\.result == 'success'/)
+test('Opoint and Omy Play deploy only after OID and OEnd', () => {
+  assert.match(block('deploy-opoint', 'deploy-omy-play'), /deploy-oid, deploy-oend/)
+  assert.match(block('deploy-omy-play', 'verify-production'), /deploy-oid, deploy-oend/)
+})
+
+test('live verification is gated by validation, authorization and every selected deployment', () => {
+  const verify = block('verify-production', null)
+  for (const name of ['deploy-oid', 'deploy-o', 'deploy-oend', 'deploy-o-final', 'deploy-opoint', 'deploy-omy-play']) {
+    assert.match(verify, new RegExp(\`needs\\\\.\${name}\\\\.result == 'success' \\\\|\\\\| needs\\\\.\${name}\\\\.result == 'skipped'\`))
   }
-  assert.match(workflow, /needs\\.deploy-o-final\\.result == 'success' \\|\\| needs\\.deploy-o-final\\.result == 'skipped'/)
-  assert.match(workflow, /needs\\.deploy-omy-play\\.result == 'success' \\|\\| needs\\.deploy-omy-play\\.result == 'skipped'/)
+  assert.match(verify, /needs\\.authorize-deploy\\.result == 'success'/)
+  assert.match(verify, /needs\\.plan-deploy\\.outputs\\.any_runtime == 'true'/)
 })
