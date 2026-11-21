@@ -24,7 +24,7 @@ test('website metadata and visual tokens match the approved Otya brand', () => {
   assert.doesNotMatch(layout,/const APP_VERSION =|softwareVersion:/)
   assert.match(layout,/const OTYA_MARK = 'https:\/\/assets\.otya\.site\/brand\/otya\/v4\/otya-master-icon-512\.webp'/)
   assert.match(layout,/brand-overrides\.css/)
-  assert.match(layout,/#050812/)
+  assert.match(layout,/#08265C/)
   for(const token of ['--otya-cyan: #00BDEB','--otya-blue: #1677FF','--otya-deep-blue: #08265C','--otya-near-black: #050812','--otya-surface: #0A1020']) assert.ok(css.includes(token),token)
   assert.match(manifest,/otya-master-icon-512\.webp/)
   assert.match(webmanifest,/otya-master-icon-512\.webp/)
