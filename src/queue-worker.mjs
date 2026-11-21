@@ -1,9 +1,8 @@
 /**
- * otya-core queue/cron wrapper.
+ * OEnd queue/cron wrapper.
  *
- * The dedicated otya-next Worker owns AI inference, AI queue consumption and
- * AI-only schedules. This file intentionally handles only the core-owned
- * push queue and the hourly abuse-maintenance schedule.
+ * O owns AI inference and AI-only schedules. This Worker handles the
+ * OEnd-owned push queue and the hourly abuse-maintenance schedule.
  */
 import openNextWorker from '../.open-next/worker.js'
 
@@ -19,7 +18,7 @@ export default {
 
   async queue(batch, env) {
     if (batch.queue !== 'oend-push') {
-      throw new Error(`otya-core received unexpected queue: ${batch.queue}`)
+      throw new Error(`OEnd received unexpected queue: ${batch.queue}`)
     }
 
     for (const message of batch.messages) {
@@ -49,7 +48,7 @@ export default {
 
   async scheduled(event, env, ctx) {
     if (event.cron !== '0 * * * *') {
-      console.warn('[CRON] otya-core received unexpected cron:', event.cron)
+      console.warn('[CRON] OEnd received unexpected cron:', event.cron)
       return
     }
     ctx.waitUntil(handleHourlyMaintenance(env))
