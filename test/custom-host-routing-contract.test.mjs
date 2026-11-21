@@ -35,7 +35,6 @@ test('the retired Otya Player download URL permanently redirects to Omy Play', (
 test('the old O owner URL redirects into the private O console in Space', () => {
   assert.ok(router.includes("url.pathname === '/ask' || url.pathname === '/ask/'"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/admin/ai/')"))
-  assert.ok(!router.includes("pathname === '/ask'"))
 })
 test('Docs root, Help and Status remain distinct surfaces', () => {
   assert.ok(router.includes("host === DOCS_HOST"))
