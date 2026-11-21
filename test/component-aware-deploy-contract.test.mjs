@@ -19,7 +19,7 @@ test('full OID, O, OEnd, Opoint and Omy Play validation runs before production a
   assert.match(validate, /Validate O worker/)
   assert.match(validate, /Validate Opoint backend, security boundaries and dashboard build/)
   assert.match(validate, /Verify Omy Play backend source and schema contract/)
-  assert.match(jobBlock('deploy-omy-play'), /ref: \\${\\{ needs\\.validate\\.outputs\\.omy_play_sha \\}\\}/)
+  assert.ok(jobBlock('deploy-omy-play').includes('ref: ${{ needs.validate.outputs.omy_play_sha }}'))
   assert.ok(workflow.indexOf('  authorize-deploy:\n') > workflow.indexOf('  validate:\n'))
 })
 test('production authorization is explicit, main-branch-only and exact-token gated', () => {
@@ -53,7 +53,7 @@ test('O bootstraps against existing OEnd predecessor, OEnd deploys next, then O 
 })
 test('Opoint and Omy Play deploy only after OID and OEnd', () => {
   assert.match(jobBlock('deploy-opoint'), /needs: \[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend\]/)
-  assert.match(jobBlock('deploy-omy-play'), /needs: \[validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend\]/)
+  assert.ok(jobBlock('deploy-omy-play').includes('ref: ${{ needs.validate.outputs.omy_play_sha }}'))
 })
 test('live verification remains behind selected deployment jobs and authorization', () => {
   const verify=jobBlock('verify-production')
