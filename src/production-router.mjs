@@ -188,8 +188,10 @@ function redirectToCanonicalPath(url, pathname) {
 }
 
 const LEGACY_PRODUCT_PATHS = new Map([
-  ['/otyapoint', '/opoint'],
-  ['/otyapoint/', '/opoint'],
+  ['/opoint', '/shop'],
+  ['/opoint/', '/shop'],
+  ['/otyapoint', '/shop'],
+  ['/otyapoint/', '/shop'],
   ['/otya-player', '/omy-play'],
   ['/otya-player/', '/omy-play'],
   ['/download/otya-player', '/download/omy-play'],
