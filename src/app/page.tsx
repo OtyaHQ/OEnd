@@ -1,9 +1,9 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { SiteNav } from '@/components/SiteNav'
 import { SiteFooter } from '@/components/SiteFooter'
 import { HomeStart } from '@/components/HomeStart'
+import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 export const metadata: Metadata = {
   title: 'Otya — Digital products and real-world services',
@@ -40,8 +40,8 @@ export default function HomePage() {
           <div className="relative">
             <div className="absolute -inset-8 rounded-full bg-[radial-gradient(circle,rgba(41,121,255,.13),transparent_65%)] blur-2xl" />
             <div className="relative rounded-[34px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] dark:bg-white/[.035] p-4 sm:p-5 shadow-[0_30px_90px_rgba(8,11,18,.16)] backdrop-blur-xl">
-              <div className="flex items-center justify-between px-2 pb-4"><div><div className="text-xs font-black otya-muted">Featured product</div><div className="mt-1 text-2xl font-black tracking-[-.04em]">Omy Play</div></div><span className="text-xs font-bold otya-muted">Actual app screen</span></div>
-              <div className="mx-auto max-w-[310px] overflow-hidden rounded-[26px] border border-white/10 bg-[#06152d] shadow-2xl"><Image src="/product/otya/onboarding.svg" alt="Omy Play welcome screen on Android" width={540} height={960} priority className="w-full h-auto" /></div>
+              <div className="flex items-center justify-between px-2 pb-4"><div><div className="text-xs font-black otya-muted">Featured product</div><div className="mt-1 text-2xl font-black tracking-[-.04em]">Omy Play</div></div><span className="text-xs font-bold otya-muted">Watch. Enjoy.</span></div>
+              <div className="mx-auto min-h-[280px] max-w-[310px] grid place-items-center rounded-[26px] bg-white shadow-2xl"><OtyaBrandMark product="omy-play" size={190}/></div>
               <div className="pt-5 px-2 pb-1 flex flex-wrap gap-3"><Link href="/omy-play" className="text-sm font-black">View product →</Link><Link href="/download/omy-play" className="text-sm font-black otya-muted">Download</Link></div>
             </div>
           </div>
@@ -51,13 +51,26 @@ export default function HomePage() {
       <HomeStart />
 
       <section className="otya-shell py-10 sm:py-14">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="otya-kicker">Omy Play</div><h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">A real player, not a concept.</h2><p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Listen, organize your media and move it between nearby phones. These are screens from Omy Play on Android.</p></div><Link href="/omy-play" className="text-sm font-black">Explore Omy Play →</Link></div>
-        <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-          {[['now-playing.svg','Now playing'],['music.svg','Music library'],['transfer.svg','Otya Transfer'],['me.svg','Your media']].map(([screen,label]) => <div key={screen} className="overflow-hidden rounded-[24px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-2 sm:p-3"><Image src={`/product/otya/${screen}`} alt={`Omy Play ${label} screen`} width={540} height={960} className="w-full h-auto rounded-[17px]" /><div className="px-2 pt-3 pb-2 text-sm font-black">{label}</div></div>)}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="otya-kicker">Omy Play · Watch. Enjoy.</div>
+            <h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">Your media. Your device. Your choice.</h2>
+            <p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Omy Play is built around local music and video playback, nearby transfer and private-by-default media handling.</p>
+          </div>
+          <Link href="/omy-play" className="text-sm font-black">Explore Omy Play →</Link>
+        </div>
+        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+          {[
+            ['Video & music', 'Play audio and video already on your Android device.'],
+            ['Send nearby', 'Move media directly between supported nearby devices.'],
+            ['Private by default', 'Keep local media on your device unless you choose otherwise.'],
+            ['Offline-first', 'Core local playback does not depend on an online music catalog.'],
+          ].map(([title, detail]) => <article key={title} className="rounded-[24px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-5 sm:p-6">
+            <h3 className="text-base font-black">{title}</h3>
+            <p className="mt-2 text-sm leading-6 otya-muted">{detail}</p>
+          </article>)}
         </div>
       </section>
-
-
 
       <section className="otya-shell py-10 sm:py-14">
         <div className="rounded-[32px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-6 sm:p-8 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-8 items-center">
