@@ -39,9 +39,10 @@ test('website, admin wrappers and account email use one canonical Otya mark', ()
   assert.match(sync, /a4d8bb1c245d7f0b4413e2bcff9d1d2e25eecbdd7ab0ff376046343c0067667a/)
   assert.match(sync, /7dd43b6aa9f6a5a4d1560c1fa02934b20150630539dbe45d03cce790f86d1bef/)
   assert.match(sync, /73f6e19997cbf28f65380ec9d6b25a5cdd27c34c3c8ee0fde0981fe082f0089e/)
-  for (const value of ['Opoint', 'Omy Play', 'Otya OS', 'OHub', 'OID', 'Shop. Pay. More.', 'Watch. Enjoy.', 'Your Smart Platform.', 'Build Together.', 'Secure Always.']) {
-    assert.ok(sync.includes(value), value)
+  for (const path of ['public/otya-product-opoint.webp', 'public/otya-product-omy-play.webp', 'public/otya-product-otya-os.webp', 'public/otya-product-ohub.webp', 'public/otya-product-oid.webp']) {
+    assert.ok(sync.includes(path), path)
   }
+  assert.doesNotMatch(sync, /font-family|product\.tagline|product\.name/)
   assert.doesNotMatch(sync, /url: 'https:\/\/assets\.otya\.site\/brand\/otya\/v4\/otya-product-strip\.webp'/)
   assert.match(sync, /RETIRED_GENERATED_TARGETS/)
   assert.match(sync, /public\/otya-product-strip\.webp/)
