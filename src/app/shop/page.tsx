@@ -5,17 +5,17 @@ import { SiteFooter } from '@/components/SiteFooter'
 
 const SITE_URL = 'https://otya.site'
 const MAP_URL = 'https://www.google.com/maps/search/?api=1&query=Old%20Market%2C%20Mbirizi%2C%20Lwengo%20District%2C%20Uganda'
-const ENQUIRY_URL = 'mailto:support@otya.site?subject=Otya%20shop%20enquiry'
+const ENQUIRY_URL = 'mailto:support@otya.site?subject=Opoint%20shop%20enquiry'
 
 export const metadata: Metadata = {
-  title: 'Otya | Physical shop in Mbirizi, Lwengo',
-  description: 'Visit Otya in the Old Market area of Mbirizi, Lwengo, Uganda for phones and accessories, electronics, and mobile-money agency services.',
+  title: 'Opoint | Physical shop in Mbirizi, Lwengo',
+  description: 'Visit Opoint in the Old Market area of Mbirizi, Lwengo, Uganda for phones and accessories, electronics, and mobile-money agency services.',
   keywords: ['Otya', 'phones and accessories Mbirizi', 'electronics Mbirizi', 'mobile money agent Mbirizi', 'Old Market Mbirizi', 'Lwengo Uganda'],
   alternates: { canonical: `${SITE_URL}/shop` },
   openGraph: {
     type: 'website',
     url: `${SITE_URL}/shop`,
-    title: 'Otya | Visit our physical shop',
+    title: 'Opoint | Visit our physical shop',
     description: 'Phones and accessories, electronics, and mobile-money agency services in Mbirizi, Lwengo, Uganda.',
   },
 }
@@ -24,9 +24,9 @@ const businessSchema = {
   '@context': 'https://schema.org',
   '@type': 'RetailStore',
   '@id': `${SITE_URL}/shop#store`,
-  name: 'Otya',
+  name: 'Opoint',
   url: `${SITE_URL}/shop`,
-  description: 'Physical retail shop offering phones and accessories, electronics, and mobile-money agency services.',
+  description: 'Opoint physical retail shop offering phones and accessories, electronics, and mobile-money agency services.',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Mbirizi',
@@ -63,12 +63,12 @@ export default function OtyaPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(businessSchema) }} />
 
       <section className="relative overflow-hidden border-b border-black/[.05] dark:border-white/[.07]">
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_10%_12%,rgba(39,232,255,.12),transparent_30%),radial-gradient(circle_at_90%_18%,rgba(18,107,255,.12),transparent_32%)]" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_10%_12%,rgba(0,189,235,.12),transparent_30%),radial-gradient(circle_at_90%_18%,rgba(22,119,255,.12),transparent_32%)]" />
         <div className="otya-shell relative py-14 sm:py-20 lg:py-24">
           <div className="max-w-[900px]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-black/[.07] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] px-4 py-2 text-xs font-black tracking-[.08em] uppercase otya-muted">Otya · Physical shop</div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/[.07] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] px-4 py-2 text-xs font-black tracking-[.08em] uppercase otya-muted">Opoint · Physical shop</div>
             <h1 className="mt-7 max-w-[850px] text-[clamp(42px,7vw,82px)] font-black tracking-[-.065em] leading-[.98]">Everyday technology.<br/><span className="otya-muted">A real place to visit.</span></h1>
-            <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Visit Otya in the Old Market area of Mbirizi, Lwengo. Find phones and accessories, electronics, and mobile-money agency services at our physical shop.</p>
+            <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Visit Opoint in the Old Market area of Mbirizi, Lwengo. Find phones and accessories, electronics, and mobile-money agency services at our physical shop.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href={MAP_URL} target="_blank" rel="noopener noreferrer" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Find the shop area</a>
               <a href={ENQUIRY_URL} className="inline-flex min-h-12 items-center rounded-full border border-black/[.10] dark:border-white/[.12] bg-[color:var(--cosmos-surface)] px-5 text-sm font-black">Ask about availability</a>
