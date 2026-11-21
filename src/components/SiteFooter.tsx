@@ -2,8 +2,8 @@ import { OTYA } from '@/lib/constants'
 import Link from 'next/link'
 
 const GROUPS = [
-  { title: 'Otya', links: [['Otya Media', '/otya-player'], ['Download for Android', '/download/otya-player'], ['Your Space', 'https://space.otya.site']] },
-  { title: 'Visit', links: [['OtyaPoint shop', '/otyapoint'], ['Products', '/apps'], ['Company', '/company']] },
+  { title: 'Products', links: [['Omy Play', '/omy-play'], ['Download Omy Play', '/download/omy-play'], ['Opoint', '/opoint'], ['OID & Space', 'https://space.otya.site']] },
+  { title: 'Company', links: [['Products', '/apps'], ['Company', '/company'], ['Developers', '/developers']] },
   { title: 'Support', links: [['Help', '/help'], ['Journal', '/blog'], ['Privacy', '/privacy'], ['Terms', '/terms'], ['Delete account', '/delete-account']] },
 ] as const
 
