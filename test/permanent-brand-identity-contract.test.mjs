@@ -4,50 +4,55 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8')
 
-test('the public Otya site names the public product family consistently', () => {
+test('the public Otya site names the public product family and shop consistently', () => {
   const nav = read('src/components/SiteNav.tsx')
   const footer = read('src/components/SiteFooter.tsx')
   const home = read('src/app/page.tsx')
   const apps = read('src/app/apps/page.tsx')
   const constants = read('src/lib/constants.ts')
+  const sitemap = read('src/app/sitemap.ts')
 
   for (const [source, expected] of [
-    [nav, "['Opoint', '/opoint']"],
+    [nav, "['Shop', '/shop']"],
     [nav, "['Omy Play', '/omy-play']"],
     [footer, "['Omy Play', '/omy-play']"],
-    [footer, "['Opoint shop', '/opoint']"],
+    [footer, "['Otya shop', '/shop']"],
     [home, 'Omy Play'],
-    [home, 'Opoint'],
+    [home, 'Otya shop'],
     [apps, 'Omy Play'],
-    [apps, 'Opoint'],
+    [apps, 'Otya shop'],
     [apps, 'Otya Help'],
     [constants, "player: 'Omy Play'"],
     [constants, "ai: 'O'"],
     [constants, "backend: 'OEnd'"],
+    [sitemap, '/shop'],
   ]) assert.ok(source.includes(expected), 'missing canonical brand text: ' + expected)
 
-  assert.doesNotMatch(nav, /\['OtyaPoint'|\['Otya', '\/otya-player'/)
-  assert.doesNotMatch(footer, /Otya Media|OtyaPoint|\/otya-player|\/otyapoint/)
-  assert.doesNotMatch(apps, /<h2[^>]*>Next<\/h2>|Otya Next/)
+  for (const source of [nav, footer, home, apps, constants, sitemap]) {
+    assert.doesNotMatch(source, /Opoint|OtyaPoint|\/opoint|\/otyapoint/)
+  }
 })
 
-test('canonical product pages and legacy redirects preserve existing public links', () => {
+test('canonical Omy Play pages and legacy paths preserve existing public links', () => {
   const router = read('src/production-router.mjs')
   const sitemap = read('src/app/sitemap.ts')
   const player = read('src/app/omy-play/page.tsx')
   const download = read('src/app/download/omy-play/page.tsx')
   const opoint = read('src/app/opoint/page.tsx')
+  const shop = read('src/app/shop/page.tsx')
 
   assert.match(router, /\['\/otya-player', '\/omy-play'\]/)
   assert.match(router, /\['\/download\/otya-player', '\/download\/omy-play'\]/)
-  assert.match(router, /\['\/otyapoint', '\/opoint'\]/)
+  assert.match(router, /\['\/otyapoint', '\/shop'\]/)
+  assert.match(router, /\['\/opoint', '\/shop'\]/)
   assert.match(router, /status: 308/)
   assert.match(player, /canonical: 'https:\/\/otya\.site\/omy-play'/)
   assert.match(download, /canonical: 'https:\/\/otya\.site\/download\/omy-play'/)
-  assert.match(opoint, /canonical: 'https:\/\/otya\.site\/opoint'/)
+  assert.match(opoint, /redirect\('\/shop'\)/)
+  assert.match(shop, /canonical: `\$\{SITE_URL\}\/shop`/)
   assert.match(sitemap, /\$\{BASE\}\/omy-play/)
-  assert.match(sitemap, /\$\{BASE\}\/opoint/)
-  assert.doesNotMatch(sitemap, /\$\{BASE\}\/ask|otya-player|otyapoint/)
+  assert.match(sitemap, /\$\{BASE\}\/shop/)
+  assert.doesNotMatch(sitemap, /\/opoint|\/otyapoint|\$\{BASE\}\/ask|otya-player/)
 })
 
 test('site structured data identifies the actual Omy Play Android package', () => {
@@ -55,7 +60,7 @@ test('site structured data identifies the actual Omy Play Android package', () =
   assert.match(layout, /name: 'Omy Play'/)
   assert.match(layout, /identifier: 'com\.otya\.omyplay'/)
   assert.match(layout, /\$\{SITE_URL\}\/omy-play/)
-  assert.doesNotMatch(layout, /com\.otyaplayer\.app|otya-player|Otya Media|OtyaPoint/)
+  assert.doesNotMatch(layout, /com\.otyaplayer\.app|otya-player|Otya Media|OtyaPoint|Opoint/)
 })
 
 test('the site and its generated Open Graph card use the owner-approved permanent mark', () => {
