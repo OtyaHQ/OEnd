@@ -34,9 +34,9 @@ function Brand() {
     <img
       src="https://assets.otya.site/brand/otya/v4/otya-master-lockup.webp"
       width={190}
-      height={61}
+      height={71}
       alt="Otya — One ecosystem. Endless possibilities."
-      className="block h-[52px] w-auto max-w-[190px] object-contain"
+      className="block h-[64px] w-auto max-w-[220px] object-contain"
       fetchPriority="high"
     />
   </Link>
