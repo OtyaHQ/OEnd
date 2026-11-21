@@ -19,5 +19,5 @@ test('public Help teaches the current one-account and verification flow', () => 
   assert.match(help,/request a new code only if you still need one/)
   assert.match(help,/OID/)
   assert.match(help,/Contact Otya/)
-  assert.doesNotMatch(help,/use Resend only|Telegram sign-in is not shown until|OTYA/i)
+  assert.doesNotMatch(help,/use Resend only|Telegram sign-in is not shown until/i)
 })
