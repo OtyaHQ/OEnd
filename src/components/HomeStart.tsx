@@ -6,7 +6,7 @@ export function HomeStart() {
       <div>
         <p className="otya-kicker">Start here</p>
         <h2 id="start-heading" className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.045em] leading-[1.1]">Digital products.<br/>Real-world services.</h2>
-        <p className="mt-4 max-w-md text-base leading-7 otya-muted">Explore Omy Play, manage your account in Space, or visit the Otya shop for physical shop services in Mbirizi.</p>
+        <p className="mt-4 max-w-md text-base leading-7 otya-muted">Explore Omy Play, manage your account in Space, or visit the Opoint shop for physical shop services in Mbirizi.</p>
       </div>
       <div className="grid gap-3">
         <Link href="/download/omy-play" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
