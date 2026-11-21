@@ -31,7 +31,7 @@ export default function StatusPage() {
           <div className="text-[11px] font-black uppercase tracking-[.16em] opacity-60">Service status</div>
           <h1 className="mt-3 text-4xl sm:text-6xl font-black tracking-[-.06em] leading-[.95]">Otya service availability.</h1>
           <p className="mt-5 max-w-[720px] text-base sm:text-lg leading-8 opacity-70">
-            Live checks below report the public website, account service and Next assistant without exposing private infrastructure details. Local media playback remains device-first and can continue when Otya online services are unavailable.
+            Live checks below report the public website, account service and supported assistance service without exposing private infrastructure details. Local media playback remains device-first and can continue when Otya online services are unavailable.
           </p>
         </section>
 
@@ -44,7 +44,7 @@ export default function StatusPage() {
           </p>
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
             <Link href="https://otya.site" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Website</Link>
-            <Link href="https://otya.site/download/otya-player" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Downloads & updates</Link>
+            <Link href="https://otya.site/download/omy-play" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Downloads & updates</Link>
             <Link href="https://docs.otya.site" className="rounded-2xl bg-[color:var(--cosmos-surface)] px-4 py-3 text-sm font-black">Documentation</Link>
           </div>
         </section>
