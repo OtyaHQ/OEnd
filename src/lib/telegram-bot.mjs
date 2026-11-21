@@ -136,19 +136,19 @@ async function askO(text, env, { senderId = '', surface = 'telegram_private' } =
     signal: AbortSignal.timeout(20000),
   }))
   const data = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error('Next request failed')
+  if (!response.ok) throw new Error('O request failed')
   const answer = cleanMessage(data?.answer ?? data?.response ?? data?.message)
-  if (!answer) throw new Error('Next returned an empty response')
+  if (!answer) throw new Error('O returned an empty response')
   return answer
 }
 
 function commandReply(text) {
   if (text === '/start' || text.startsWith('/start ')) return {
-    text: 'Welcome to Next by Otya. Ask a question or open Otya Space.',
+    text: 'Welcome to O by Otya. Ask a question or open Otya Space.',
     reply_markup: { inline_keyboard: [[{ text: 'Open Otya', web_app: { url: MINI_APP_URL } }]] },
   }
   if (text === '/help') return {
-    text: 'Ask Next anything, use /account for your Otya Account, /updates for release status, or /privacy for privacy information. Music playback and library search are local to the Android app.',
+    text: 'Ask O anything, use /account for your Otya Account, /updates for release status, or /privacy for privacy information. Music playback and library search are local to the Android app.',
   }
   if (text === '/account') return { text: `Open your Otya Account: ${MINI_APP_URL}` }
   if (text === '/privacy') return { text: 'Otya Privacy: https://otya.site/privacy' }
@@ -208,7 +208,7 @@ async function processPrivateMessage(message, env) {
   }
   if (!reply) {
     try { reply = { text: await askO(text, env, { senderId, surface: 'telegram_private' }) } }
-    catch { reply = { text: 'Next is temporarily unavailable. Please try again shortly.' } }
+    catch { reply = { text: 'O is temporarily unavailable. Please try again shortly.' } }
   }
   const chunks = splitTelegramText(reply.text)
   for (let i = 0; i < chunks.length; i++) {
@@ -232,16 +232,16 @@ function isOfficialChannelForward(message) {
     && normalizedUsername(originChat?.username) === CHANNEL_USERNAME
 }
 
-function isReplyToNext(message) {
+function isReplyToO(message) {
   const from = message?.reply_to_message?.from
   return from?.is_bot === true && normalizedUsername(from?.username) === BOT_USERNAME.toLowerCase()
 }
 
-function mentionsNext(text) {
+function mentionsO(text) {
   return clean(text, 3000).toLowerCase().includes(`@${BOT_USERNAME.toLowerCase()}`)
 }
 
-function stripNextMention(text) {
+function stripOMention(text) {
   return clean(text, 3000).replace(new RegExp(`@${BOT_USERNAME}\\b`, 'ig'), '').trim()
 }
 
@@ -270,12 +270,12 @@ async function processDiscussionMessage(message, env) {
   const knownDiscussion = directChannelComment || await isKnownDiscussionChat(chatId, env)
   if (!knownDiscussion) return
 
-  const addressedToNext = directChannelComment || isReplyToNext(message) || mentionsNext(rawText)
-  if (!addressedToNext) return
+  const addressedToO = directChannelComment || isReplyToO(message) || mentionsO(rawText)
+  if (!addressedToO) return
 
-  const prompt = stripNextMention(rawText)
+  const prompt = stripOMention(rawText)
   const replyText = prompt
-    ? await askO(prompt, env, { senderId, surface: 'telegram_discussion' }).catch(() => 'Next is temporarily unavailable. Please try again shortly.')
+    ? await askO(prompt, env, { senderId, surface: 'telegram_discussion' }).catch(() => 'O is temporarily unavailable. Please try again shortly.')
     : 'How can I help with Otya?'
   const chunks = splitTelegramText(replyText)
   for (let i = 0; i < chunks.length; i++) {
