@@ -37,6 +37,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       opoint_sha: ${{ steps.opoint_source.outputs.sha }}
+      omy_play_sha: ${{ steps.omy_play_source.outputs.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -83,6 +84,21 @@ jobs:
           npm run build
           npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
+      - name: Fetch exact Omy Play main commit for release validation
+        id: omy_play_source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch main https://github.com/OtyaHQ/Omy_Play.git "$RUNNER_TEMP/Omy_Play"
+          echo "sha=$(git -C "$RUNNER_TEMP/Omy_Play" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Omy Play backend source and schema contract
+        working-directory: ${{ runner.temp }}/Omy_Play
+        run: |
+          set -euo pipefail
+          npm install --prefix backend --no-audit --no-fund --ignore-scripts
+          npm --prefix backend run check
+          npm --prefix backend test
+          npm --prefix backend run verify:schema
       - name: Validate O worker
         working-directory: ai-worker
         run: |
@@ -422,21 +438,12 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: OtyaHQ/Omy_Play
-          ref: main
+          ref: ${{ needs.validate.outputs.omy_play_sha }}
           path: Omy_Play
           persist-credentials: false
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '22.23.4', package-manager-cache: false }
-
-      - name: Verify Omy Play backend source and schema contract
-        working-directory: Omy_Play
-        run: |
-          set -euo pipefail
-          npm install --prefix backend --no-audit --no-fund --ignore-scripts
-          npm --prefix backend run check
-          npm --prefix backend test
-          npm --prefix backend run verify:schema
 
       - name: Deploy Omy Play production API
         working-directory: Omy_Play
