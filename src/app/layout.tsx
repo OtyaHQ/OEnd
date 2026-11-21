@@ -6,7 +6,7 @@ import './brand-overrides.css'
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
 const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
-const OTYA_MARK = '/otya-app-icon.webp'
+const OTYA_MARK = 'https://assets.otya.site/brand/otya/v4/otya-orbital-mark.webp'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -59,10 +59,10 @@ export const metadata: Metadata = {
       'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
       {
-        url: OTYA_MARK,
-        width: 512,
-        height: 512,
-        alt: 'Otya',
+        url: 'https://assets.otya.site/brand/otya/v4/otya-full-artwork.webp',
+        width: 560,
+        height: 373,
+        alt: 'Otya — One ecosystem. Endless possibilities.',
         type: 'image/webp',
       },
     ],
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     images: [OTYA_MARK],
   },
   icons: {
-    icon: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
+    icon: [{ url: OTYA_MARK, sizes: '240x183', type: 'image/webp' }],
     apple: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
     shortcut: OTYA_MARK,
   },
@@ -84,8 +84,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F5FAFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#050812' },
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#08265C' },
   ],
   width: 'device-width', initialScale: 1, maximumScale: 5,
 }
