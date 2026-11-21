@@ -6,7 +6,7 @@ import sharp from 'sharp'
 // Download the owner-approved Otya master icon from the public Cloudflare asset store.
 // The website build vendors this exact source-derived asset locally for reliable rendering.
 const SOURCE_URL = 'https://assets.otya.site/brand/otya/v4/otya-master-icon-512.webp'
-const EXPECTED_SHA256 = 'b0bd89ca87e97f35d7f0a7c2045cbe5ba354d5ca1fbc27e184075934ac33ca7a'
+const EXPECTED_SHA256 = '977722e97ce4ebe6a1857c8fce31b04ac34ae35826aa413d4f1ac759cf731445'
 const TARGET = 'public/otya-app-icon.webp'
 const EXPECTED_WIDTH = 512
 const EXPECTED_HEIGHT = 512
