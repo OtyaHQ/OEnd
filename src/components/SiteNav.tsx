@@ -10,7 +10,7 @@ type Session = { authenticated?: boolean; user?: User }
 
 const publicLinks = [
   ['Products', '/apps'],
-  ['Otya shop', '/shop'],
+  ['Opoint shop', '/shop'],
   ['Omy Play', '/omy-play'],
   ['Developers', '/developers'],
   ['Company', '/company'],
