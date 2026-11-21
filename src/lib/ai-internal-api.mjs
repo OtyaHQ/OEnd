@@ -30,15 +30,15 @@ function safeWindow(value, fallback = "-24 hours") {
 
 function redactAiText(value, max = 900) {
   return String(value || "")
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, "<email>")
-    .replace(/\\+?[0-9][0-9 ()-]{7,}[0-9]/g, "<phone>")
-    .replace(/\\b(?:bearer|token|authorization|api[_ -]?key)\\s*[:=]?\\s*[A-Za-z0-9._~-]{10,}/gi, "<secret>")
-    .replace(/(?:\\/data\\/user\\/\\d+\\/\\S+|\\/data\\/data\\/\\S+)/gi, "<app-data>")
-    .replace(/\\/storage\\/emulated\\/\\d+(?:\\/\\S*)?/gi, "<device-storage>")
-    .replace(/[A-Z]:\\\\Users\\\\\\S+/gi, "<user-path>")
-    .replace(/\\/home\\/\\S+/gi, "<user-path>")
-    .replace(/[\\u0000-\\u001F\\u007F]/g, " ")
-    .replace(/\\s+/g, " ")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "<email>")
+    .replace(/\+?[0-9][0-9 ()-]{7,}[0-9]/g, "<phone>")
+    .replace(/\b(?:bearer|token|authorization|api[_ -]?key)\s*[:=]?\s*[A-Za-z0-9._~-]{10,}/gi, "<secret>")
+    .replace(/(?:\/data\/user\/\d+\/\S+|\/data\/data\/\S+)/gi, "<app-data>")
+    .replace(/\/storage\/emulated\/\d+(?:\/\S*)?/gi, "<device-storage>")
+    .replace(/[A-Z]:\\Users\\\S+/gi, "<user-path>")
+    .replace(/\/home\/\S+/gi, "<user-path>")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
     .trim()
     .slice(0, max);
 }
