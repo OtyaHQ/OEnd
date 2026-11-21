@@ -75,8 +75,8 @@ async function sync() {
 
   const byTarget = Object.fromEntries(downloaded.map(({ asset, bytes }) => [asset.target, bytes]))
   const lockup = await sharp(byTarget['public/otya-master-lockup.webp']).resize({ width: 880 }).toBuffer()
-  const products = await sharp(byTarget['public/otya-product-strip.webp']).resize({ width: 950 }).toBuffer()
-  const footer = await sharp(byTarget['public/otya-company-footer.webp']).resize({ width: 950 }).toBuffer()
+  const products = await sharp(byTarget['public/otya-product-strip.webp']).resize({ width: 880 }).toBuffer()
+  const footer = await sharp(byTarget['public/otya-company-footer.webp']).resize({ width: 880 }).toBuffer()
   const canvas = Buffer.from('<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="630" fill="#FFFFFF"/></svg>')
 
   // Preserve the exact master lockup, product strip and company footer; no substitute lettering or invented iconography.
