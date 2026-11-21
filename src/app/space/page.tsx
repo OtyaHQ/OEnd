@@ -88,7 +88,7 @@ export default function SpaceHomePage() {
   return <main className="px-4 sm:px-7 lg:px-10 py-7 sm:py-9 max-w-[1240px]">
     <section className="relative overflow-hidden rounded-[28px] border p-6 sm:p-8 lg:p-10" style={{ borderColor: 'var(--cosmos-divider)', background: 'linear-gradient(135deg,color-mix(in srgb,var(--cosmos-primary) 13%,var(--cosmos-card)),var(--cosmos-card) 58%)' }}>
       <div className="max-w-3xl">
-        <div className="flex items-center gap-3"><OtyaBrandMark product="oid" size={42}/><div><div className="text-[11px] font-black uppercase tracking-[.18em] otya-muted">OID</div><div className="mt-1 text-xl font-black">Otya Space</div></div></div>
+        <div className="flex items-center gap-3"><OtyaBrandMark product="oid" size={42}/><div><div className="text-[11px] font-black uppercase tracking-[.18em] otya-muted">OID</div><div className="mt-1 text-xl font-black">Otya Space</div><div className="mt-1 text-xs font-bold otya-muted">Secure Always.</div></div></div>
         <h1 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.05em]">Welcome, {displayName}</h1>
         <p className="mt-4 text-sm sm:text-base leading-7 otya-muted">Your local Otya account space. Manage your identity, security, connected sign-in methods and supported recovery services.</p>
         {user?.otya_id && <div className="mt-4 inline-flex rounded-xl border px-3 py-2 font-mono text-xs font-bold" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>OID · {user.otya_id}</div>}
