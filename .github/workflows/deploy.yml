@@ -81,7 +81,7 @@ jobs:
           node --test scripts/export-d1-backup.test.mjs
           npm run lint
           npm run build
-          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.opoint-production.toml
+          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
       - name: Validate Next worker
         working-directory: ai-worker
@@ -169,7 +169,7 @@ jobs:
           echo "any_runtime=true" >> "$GITHUB_OUTPUT"
           echo "Deploy plan: OID=$auth O=$next OEnd=$core Opoint=$opoint OmyPlay=$omy_play"
 
-  deploy-auth:
+  deploy-oid:
     name: Deploy OID
     if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.oid == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy]
@@ -207,7 +207,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$AUTH_JWT_SECRET" && test -n "$RESEND_API_KEY" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
-          grep -q 'secret_name = "OTYAPOINT_INVITE_SERVICE_TOKEN"' wrangler.toml
+          grep -q 'secret_name = "OPOINT_INVITE_SERVICE_TOKEN"' wrangler.toml
           printf '%s' "$AUTH_JWT_SECRET" | npx wrangler secret put AUTH_JWT_SECRET
           printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY
           if [ -n "${FIREBASE_API_KEY:-}" ]; then printf '%s' "$FIREBASE_API_KEY" | npx wrangler secret put FIREBASE_API_KEY; fi
@@ -219,10 +219,10 @@ jobs:
           if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
           npx wrangler deploy
 
-  deploy-next:
+  deploy-o:
     name: Deploy O
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -254,10 +254,10 @@ jobs:
           printf '%s\n' '{"TELEGRAM_BOT_TOKEN":null,"TELEGRAM_WEBHOOK_SECRET":null}' | npx wrangler secret bulk
           npx wrangler deploy
 
-  deploy-core:
+  deploy-oend:
     name: Deploy OEnd
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && needs.plan-deploy.outputs.oend == 'true' }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && needs.plan-deploy.outputs.oend == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
@@ -298,8 +298,8 @@ jobs:
 
   deploy-opoint:
     name: Deploy Opoint
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.opoint == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.opoint == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
@@ -325,7 +325,7 @@ jobs:
           git -C "$RUNNER_TEMP/OPoint" fetch --depth 1 origin "$OPOINT_SHA"
           git -C "$RUNNER_TEMP/OPoint" checkout --detach FETCH_HEAD
           test "$(git -C "$RUNNER_TEMP/OPoint" rev-parse HEAD)" = "$OPOINT_SHA"
-          test -f "$RUNNER_TEMP/OPoint/wrangler.opoint-production.toml"
+          test -f "$RUNNER_TEMP/OPoint/wrangler.toml"
 
       - name: Install Opoint dependencies
         working-directory: ${{ runner.temp }}/OPoint
@@ -348,7 +348,7 @@ jobs:
           node --test scripts/export-d1-backup.test.mjs
           npm run lint
           npm run build
-          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.opoint-production.toml
+          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
       - name: Require existing production Cloudflare deployment credentials
         shell: bash
@@ -366,7 +366,7 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npx --yes wrangler@4.159.0 deploy --config wrangler.opoint-production.toml
+        run: npx --yes wrangler@4.159.0 deploy --config wrangler.toml
 
       - name: Verify Opoint is deployed privately at 100 percent
         shell: bash
@@ -389,8 +389,8 @@ jobs:
 
   deploy-omy-play:
     name: Deploy Omy Play
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.omy_play == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-core]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.omy_play == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
@@ -445,8 +445,8 @@ jobs:
 
   verify-production:
     name: Verify live Otya platform after deploy
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-opoint]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o, deploy-oend, deploy-opoint]
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
