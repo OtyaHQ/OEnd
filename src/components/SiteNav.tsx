@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { OTYA } from '@/lib/constants'
 import { signOutBrowser } from '@/lib/browser-sign-out.mjs'
 import { useEffect, useRef, useState } from 'react'
-import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 type User = { name?: string; email?: string; avatar_url?: string }
 type Session = { authenticated?: boolean; user?: User }
