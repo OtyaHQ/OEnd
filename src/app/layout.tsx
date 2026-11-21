@@ -6,7 +6,9 @@ import './brand-overrides.css'
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
 const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
-const OTYA_MARK = '/otya-app-icon.webp'
+const OTYA_MARK = 'https://assets.otya.site/brand/otya/v3/otya-icon.svg'
+const OTYA_SOCIAL_MARK = 'https://assets.otya.site/brand/otya/v3/otya-logo.svg'
+const OTYA_PWA_MARK = '/otya-app-icon.webp'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -15,12 +17,11 @@ export const metadata: Metadata = {
     template: '%s | Otya',
   },
   description:
-    'Explore Otya digital products, account services, official support and Opoint physical shop services in Mbirizi, Lwengo, Uganda.',
+    'Explore Otya digital products, account services, official support and Otya shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
     'Omy Play',
     'Otya Android',
-    'Opoint',
     'Otya ecosystem',
     'Mbirizi physical shop',
     'Lwengo mobile money agency',
@@ -54,28 +55,28 @@ export const metadata: Metadata = {
     locale: 'en_UG',
     url: SITE_URL,
     siteName: 'Otya',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'Otya — Digital products and real-world services',
     description:
       'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
       {
-        url: OTYA_MARK,
-        width: 512,
-        height: 512,
+        url: OTYA_SOCIAL_MARK,
+        width: 720,
+        height: 180,
         alt: 'Otya',
-        type: 'image/webp',
+        type: 'image/svg+xml',
       },
     ],
   },
   twitter: {
     card: 'summary',
-    title: 'Otya — Offline Music & Video for Android',
+    title: 'Otya — Digital products and real-world services',
     description: 'Official Otya for local Android media, Otya Transfer and Watch Together.',
-    images: [OTYA_MARK],
+    images: [OTYA_SOCIAL_MARK],
   },
   icons: {
-    icon: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
-    apple: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
+    icon: [{ url: OTYA_MARK, type: 'image/svg+xml' }],
+    apple: [{ url: OTYA_PWA_MARK, sizes: '512x512', type: 'image/webp' }],
     shortcut: OTYA_MARK,
   },
   manifest: '/manifest.json',
@@ -99,8 +100,8 @@ const schemaOrg = {
       name: 'Otya',
       description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
-      logo: `${SITE_URL}${OTYA_MARK}`,
-      email: 'support@otya.site',
+      logo: OTYA_MARK,
+      email: 'info@otya.site',
     },
     {
       '@type': 'SoftwareApplication',
@@ -118,7 +119,7 @@ const schemaOrg = {
       publisher: { '@id': `${SITE_URL}/#organization` },
       description:
         'Offline-first Android music and video app for local media, Otya Transfer, Watch Together, Private media, playlists, subtitles and practical media tools.',
-      image: `${SITE_URL}${OTYA_MARK}`,
+      image: OTYA_MARK,
       featureList: [
         'Local music playback',
         'Local video playback',

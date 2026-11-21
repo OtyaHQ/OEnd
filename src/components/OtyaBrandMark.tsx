@@ -12,10 +12,10 @@ type Props = {
 export function OtyaBrandMark({ size = 36, thinking = false, ai = false, className = '', label }: Props) {
   const accessibleLabel = label ?? (ai ? 'O owner workspace' : '')
   return <img
-    src="/otya-app-icon.webp"
+    src="https://assets.otya.site/brand/otya/v3/otya-icon.svg"
     width={size}
     height={size}
-    alt={accessibleLabel}
+    alt={accessibleLabel || 'Otya'}
     aria-label={accessibleLabel || undefined}
     className={`block shrink-0 object-contain ${thinking ? 'otya-brand-thinking' : ''} ${className}`}
     style={{ width: size, height: size, background: 'transparent' }}

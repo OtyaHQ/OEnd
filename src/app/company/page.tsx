@@ -5,7 +5,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 
 export const metadata: Metadata = {
   title: 'Otya | Company and ecosystem',
-  description: 'Discover the Otya ecosystem: Otya OS, Otya End, OtyaPoint, Otya Media, OtyaHub and Next. Built in Uganda.',
+  description: 'Discover the Otya ecosystem: Otya OS, Otya End, Opoint, Otya Media, OtyaHub and Next. Built in Uganda.',
   alternates: { canonical: 'https://otya.site/company' },
 }
 
