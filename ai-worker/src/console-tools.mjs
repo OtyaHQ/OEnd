@@ -13,7 +13,7 @@ import {
 } from './conversations.mjs'
 
 const DEFAULT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-const OTYA_CORE_URL = 'https://otya.site'
+const OEND_URL = 'https://otya.site'
 
 const clean = (v, max = 5000) => String(v ?? '')
   .replace(/[\u0000-\u001f]/g, ' ')
@@ -53,7 +53,7 @@ async function telegramCoreStatus() {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 3500)
   try {
-    const response = await fetch(`${OTYA_CORE_URL}/api/telegram/status`, {
+    const response = await fetch(`${OEND_URL}/api/telegram/status`, {
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     })
@@ -92,14 +92,14 @@ async function pluginRegistry(env) {
   return [
     {
       id: 'resend',
-      name: 'Shared email gateway (Resend via Otya Auth)',
+      name: 'Shared email gateway (Resend via OID)',
       category: 'Email',
       status: emailGatewayReady ? 'ready_to_connect' : 'setup_required',
-      capabilities: ['transactional email via Otya Auth', 'outbound support replies', 'operational alerts'],
+      capabilities: ['transactional email via OID', 'outbound support replies', 'operational alerts'],
       write: true,
       setup_hint: emailGatewayReady
-        ? 'O can reach the private Otya Auth gateway. Resend credentials remain owned by Otya Auth; provider acceptance is verified there.'
-        : 'Configure the same high-entropy OTYA_O_MAIL_SERVICE_TOKEN on O and Otya Auth. Do not add a direct RESEND_API_KEY to O.'
+        ? 'O can reach the private OID gateway. Resend credentials remain owned by OID; provider acceptance is verified there.'
+        : 'Configure the same high-entropy OTYA_O_MAIL_SERVICE_TOKEN on O and OID. Do not add a direct RESEND_API_KEY to O.'
     },
     {
       id: 'telegram',
@@ -109,10 +109,10 @@ async function pluginRegistry(env) {
       capabilities: ['same OTYA AI', 'private support', 'server conversation memory', 'official channel publishing'],
       write: true,
       setup_hint: telegram.connected
-        ? 'Healthy through the canonical Otya Core webhook and Next readiness path.'
+        ? 'Healthy through the canonical OEnd webhook and O readiness path.'
         : telegram.reachable
-          ? 'Otya Core is reachable, but the Telegram webhook or live Next dependency needs attention.'
-          : 'Telegram transport is owned by Otya Core; check the Core runtime rather than adding bot credentials to Next.',
+          ? 'OEnd is reachable, but the Telegram webhook or live O dependency needs attention.'
+          : 'Telegram transport is owned by OEnd; check the OEnd runtime rather than adding bot credentials to O.',
     },
     {
       id: 'otya',
@@ -123,7 +123,7 @@ async function pluginRegistry(env) {
       write: false,
     },
     {
-      id: 'otya-knowledge',
+      id: 'o-knowledge',
       name: 'OTYA Knowledge',
       category: 'Knowledge',
       status: env.AI_SEARCH?.search ? 'connected' : 'setup_required',
@@ -167,7 +167,7 @@ async function pluginRegistry(env) {
       id: 'github',
       name: 'GitHub',
       category: 'Developer',
-      status: 'available_next',
+      status: 'available_o',
       capabilities: ['issues', 'pull requests', 'workflow status', 'release context'],
       write: true,
       setup_hint: 'Use a dedicated GitHub App/token with least-privilege repository permissions.',
