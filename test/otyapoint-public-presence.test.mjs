@@ -4,14 +4,14 @@ import { readFileSync } from 'node:fs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 
-test('OtyaPoint is discoverable from primary navigation, home, product directory and footer', () => {
+test('Opoint is discoverable from primary navigation, home, product directory and footer', () => {
   const navigation = read('src/components/SiteNav.tsx')
   const home = read('src/components/HomeStart.tsx')
   const products = read('src/app/apps/page.tsx')
   const footer = read('src/components/SiteFooter.tsx')
   const sitemap = read('src/app/sitemap.ts')
 
-  assert.match(navigation, /\['OtyaPoint', '\/otyapoint'\]/)
+  assert.match(navigation, /\['OtyaPoint', '\/opoint'\]/)
   assert.match(home, /href="\/otyapoint"/)
   assert.match(products, /href="\/otyapoint"/)
   assert.match(footer, /\['OtyaPoint shop', '\/otyapoint'\]/)
@@ -19,7 +19,7 @@ test('OtyaPoint is discoverable from primary navigation, home, product directory
 })
 
 test('OtyaPoint page describes the real physical shop and avoids invented contact/location details', () => {
-  const page = read('src/app/otyapoint/page.tsx')
+  const page = read('src/app/opoint/page.tsx')
 
   assert.match(page, /Old Market area/)
   assert.match(page, /Mbirizi/)
