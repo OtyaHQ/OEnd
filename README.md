@@ -8,8 +8,8 @@ It provides reusable server-side identity, product-scoped APIs, integrations, de
 
 - **Otya OS** — the unified platform and shared experience.
 - **Otya End** — shared backend and integration layer.
-- **Otya shop** — the public-facing physical shop brand in Mbirizi, Uganda; customer-facing shop pages and signage use Otya.
-- **Opoint** — the private internal retail, inventory and mobile-money agency application. It is not the public shop brand; its shop records and financial ledgers remain isolated in its own data store.
+- **Opoint** — the public-facing physical shop brand in Mbirizi, Uganda and the retail/business application; customer-facing shop pages and signage use Opoint.
+- **Opoint** — owns its shop operations, retail, inventory and mobile-money agency workflows. Its financial ledgers remain isolated in its own data store.
 - **Omy Play** — local-first music and video. Core playback must remain available without the backend.
 - **OHub** — public developer and partner documentation. Private infrastructure and credentials do not belong there.
 - **O** — the private owner-facing AI coordinator and intelligence workspace. Privileged execution stays server-side and approval-gated.
