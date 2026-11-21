@@ -235,6 +235,9 @@ jobs:
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
           if [ -n "${OTYA_O_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_O_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_O_MAIL_SERVICE_TOKEN; fi
           npx wrangler deploy
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/oid/settings")"
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "AUTH_DB" and .type == "d1" and .database_id == "0501d1c1-7f7f-4760-9486-b594bae6436f")' >/dev/null
+          echo "OID is bound to the canonical otya-id-db identity store."
 
   deploy-o:
     name: Deploy O
@@ -312,6 +315,29 @@ jobs:
           if [ -n "${TURNSTILE_SECRET_KEY:-}" ]; then printf '%s' "$TURNSTILE_SECRET_KEY" | npx wrangler secret put TURNSTILE_SECRET_KEY; fi
           npm run deploy
           node scripts/sync-production-kv.mjs
+      - name: Verify OEnd owns canonical public hosts and product bindings
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          base="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/workers/scripts/oend/settings")"
+          assert_service() {
+            local binding="$1"
+            local service="$2"
+            printf '%s' "$settings" | jq -e --arg binding "$binding" --arg service "$service"               'any(.result.bindings[]; .name == $binding and .type == "service" and .service == $service)' >/dev/null
+          }
+          assert_service AUTH oid
+          assert_service AI_SUPPORT o
+          assert_service OPOINT_API opoint
+          assert_service OMY_PLAY_API omy-play
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "DB" and .type == "d1" and .database_id == "8639040c-2365-45ea-9e49-8f6228116471")' >/dev/null
+          domains="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/workers/domains")"
+          for hostname in otya.site www.otya.site docs.otya.site status.otya.site space.otya.site api.otya.site; do
+            printf '%s' "$domains" | jq -e --arg hostname "$hostname"               'any(.result[]; .hostname == $hostname and .service == "oend" and .enabled == true)' >/dev/null
+          done
+          echo "All six canonical hosts route to OEnd; OID, O, Opoint and Omy Play bindings are canonical."
 
   deploy-o-final:
     name: Finalize O with canonical OEnd binding
@@ -335,6 +361,9 @@ jobs:
           ! grep -q 'service = "otya-core"' wrangler.toml
           grep -q 'service = "oend"' wrangler.toml
           npx wrangler deploy --config wrangler.toml
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/o/settings")"
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "CORE" and .type == "service" and .service == "oend") and any(.result.bindings[]; .name == "AUTH" and .type == "service" and .service == "oid")' >/dev/null
+          echo "O now calls OEnd and OID through canonical service bindings."
 
   deploy-opoint:
     name: Deploy Opoint
@@ -425,7 +454,15 @@ jobs:
           ' >/dev/null
           echo "Opoint API deployment is present and receives 100% of its Worker traffic."
           echo "The Worker remains private: workers.dev is disabled and no public custom route is attached."
-
+      - name: Verify Opoint uses canonical OID and existing operations D1
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/opoint/settings")"
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "OID" and .type == "service" and .service == "oid") and any(.result.bindings[]; .name == "DB" and .type == "d1" and .database_id == "06ded416-1ae9-4f28-b50a-d408317ad60c")' >/dev/null
+          echo "Opoint is bound to OID and its existing operations database."
 
   deploy-omy-play:
     name: Deploy Omy Play
@@ -504,7 +541,128 @@ jobs:
             exit 1
           }
           check https://otya.site/ '^(200|301|302|307|308)$'
-          check https://api.otya.site/omy-play/latest '^(200|301|302|307|308)$'
+          check https://api.otya.site/omy-play/latest '^(200|301|302|307|308)          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://api.otya.site/omy-play/health '^200          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
           check https://otya.site/download '^(200|301|302|307|308)$'
           check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
           check https://otya.site/opoint '^(200|301|302|307|308)$'

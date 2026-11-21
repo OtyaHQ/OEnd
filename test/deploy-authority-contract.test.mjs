@@ -44,3 +44,28 @@ test('dependent products cannot deploy before their shared services', () => {
   assert.match(jobBlock('deploy-opoint'),/deploy-oid, deploy-oend/)
   assert.match(jobBlock('deploy-omy-play'),/deploy-oid, deploy-oend/)
 })
+
+
+test('production cutover verifies canonical Worker bindings and host ownership', () => {
+  const oid = jobBlock('deploy-oid')
+  const oend = jobBlock('deploy-oend')
+  const oFinal = jobBlock('deploy-o-final')
+  const opoint = jobBlock('deploy-opoint')
+  const verify = jobBlock('verify-production')
+
+  assert.match(oid, /workers\/scripts\/oid\/settings/)
+  assert.match(oid, /database_id == "0501d1c1-7f7f-4760-9486-b594bae6436f"/)
+  assert.match(oend, /workers\/scripts\/oend\/settings/)
+  assert.match(oend, /assert_service AUTH oid/)
+  assert.match(oend, /assert_service AI_SUPPORT o/)
+  assert.match(oend, /assert_service OPOINT_API opoint/)
+  assert.match(oend, /assert_service OMY_PLAY_API omy-play/)
+  assert.match(oend, /workers\/domains/)
+  for (const host of ['otya.site','www.otya.site','docs.otya.site','status.otya.site','space.otya.site','api.otya.site']) {
+    assert.ok(oend.includes(host), 'must verify ' + host)
+  }
+  assert.match(oFinal, /service == "oend"/)
+  assert.match(oFinal, /service == "oid"/)
+  assert.match(opoint, /service == "oid"/)
+  assert.ok(verify.includes('api.otya.site/omy-play/health'))
+})
