@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 export function HomeStart() {
   return <section className="otya-shell py-10 sm:py-14" aria-labelledby="start-heading">
@@ -10,19 +11,19 @@ export function HomeStart() {
       </div>
       <div className="grid gap-3">
         <Link href="/download/omy-play" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
-          <p className="text-xs font-black otya-muted">Omy Play · Android</p>
+          <div className="flex items-center gap-3"><OtyaBrandMark product="omy-play" size={40}/><p className="text-xs font-black otya-muted">Omy Play · Android</p></div>
           <h3 className="mt-1 text-xl font-black tracking-[-.03em]">Play the media already on your phone.</h3>
           <p className="mt-2 text-sm leading-6 otya-muted">Music and video playback, including core local playback offline.</p>
           <span className="mt-4 inline-flex text-sm font-black">Download Omy Play <span aria-hidden="true" className="ml-1">→</span></span>
         </Link>
         <a href="https://space.otya.site/account/" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
-          <p className="text-xs font-black otya-muted">Otya Space</p>
+          <div className="flex items-center gap-3"><OtyaBrandMark product="oid" size={40}/><p className="text-xs font-black otya-muted">OID · Space</p></div>
           <h3 className="mt-1 text-xl font-black tracking-[-.03em]">Manage your account in private.</h3>
           <p className="mt-2 text-sm leading-6 otya-muted">Review account details, signed-in devices and security settings.</p>
           <span className="mt-4 inline-flex text-sm font-black">Open Space <span aria-hidden="true" className="ml-1">→</span></span>
         </a>
         <Link href="/shop" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
-          <p className="text-xs font-black otya-muted">Opoint · Physical shop</p>
+          <div className="flex items-center gap-3"><OtyaBrandMark product="opoint" size={40}/><p className="text-xs font-black otya-muted">Opoint · Physical shop</p></div>
           <h3 className="mt-1 text-xl font-black tracking-[-.03em]">Visit us in Mbirizi.</h3>
           <p className="mt-2 text-sm leading-6 otya-muted">Phones and accessories, electronics, and mobile-money agency services in the Old Market area.</p>
           <span className="mt-4 inline-flex text-sm font-black">Shop location and services <span aria-hidden="true" className="ml-1">→</span></span>
