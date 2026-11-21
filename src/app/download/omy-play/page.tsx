@@ -37,6 +37,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function DownloadOtyaPlayerPage() {
+export default function DownloadOmyPlayPage() {
   return <DownloadPageClient />
 }
