@@ -145,7 +145,7 @@ export async function GET(
       // Human-facing "latest" links may still recover through the download
       // chooser if the mutable alias has not been published yet.
       return NextResponse.redirect(
-        'https://otya.site/download/otya-player',
+        'https://otya.site/download/omy-play',
         { status: 302 }
       )
     }
