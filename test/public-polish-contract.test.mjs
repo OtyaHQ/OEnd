@@ -9,7 +9,7 @@ test('public Status uses canonical Otya naming and exposes safe service meaning'
   assert.match(status,/LiveStatusPanel/)
   assert.match(client,/Local playback/)
   assert.match(client,/device-first/)
-  for(const source of [status,client]) assert.doesNotMatch(source,/OTYA|music-provider|D1|KV namespace|R2 bucket|Worker binding|Cloudflare account/i)
+  for(const source of [status,client]) assert.doesNotMatch(source,/OTYA|music-provider|D1|KV namespace|R2 bucket|Worker binding|Cloudflare account/)
 })
 test('public Help teaches the current one-account and verification flow', () => {
   const help=read('src/app/help/page.tsx')
