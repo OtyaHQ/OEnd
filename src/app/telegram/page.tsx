@@ -20,7 +20,7 @@ declare global { interface Window { Telegram?: { WebApp?: TelegramWebApp } } }
 type AuthState = { ready: boolean; authenticated: boolean; needsAccount: boolean; error?: string; user?: { name?: string; email?: string; otya_id?: string } }
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'home', label: 'Home' }, { id: 'next', label: 'Next' },
+  { id: 'home', label: 'Home' }, { id: 'next', label: 'O' },
    { id: 'account', label: 'Account' }, { id: 'updates', label: 'Updates' },
 ]
 
@@ -104,7 +104,7 @@ export default function TelegramMiniAppPage() {
     <Script src="https://telegram.org/js/telegram-web-app.js" strategy="afterInteractive" onLoad={() => setTelegramReady(true)} />
     <div className="mx-auto max-w-xl">
       <header className="flex items-center justify-between py-3">
-        <div className="flex items-center gap-2"><OtyaBrandMark size={34}/><div><div className="font-black tracking-tight">Otya</div><div className="text-xs otya-muted">Next by Otya</div></div></div>
+        <div className="flex items-center gap-2"><OtyaBrandMark size={34}/><div><div className="font-black tracking-tight">Otya</div><div className="text-xs otya-muted">O by Otya</div></div></div>
         <div className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold dark:border-white/10">{title}</div>
       </header>
 
@@ -113,15 +113,15 @@ export default function TelegramMiniAppPage() {
       {auth.needsAccount && <Card><h2 className="text-lg font-black">Connect your OTYA Account</h2><p className="mt-2 text-sm otya-muted">Telegram is verified, but it is not linked to an OTYA Account yet. Sign in first, then reopen OTYA from Telegram.</p><a className="cosmos-button mt-4 inline-flex rounded-full px-5 py-3 font-black" href="https://otya.site/sign-in">Sign in to OTYA</a></Card>}
       {auth.error && !auth.needsAccount && inTelegram && <Card><p className="text-sm font-bold text-red-600 dark:text-red-300">{auth.error}</p></Card>}
 
-      {tab === 'home' && <div className="space-y-3"><Card><h1 className="text-3xl font-black tracking-[-.04em]">OTYA in Telegram</h1><p className="mt-2 otya-muted">Ask Next, manage your account and check Otya updates without leaving Telegram.</p></Card><div className="grid grid-cols-2 gap-3">{TABS.slice(1).map(item => <button key={item.id} onClick={() => setTab(item.id)} className="rounded-3xl border border-black/10 bg-[color:var(--cosmos-surface)] p-5 text-left font-black dark:border-white/10">{item.label}</button>)}</div></div>}
+      {tab === 'home' && <div className="space-y-3"><Card><h1 className="text-3xl font-black tracking-[-.04em]">OTYA in Telegram</h1><p className="mt-2 otya-muted">Ask O, manage your account and check Otya updates without leaving Telegram.</p></Card><div className="grid grid-cols-2 gap-3">{TABS.slice(1).map(item => <button key={item.id} onClick={() => setTab(item.id)} className="rounded-3xl border border-black/10 bg-[color:var(--cosmos-surface)] p-5 text-left font-black dark:border-white/10">{item.label}</button>)}</div></div>}
 
-      {tab === 'next' && <Card><h2 className="text-2xl font-black">Next</h2><p className="mt-1 text-sm otya-muted">Ask a question or get help with Otya.</p><textarea value={query} onChange={e => setQuery(e.target.value)} className="mt-4 min-h-28 w-full rounded-2xl border border-black/10 bg-transparent p-3 dark:border-white/10" placeholder="Ask Next…"/><button onClick={askNext} disabled={busy} className="cosmos-button mt-3 rounded-full px-5 py-3 font-black disabled:opacity-50">{busy ? 'Thinking…' : 'Ask Next'}</button>{answer && <div className="mt-4 whitespace-pre-wrap rounded-2xl bg-black/[.04] p-4 text-sm dark:bg-white/[.05]">{answer}</div>}</Card>}
+      {tab === 'next' && <Card><h2 className="text-2xl font-black">O</h2><p className="mt-1 text-sm otya-muted">Ask a question or get help with Otya.</p><textarea value={query} onChange={e => setQuery(e.target.value)} className="mt-4 min-h-28 w-full rounded-2xl border border-black/10 bg-transparent p-3 dark:border-white/10" placeholder="Ask O…"/><button onClick={askNext} disabled={busy} className="cosmos-button mt-3 rounded-full px-5 py-3 font-black disabled:opacity-50">{busy ? 'Thinking…' : 'Ask O'}</button>{answer && <div className="mt-4 whitespace-pre-wrap rounded-2xl bg-black/[.04] p-4 text-sm dark:bg-white/[.05]">{answer}</div>}</Card>}
 
 
 
       {tab === 'account' && <Card><h2 className="text-2xl font-black">OTYA Account</h2>{auth.authenticated ? <><p className="mt-2 font-bold">Connected</p><p className="mt-1 text-sm otya-muted">{auth.user?.name || auth.user?.email || auth.user?.otya_id || 'OTYA Account'}</p></> : <p className="mt-2 text-sm otya-muted">Sign in to connect Telegram to your OTYA Account.</p>}<a href="https://otya.site/account" className="mt-4 inline-flex font-black underline">Open full account</a></Card>}
 
-      {tab === 'updates' && <Card><h2 className="text-2xl font-black">Updates</h2><button onClick={loadUpdates} className="cosmos-button mt-4 rounded-full px-5 py-3 font-black">Check OTYA</button><div className="mt-4 text-base leading-7">{updates?.error ? <p role="alert">Updates are temporarily unavailable. Please try again.</p> : updates?.published === false ? <p>No public release is available yet.</p> : updates ? <><p className="font-bold">Otya {String(updates.version ?? '')}</p><p className="mt-2 whitespace-pre-wrap">{String(updates.changelog ?? 'Visit the download page for release details.')}</p><a href="https://otya.site/download/otya-player" className="mt-4 inline-flex min-h-11 items-center underline">View release and download</a></> : <p className="otya-muted">Check for the latest Otya release.</p>}</div></Card>}
+      {tab === 'updates' && <Card><h2 className="text-2xl font-black">Updates</h2><button onClick={loadUpdates} className="cosmos-button mt-4 rounded-full px-5 py-3 font-black">Check OTYA</button><div className="mt-4 text-base leading-7">{updates?.error ? <p role="alert">Updates are temporarily unavailable. Please try again.</p> : updates?.published === false ? <p>No public release is available yet.</p> : updates ? <><p className="font-bold">Otya {String(updates.version ?? '')}</p><p className="mt-2 whitespace-pre-wrap">{String(updates.changelog ?? 'Visit the download page for release details.')}</p><a href="https://otya.site/download/omy-play" className="mt-4 inline-flex min-h-11 items-center underline">View release and download</a></> : <p className="otya-muted">Check for the latest Otya release.</p>}</div></Card>}
     </div>
 
     <nav className="fixed inset-x-0 bottom-0 border-t border-black/10 bg-[color:var(--cosmos-surface)]/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 backdrop-blur dark:border-white/10"><div className="mx-auto flex max-w-xl justify-around">{TABS.map(item => <button key={item.id} onClick={() => setTab(item.id)} className={`rounded-full px-2 py-2 text-sm font-black ${tab === item.id ? 'bg-black/10 dark:bg-white/10' : 'otya-muted'}`}>{item.label}</button>)}</div></nav>
