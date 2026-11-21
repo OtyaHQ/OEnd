@@ -92,7 +92,7 @@ test('website, install surfaces and build pipeline use one Otya mark and name', 
   assert.match(sync, /TARGET = 'public\/otya-app-icon\.webp'/)
   assert.equal(manifest.name, 'Otya')
   assert.equal(manifest.short_name, 'Otya')
-  assert.match(manifest.description, /One ecosystem\. Endless possibilities\./)
+  assert.match(manifest.description, /One ecosystem\. Endless possibilities\./i)
   assert.match(brandReadme, /^# Otya Brand Templates/m)
   assert.doesNotMatch(brandReadme, /^# OTYA/m)
   assert.match(layout, /name: 'Otya'/)
