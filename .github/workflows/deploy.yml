@@ -1,4 +1,4 @@
-name: Deploy OTYA to Cloudflare
+name: Deploy Otya ecosystem to Cloudflare
 on:
   push:
     branches: [main]
@@ -9,18 +9,20 @@ on:
   workflow_dispatch:
     inputs:
       component:
-        description: 'Production action after validation'
+        description: 'Choose the canonical production component'
         required: true
         default: 'validate-only'
         type: choice
         options:
           - validate-only
-          - auth
-          - next
-          - core
+          - oid
+          - o
+          - oend
+          - opoint
+          - omy-play
           - all
       confirm:
-        description: 'Type DEPLOY to authorize a production deployment'
+        description: 'Type DEPLOY to authorize the selected production release'
         required: false
         default: ''
         type: string
@@ -30,16 +32,17 @@ concurrency:
 permissions: { contents: read }
 jobs:
   validate:
-    name: Validate complete OTYA backend
+    name: Validate OID OEnd O Opoint and Omy Play
     runs-on: ubuntu-latest
     timeout-minutes: 30
     outputs:
-      otyapoint_sha: ${{ steps.otyapoint_source.outputs.sha }}
+      opoint_sha: ${{ steps.opoint_source.outputs.sha }}
+      omy_play_sha: ${{ steps.omy_play_source.outputs.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '22.23.4', package-manager-cache: false }
-      - name: Validate OTYA core/web
+      - name: Validate OEnd web
         run: |
           npm ci --ignore-scripts
           npm run validate:config
@@ -52,17 +55,17 @@ jobs:
           npm ci --ignore-scripts
           npm test
           npx tsc --noEmit
-      - name: Fetch exact OtyaPoint main commit for release validation
-        id: otyapoint_source
+      - name: Fetch exact Opoint main commit for release validation
+        id: opoint_source
         shell: bash
         run: |
           set -euo pipefail
-          git clone --depth 1 --branch main https://github.com/PeterSmartLink/OtyaPoint.git "$RUNNER_TEMP/OtyaPoint"
-          OTYAPOINT_SHA="$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)"
-          echo "sha=$OTYAPOINT_SHA" >> "$GITHUB_OUTPUT"
+          git clone --depth 1 --branch main https://github.com/OtyaHQ/OPoint.git "$RUNNER_TEMP/OPoint"
+          OPOINT_SHA="$(git -C "$RUNNER_TEMP/OPoint" rev-parse HEAD)"
+          echo "sha=$OPOINT_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: Validate OtyaPoint backend, security boundaries and dashboard build
-        working-directory: ${{ runner.temp }}/OtyaPoint
+      - name: Validate Opoint backend, security boundaries and dashboard build
+        working-directory: ${{ runner.temp }}/OPoint
         run: |
           set -euo pipefail
           npm install --no-audit --no-fund --ignore-scripts
@@ -81,7 +84,22 @@ jobs:
           npm run build
           npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.toml
 
-      - name: Validate Next worker
+      - name: Fetch exact Omy Play main commit for release validation
+        id: omy_play_source
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch main https://github.com/OtyaHQ/Omy_Play.git "$RUNNER_TEMP/Omy_Play"
+          echo "sha=$(git -C "$RUNNER_TEMP/Omy_Play" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Omy Play backend source and schema contract
+        working-directory: ${{ runner.temp }}/Omy_Play
+        run: |
+          set -euo pipefail
+          npm install --prefix backend --no-audit --no-fund --ignore-scripts
+          npm --prefix backend run check
+          npm --prefix backend test
+          npm --prefix backend run verify:schema
+      - name: Validate O worker
         working-directory: ai-worker
         run: |
           npm ci --ignore-scripts
@@ -111,7 +129,7 @@ jobs:
             exit 1
           }
           case "$COMPONENT" in
-            auth|next|core|all) ;;
+            oid|o|oend|opoint|omy-play|all) ;;
             *) echo "ERROR: unsupported production component $COMPONENT"; exit 1 ;;
           esac
           echo "Production deploy authorized for component: $COMPONENT"
@@ -122,10 +140,11 @@ jobs:
     needs: [validate, authorize-deploy]
     runs-on: ubuntu-latest
     outputs:
-      auth: ${{ steps.plan.outputs.auth }}
-      next: ${{ steps.plan.outputs.next }}
-      core: ${{ steps.plan.outputs.core }}
-      otyapoint: ${{ steps.plan.outputs.otyapoint }}
+      oid: ${{ steps.plan.outputs.oid }}
+      o: ${{ steps.plan.outputs.o }}
+      oend: ${{ steps.plan.outputs.oend }}
+      opoint: ${{ steps.plan.outputs.opoint }}
+      omy_play: ${{ steps.plan.outputs.omy_play }}
       any_runtime: ${{ steps.plan.outputs.any_runtime }}
     steps:
       - name: Select requested runtime components
@@ -135,35 +154,40 @@ jobs:
           COMPONENT: ${{ github.event_name == 'workflow_dispatch' && inputs.component || (contains(github.event.head_commit.message, '[DEPLOY-ALL]') && 'all' || 'validate-only') }}
         run: |
           set -euo pipefail
-          auth=false
-          next=false
-          core=false
-          otyapoint=false
+          oid=false
+          o=false
+          oend=false
+          opoint=false
+          omy_play=false
           case "$COMPONENT" in
-            auth) auth=true ;;
-            next) next=true ;;
-            core) core=true ;;
+            oid) oid=true ;;
+            o) oid=true; o=true; oend=true ;;
+            oend) oid=true; o=true; oend=true ;;
+            opoint) oid=true; o=true; oend=true; opoint=true ;;
+            omy-play) oid=true; o=true; oend=true; omy_play=true ;;
             all)
-              auth=true
-              next=true
-              core=true
-              otyapoint=true
+              oid=true
+              o=true
+              oend=true
+              opoint=true
+              omy_play=true
               ;;
             *)
               echo "ERROR: unsupported production component $COMPONENT"
               exit 1
               ;;
           esac
-          echo "auth=$auth" >> "$GITHUB_OUTPUT"
-          echo "next=$next" >> "$GITHUB_OUTPUT"
-          echo "core=$core" >> "$GITHUB_OUTPUT"
-          echo "otyapoint=$otyapoint" >> "$GITHUB_OUTPUT"
+          echo "oid=$oid" >> "$GITHUB_OUTPUT"
+          echo "o=$o" >> "$GITHUB_OUTPUT"
+          echo "oend=$oend" >> "$GITHUB_OUTPUT"
+          echo "opoint=$opoint" >> "$GITHUB_OUTPUT"
+          echo "omy_play=$omy_play" >> "$GITHUB_OUTPUT"
           echo "any_runtime=true" >> "$GITHUB_OUTPUT"
-          echo "Deploy plan: auth=$auth next=$next core=$core"
+          echo "Deploy plan: OID=$oid O=$o OEnd=$oend Opoint=$opoint OmyPlay=$omy_play"
 
-  deploy-auth:
-    name: Deploy otya-auth
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.auth == 'true' }}
+  deploy-oid:
+    name: Deploy OID
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.oid == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy]
     runs-on: ubuntu-latest
     environment: production
@@ -178,11 +202,12 @@ jobs:
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          OTYA_AUTH_DB_NAME: otya-id-db
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
           bash scripts/repair-remote-schema.sh
-      - name: Configure and deploy auth
+      - name: Configure and deploy OID
         working-directory: auth-worker
         env:
           AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
@@ -193,13 +218,13 @@ jobs:
           TELEGRAM_GATEWAY_TOKEN: ${{ secrets.TELEGRAM_GATEWAY_TOKEN }}
           ACCOUNT_ENCRYPTION_KEY: ${{ secrets.ACCOUNT_ENCRYPTION_KEY }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
-          OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
+          OTYA_O_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_O_MAIL_SERVICE_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
           test -n "$AUTH_JWT_SECRET" && test -n "$RESEND_API_KEY" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
-          grep -q 'secret_name = "OTYAPOINT_INVITE_SERVICE_TOKEN"' wrangler.toml
+          grep -q 'secret_name = "OPOINT_INVITE_SERVICE_TOKEN"' wrangler.toml
           printf '%s' "$AUTH_JWT_SECRET" | npx wrangler secret put AUTH_JWT_SECRET
           printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY
           if [ -n "${FIREBASE_API_KEY:-}" ]; then printf '%s' "$FIREBASE_API_KEY" | npx wrangler secret put FIREBASE_API_KEY; fi
@@ -208,13 +233,16 @@ jobs:
           if [ -n "${TELEGRAM_GATEWAY_TOKEN:-}" ]; then printf '%s' "$TELEGRAM_GATEWAY_TOKEN" | npx wrangler secret put TELEGRAM_GATEWAY_TOKEN; fi
           if [ -n "${ACCOUNT_ENCRYPTION_KEY:-}" ]; then printf '%s' "$ACCOUNT_ENCRYPTION_KEY" | npx wrangler secret put ACCOUNT_ENCRYPTION_KEY; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
-          if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
+          if [ -n "${OTYA_O_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_O_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_O_MAIL_SERVICE_TOKEN; fi
           npx wrangler deploy
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/oid/settings")"
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "AUTH_DB" and .type == "d1" and .database_id == "0501d1c1-7f7f-4760-9486-b594bae6436f")' >/dev/null
+          echo "OID is bound to the canonical otya-id-db identity store."
 
-  deploy-next:
-    name: Deploy otya-next
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && needs.plan-deploy.outputs.next == 'true' }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth]
+  deploy-o:
+    name: Deploy O
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -223,11 +251,10 @@ jobs:
         with: { node-version: '22.23.4', package-manager-cache: false }
       - working-directory: ai-worker
         run: npm ci --ignore-scripts
-      - name: Configure and deploy Next
+      - name: Configure and deploy O
         working-directory: ai-worker
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          OTYA_NEXT_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_NEXT_MAIL_SERVICE_TOKEN }}
+          OTYA_O_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_O_MAIL_SERVICE_TOKEN }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
           GMAIL_GOOGLE_CLIENT_SECRET: ${{ secrets.GMAIL_GOOGLE_CLIENT_SECRET }}
           CONNECTOR_ENCRYPTION_KEY: ${{ secrets.CONNECTOR_ENCRYPTION_KEY }}
@@ -236,20 +263,21 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
-          if [ -n "${RESEND_API_KEY:-}" ]; then printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY; fi
-          if [ -n "${OTYA_NEXT_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_NEXT_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_NEXT_MAIL_SERVICE_TOKEN; fi
+          if [ -n "${OTYA_O_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_O_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_O_MAIL_SERVICE_TOKEN; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
           if [ -n "${GMAIL_GOOGLE_CLIENT_SECRET:-}" ]; then printf '%s' "$GMAIL_GOOGLE_CLIENT_SECRET" | npx wrangler secret put GMAIL_GOOGLE_CLIENT_SECRET; fi
           if [ -n "${CONNECTOR_ENCRYPTION_KEY:-}" ]; then printf '%s' "$CONNECTOR_ENCRYPTION_KEY" | npx wrangler secret put CONNECTOR_ENCRYPTION_KEY; fi
           # Core is the sole Telegram transport owner. Remove any legacy copies
-          # left on Next by older deployments while preserving every other secret.
+          # left on O by older deployments while preserving every other secret.
           printf '%s\n' '{"TELEGRAM_BOT_TOKEN":null,"TELEGRAM_WEBHOOK_SECRET":null}' | npx wrangler secret bulk
-          npx wrangler deploy
+          sed 's/service = "oend"/service = "otya-core"/' wrangler.toml > wrangler.bootstrap.toml
+          grep -q 'service = "otya-core"' wrangler.bootstrap.toml
+          npx wrangler deploy --config wrangler.bootstrap.toml
 
-  deploy-core:
-    name: Deploy otya-core
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && needs.plan-deploy.outputs.core == 'true' }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next]
+  deploy-oend:
+    name: Deploy OEnd
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && needs.plan-deploy.outputs.oend == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
@@ -258,7 +286,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '22.23.4', package-manager-cache: false }
       - run: npm ci --ignore-scripts
-      - name: Build and deploy OTYA core
+      - name: Build and deploy OEnd
         env:
           FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
@@ -287,11 +315,60 @@ jobs:
           if [ -n "${TURNSTILE_SECRET_KEY:-}" ]; then printf '%s' "$TURNSTILE_SECRET_KEY" | npx wrangler secret put TURNSTILE_SECRET_KEY; fi
           npm run deploy
           node scripts/sync-production-kv.mjs
+      - name: Verify OEnd owns canonical public hosts and product bindings
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          base="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID"
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/workers/scripts/oend/settings")"
+          assert_service() {
+            local binding="$1"
+            local service="$2"
+            printf '%s' "$settings" | jq -e --arg binding "$binding" --arg service "$service"               'any(.result.bindings[]; .name == $binding and .type == "service" and .service == $service)' >/dev/null
+          }
+          assert_service AUTH oid
+          assert_service AI_SUPPORT o
+          assert_service OPOINT_API opoint
+          assert_service OMY_PLAY_API omy-play
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "DB" and .type == "d1" and .database_id == "8639040c-2365-45ea-9e49-8f6228116471")' >/dev/null
+          domains="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/workers/domains")"
+          for hostname in otya.site www.otya.site docs.otya.site status.otya.site space.otya.site api.otya.site; do
+            printf '%s' "$domains" | jq -e --arg hostname "$hostname"               'any(.result[]; .hostname == $hostname and .service == "oend" and .enabled == true)' >/dev/null
+          done
+          echo "All six canonical hosts route to OEnd; OID, O, Opoint and Omy Play bindings are canonical."
 
-  deploy-otyapoint:
-    name: Deploy private OtyaPoint API
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.otyapoint == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core]
+  deploy-o-final:
+    name: Finalize O with canonical OEnd binding
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.deploy-o.result == 'success' && needs.deploy-oend.result == 'success' && needs.plan-deploy.outputs.o == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-o, deploy-oend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
+      - name: Deploy canonical O configuration
+        working-directory: ai-worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          ! grep -q 'service = "otya-core"' wrangler.toml
+          grep -q 'service = "oend"' wrangler.toml
+          npx wrangler deploy --config wrangler.toml
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/o/settings")"
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "CORE" and .type == "service" and .service == "oend") and any(.result.bindings[]; .name == "AUTH" and .type == "service" and .service == "oid")' >/dev/null
+          echo "O now calls OEnd and OID through canonical service bindings."
+
+  deploy-opoint:
+    name: Deploy Opoint
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.opoint == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
@@ -305,26 +382,26 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '22.23.4', package-manager-cache: false }
 
-      - name: Fetch the exact OtyaPoint commit that passed validation
+      - name: Fetch the exact Opoint commit that passed validation
         shell: bash
         env:
-          OTYAPOINT_SHA: ${{ needs.validate.outputs.otyapoint_sha }}
+          OPOINT_SHA: ${{ needs.validate.outputs.opoint_sha }}
         run: |
           set -euo pipefail
-          test -n "$OTYAPOINT_SHA"
-          git init "$RUNNER_TEMP/OtyaPoint"
-          git -C "$RUNNER_TEMP/OtyaPoint" remote add origin https://github.com/PeterSmartLink/OtyaPoint.git
-          git -C "$RUNNER_TEMP/OtyaPoint" fetch --depth 1 origin "$OTYAPOINT_SHA"
-          git -C "$RUNNER_TEMP/OtyaPoint" checkout --detach FETCH_HEAD
-          test "$(git -C "$RUNNER_TEMP/OtyaPoint" rev-parse HEAD)" = "$OTYAPOINT_SHA"
-          test -f "$RUNNER_TEMP/OtyaPoint/wrangler.toml"
+          test -n "$OPOINT_SHA"
+          git init "$RUNNER_TEMP/OPoint"
+          git -C "$RUNNER_TEMP/OPoint" remote add origin https://github.com/OtyaHQ/OPoint.git
+          git -C "$RUNNER_TEMP/OPoint" fetch --depth 1 origin "$OPOINT_SHA"
+          git -C "$RUNNER_TEMP/OPoint" checkout --detach FETCH_HEAD
+          test "$(git -C "$RUNNER_TEMP/OPoint" rev-parse HEAD)" = "$OPOINT_SHA"
+          test -f "$RUNNER_TEMP/OPoint/wrangler.toml"
 
-      - name: Install OtyaPoint dependencies
-        working-directory: ${{ runner.temp }}/OtyaPoint
+      - name: Install Opoint dependencies
+        working-directory: ${{ runner.temp }}/OPoint
         run: npm install --no-audit --no-fund --ignore-scripts
 
-      - name: Test and validate OtyaPoint release
-        working-directory: ${{ runner.temp }}/OtyaPoint
+      - name: Test and validate Opoint release
+        working-directory: ${{ runner.temp }}/OPoint
         run: |
           set -euo pipefail
           npm run check:worker
@@ -353,14 +430,14 @@ jobs:
           test -n "$CLOUDFLARE_API_TOKEN"
           echo "Cloudflare deployment credentials are present; application secrets are read from the account Secrets Store."
 
-      - name: Deploy the private OtyaPoint API
-        working-directory: ${{ runner.temp }}/OtyaPoint
+      - name: Deploy the private Opoint API
+        working-directory: ${{ runner.temp }}/OPoint
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4.159.0 deploy --config wrangler.toml
 
-      - name: Verify OtyaPoint is deployed privately at 100 percent
+      - name: Verify Opoint is deployed privately at 100 percent
         shell: bash
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -369,19 +446,75 @@ jobs:
           set -euo pipefail
           response="$(curl --fail --silent --show-error \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/otyapoint-api/deployments?per_page=1")"
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/opoint/deployments?per_page=1")"
           printf '%s' "$response" | jq -e '
             .success == true and
             (.result.deployments | length) > 0 and
             .result.deployments[0].versions[0].percentage == 100
           ' >/dev/null
-          echo "OtyaPoint API deployment is present and receives 100% of its Worker traffic."
+          echo "Opoint API deployment is present and receives 100% of its Worker traffic."
           echo "The Worker remains private: workers.dev is disabled and no public custom route is attached."
+      - name: Verify Opoint uses canonical OID and existing operations D1
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/opoint/settings")"
+          printf '%s' "$settings" | jq -e '.success == true and any(.result.bindings[]; .name == "OID" and .type == "service" and .service == "oid") and any(.result.bindings[]; .name == "DB" and .type == "d1" and .database_id == "06ded416-1ae9-4f28-b50a-d408317ad60c")' >/dev/null
+          echo "Opoint is bound to OID and its existing operations database."
+
+  deploy-omy-play:
+    name: Deploy Omy Play
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.omy_play == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Check out Omy Play
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: OtyaHQ/Omy_Play
+          ref: ${{ needs.validate.outputs.omy_play_sha }}
+          path: Omy_Play
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
+
+      - name: Deploy Omy Play production API
+        working-directory: Omy_Play
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          npx --yes wrangler@4.159.0 deploy --dry-run --config wrangler.omy-play-production.toml
+          npx --yes wrangler@4.159.0 deploy --config wrangler.omy-play-production.toml
+
+      - name: Verify Omy Play private production Worker and OID binding
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          base="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/omy-play"
+          settings="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/settings")"
+          secrets="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$base/secrets")"
+          printf '%s' "$settings" | jq -e '
+            .success == true and
+            any(.result.bindings[]; .name == "OID" and .type == "service" and .service == "oid") and
+            any(.result.bindings[]; .name == "DB" and .type == "d1") and
+            any(.result.bindings[]; .name == "ASSETS" and .type == "r2_bucket")
+          ' >/dev/null
+          printf '%s' "$secrets" | jq -e '.success == true and any(.result[]; .name == "FCM_TOKEN_ENCRYPTION_KEY")' >/dev/null
 
   verify-production:
-    name: Verify live OTYA after deploy
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-auth.result == 'success' || needs.deploy-auth.result == 'skipped') && (needs.deploy-next.result == 'success' || needs.deploy-next.result == 'skipped') && (needs.deploy-core.result == 'success' || needs.deploy-core.result == 'skipped') && (needs.deploy-otyapoint.result == 'success' || needs.deploy-otyapoint.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-auth, deploy-next, deploy-core, deploy-otyapoint]
+    name: Verify live Otya platform after deploy
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && (needs.deploy-o-final.result == 'success' || needs.deploy-o-final.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o, deploy-oend, deploy-o-final, deploy-opoint, deploy-omy-play]
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -408,17 +541,16 @@ jobs:
             exit 1
           }
           check https://otya.site/ '^(200|301|302|307|308)$'
-          check https://otya.site/latest '^(200|301|302|307|308)$'
-          check https://otya.site/download '^(200|301|302|307|308)$'
-          check https://otya.site/download/otya '^(200|301|302|307|308)$'
-          check https://otya.site/download/otya-player '^(200|301|302|307|308)$'
-          check https://otya.site/api/version '^(200|401)$'
+          check https://api.otya.site/omy-play/latest '^(200|301|302|307|308)          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
           check https://otya.site/api/security/turnstile/config '^200$'
           check https://docs.otya.site/ '^(200|301|302|307|308)$'
           check https://status.otya.site/ '^(200|301|302|307|308)$'
           check https://space.otya.site/ '^(200|301|302|307|308)$'
       - name: Verify core trust surfaces
-        if: ${{ needs.plan-deploy.outputs.core == 'true' }}
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -439,7 +571,372 @@ jobs:
           if data.get('status') not in {'operational', 'degraded'}:
               raise SystemExit('public status has invalid overall state')
           components = data.get('components') or {}
-          if set(components) != {'website', 'accounts', 'next'}:
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://api.otya.site/omy-play/health '^200
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://otya.site/download '^(200|301|302|307|308)
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
+              raise SystemExit('public status component set changed unexpectedly')
+          if any(value not in {'operational', 'degraded'} for value in components.values()):
+              raise SystemExit('public status has invalid component state')
+          if not str(data.get('checkedAt') or '').strip():
+              raise SystemExit('public status has no checkedAt timestamp')
+          print('Core public trust surfaces are healthy and privacy-bounded')
+          PY
+
+          turnstile_status="$(curl --silent --show-error --location --output /tmp/otya-turnstile-config.json --write-out '%{http_code}' --connect-timeout 10 --max-time 20 https://otya.site/api/security/turnstile/config || true)"
+          test "$turnstile_status" = "200" || {
+            echo "::error::Turnstile config endpoint returned ${turnstile_status:-network-error}"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"turnstile"[[:space:]]*:[[:space:]]*true' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile is not enabled after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          grep -Eq '"siteKey"[[:space:]]*:[[:space:]]*"[^"]+"' /tmp/otya-turnstile-config.json || {
+            echo "::error::Turnstile site key is unavailable after production deploy"
+            head -c 1000 /tmp/otya-turnstile-config.json 2>/dev/null || true
+            exit 1
+          }
+          # Resend callbacks must reach the signed handler; GET is deliberately rejected.
+          check https://otya.site/webhooks/ '^405$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+
+          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
+          check https://otya.site/opoint '^(200|301|302|307|308)$'
+          check https://otya.site/api/omy-play/latest '^(200|401)$'
+          check https://otya.site/api/security/turnstile/config '^200$'
+          check https://docs.otya.site/ '^(200|301|302|307|308)$'
+          check https://status.otya.site/ '^(200|301|302|307|308)$'
+          check https://space.otya.site/ '^(200|301|302|307|308)$'
+      - name: Verify core trust surfaces
+        if: ${{ needs.plan-deploy.outputs.oend == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://otya.site/.well-known/security.txt \
+            --output /tmp/otya-security.txt
+          grep -Fxq 'Contact: mailto:support@otya.site' /tmp/otya-security.txt
+          grep -Fxq 'Canonical: https://otya.site/.well-known/security.txt' /tmp/otya-security.txt
+
+          curl --fail --silent --show-error --location --connect-timeout 10 --max-time 20 \
+            https://status.otya.site/api/status \
+            --output /tmp/otya-status.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('/tmp/otya-status.json').read_text())
+          if data.get('status') not in {'operational', 'degraded'}:
+              raise SystemExit('public status has invalid overall state')
+          components = data.get('components') or {}
+          if set(components) != {'website', 'accounts', 'O'}:
               raise SystemExit('public status component set changed unexpectedly')
           if any(value not in {'operational', 'degraded'} for value in components.values()):
               raise SystemExit('public status has invalid component state')

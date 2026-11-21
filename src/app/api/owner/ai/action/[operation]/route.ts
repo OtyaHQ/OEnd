@@ -33,7 +33,7 @@ async function verifyOwnerGrant(request: NextRequest, env: OwnerEnv): Promise<{ 
   if (!authorization.startsWith('Bearer ') || !grant || !deviceId || !env.AUTH?.fetch) return { ok: false }
 
   try {
-    const upstream = await env.AUTH.fetch(new Request('https://auth/auth/admin/verify-grant', {
+    const upstream = await env.AUTH.fetch(new Request('https://oid/auth/admin/verify-grant', {
       method: 'POST',
       headers: {
         Authorization: authorization,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest, context: Context) {
 
   try {
     const upstream = await recordEnv.AI_SUPPORT.fetch(new Request(
-      `https://otya-next/api/admin/ai/actions/${operation}`,
+      `https://o/api/admin/ai/actions/${operation}`,
       {
         method: 'POST',
         headers: {

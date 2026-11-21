@@ -8,17 +8,6 @@ const DOCS_HOST = 'docs.otya.site'
 const STATUS_HOST = 'status.otya.site'
 const SPACE_HOST = 'space.otya.site'
 
-// Keep the retired hostnames attached during migration and permanently redirect
-// every request to the matching canonical Otya host. A 308 preserves POST bodies
-// for OAuth callbacks and mobile/API requests while moving cookies to .otya.site.
-const LEGACY_HOST_REDIRECTS = new Map([
-  ['petersmartlink.com', APP_HOST],
-  ['www.petersmartlink.com', 'www.otya.site'],
-  ['docs.petersmartlink.com', DOCS_HOST],
-  ['status.petersmartlink.com', STATUS_HOST],
-  ['space.petersmartlink.com', SPACE_HOST],
-])
-
 const CANONICAL_CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://accounts.google.com https://telegram.org https://challenges.cloudflare.com https://pagead2.googlesyndication.com https://partner.googleadservices.com https://tpc.googlesyndication.com",
@@ -52,7 +41,7 @@ async function authenticateTogetherUser(request, env) {
   const controller = new AbortController()
   const deadline = setTimeout(() => controller.abort(), 5000)
   try {
-    const response = await env.AUTH.fetch(new Request('https://otya-auth/auth/verify', {
+    const response = await env.AUTH.fetch(new Request('https://oid/auth/verify', {
       method: 'GET',
       headers: { Authorization: authorization },
       signal: controller.signal,
@@ -70,14 +59,14 @@ async function authenticateTogetherUser(request, env) {
   }
 }
 
-function redirectToHost(url, hostname, pathname) {
+function redirectToHost(url, hostname, pathname, status = 302) {
   const target = new URL(url)
   target.protocol = 'https:'
   target.hostname = hostname
   target.pathname = pathname
   target.search = ''
   target.hash = ''
-  return Response.redirect(target.toString(), 302)
+  return Response.redirect(target.toString(), status)
 }
 
 function isSharedAppAssetPath(pathname) {
@@ -92,8 +81,6 @@ function isSpaceSurfacePath(pathname) {
     || pathname === '/space/'
     || pathname === '/telegram'
     || pathname === '/telegram/'
-    || pathname === '/ask'
-    || pathname.startsWith('/ask/')
     || pathname === '/account'
     || pathname.startsWith('/account/')
     || pathname === '/admin'
@@ -124,7 +111,7 @@ function matchSpaceConsoleRoute(pathname) {
     ['activity', '/account/activity/'],
     ['notifications', '/account/notifications/'],
     ['settings', '/account/settings/'],
-    ['next', '/ask/'],
+    ['o', '/admin/ai/'],
     ['telegram', '/telegram/'],
     ['admin', '/admin'],
   ])
@@ -181,16 +168,6 @@ async function routeOtyaRequest(request, env, ctx) {
     const url = new URL(request.url)
     const host = url.hostname.toLowerCase()
 
-    const canonicalHost = LEGACY_HOST_REDIRECTS.get(host)
-    if (canonicalHost) {
-      url.protocol = 'https:'
-      url.hostname = canonicalHost
-      url.port = ''
-      return new Response(null, {
-        status: 308,
-        headers: { Location: url.toString(), 'Cache-Control': 'public, max-age=3600' },
-      })
-    }
 
     if (url.pathname.startsWith('/api/together/')) {
       if (!env.KV || !env.AUTH?.fetch) {
@@ -235,7 +212,7 @@ async function routeOtyaRequest(request, env, ctx) {
       // not another copy of the documentation index.
       const publicPath = url.pathname.replace(/\/$/, '')
       const publicDestinations = new Set([
-        '/apps', '/otyapoint', '/otya-player', '/download/otya-player', '/music',
+        '/apps', '/shop', '/opoint', '/omy-play', '/download/omy-play', '/music',
         '/developers', '/company', '/contact', '/privacy', '/terms',
         '/delete-account',
       ])
@@ -259,6 +236,8 @@ async function routeOtyaRequest(request, env, ctx) {
       if (host === APP_HOST && (url.pathname === '/account' || url.pathname === '/account/')) return redirectToHost(url, SPACE_HOST, '/account/')
       if (host === APP_HOST && (url.pathname === '/sign-in' || url.pathname === '/sign-in/')) return redirectToHost(url, SPACE_HOST, '/sign-in/')
       if (host === APP_HOST && (url.pathname === '/admin' || url.pathname.startsWith('/admin/'))) return redirectToHost(url, SPACE_HOST, url.pathname)
+      if (host === APP_HOST && (url.pathname === '/ask' || url.pathname === '/ask/')) return redirectToHost(url, SPACE_HOST, '/admin/ai/')
+      if (host === APP_HOST && url.pathname === '/download/otya-player') return redirectToHost(url, APP_HOST, '/download/omy-play', 308)
       if (host === APP_HOST && (url.pathname === '/help' || url.pathname === '/help/')) return redirectToHost(url, DOCS_HOST, '/help/')
       if (host === APP_HOST && (url.pathname === '/docs' || url.pathname === '/docs/')) return redirectToHost(url, DOCS_HOST, '/')
       if (host === APP_HOST && (url.pathname === '/status' || url.pathname === '/status/')) return redirectToHost(url, STATUS_HOST, '/')

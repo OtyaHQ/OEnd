@@ -6,11 +6,11 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 
 test('visitor-facing pages use the canonical Otya Player download path', () => {
   const music = read('src/app/music/page.tsx')
-  assert.match(music, /href="\/download\/otya-player"/)
+  assert.match(music, /href="\/download\/omy-play"/)
   assert.doesNotMatch(music, /href="\/download\/otya"/)
 })
 
-test('generic website loading stays quiet and does not impersonate Next thinking', () => {
+test('generic website loading stays quiet and does not expose the private assistant', () => {
   const loading = read('src/app/loading.tsx')
   assert.match(loading, />Loading<\/span>/)
   assert.match(loading, /animate-pulse/)
@@ -22,8 +22,9 @@ test('generic website loading stays quiet and does not impersonate Next thinking
 test('404 and error fallbacks keep current public product language', () => {
   const notFound = read('src/app/not-found.tsx')
   const errorPage = read('src/app/error.tsx')
-  assert.match(notFound, /Open Next/)
-  assert.doesNotMatch(notFound, /ask Otya/i)
+  assert.match(notFound, /Download Omy Play/)
+  assert.ok(!notFound.includes('href="/ask"'))
+  assert.doesNotMatch(notFound, />\s*(?:Open Next|Open O)\s*</i)
   assert.match(errorPage, /Try again/)
   assert.match(errorPage, /href="\/help"/)
 })

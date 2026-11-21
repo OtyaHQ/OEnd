@@ -34,7 +34,7 @@ export default function MusicPage() {
             Otya Media is built for songs already on your Android device. It does not depend on an online music catalog, a streaming-provider account or a provider API to keep your library useful.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/download/otya-player" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 font-black">Download Otya Media</Link>
+            <Link href="/download/omy-play" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 font-black">Download Otya Media</Link>
             <Link href="/help" className="otya-quiet-button inline-flex min-h-12 items-center rounded-full px-6 font-black">Open Help</Link>
           </div>
         </div>

@@ -1,16 +1,16 @@
 export const OTYA = {
   name: 'Otya',
-  player: 'Otya Media',
-  ai: 'Next',
-  auth: 'Otya Account',
-  console: 'Otya Command Center',
-  backend: 'Otya Backend',
+  player: 'Omy Play',
+  ai: 'O',
+  auth: 'OID',
+  console: 'O',
+  backend: 'OEnd',
   website: 'https://otya.site',
   supportEmail: 'support@otya.site',
   noReplyEmail: 'noreply@otya.site',
   telegramChannel: 'https://t.me/otyaplayer',
   telegramSupport: 'https://t.me/OtyaPlayerBot',
-  description: 'Otya brings together local video and music, nearby Send, Private media, practical tools and one secure account. Core playback and nearby sharing remain local-first.',
+  description: 'Otya connects Omy Play, Opoint, OID and the wider Otya ecosystem, nearby Send, Private media, practical tools and one secure account. Core playback and nearby sharing remain local-first.',
 } as const;
 
 export const SITE_CONFIG = {

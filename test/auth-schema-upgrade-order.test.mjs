@@ -20,3 +20,19 @@ test('preserved auth schemas upgrade required columns before dependent indexes',
   assert.ok(upgradeColumns > createBase)
   assert.ok(createIndexes > upgradeColumns)
 })
+
+
+test('OID deployment repairs only its configured D1 and adds optional username fields safely', () => {
+  const repair = readFileSync(new URL('../auth-worker/scripts/repair-remote-schema.sh', import.meta.url), 'utf8')
+  const deploy = readFileSync(new URL('../.github/workflows/deploy.yml', import.meta.url), 'utf8')
+  const schema = readFileSync(new URL('../auth-worker/src/db.ts', import.meta.url), 'utf8')
+
+  assert.match(repair, /OTYA_AUTH_DB_NAME:-otya-id-db/)
+  assert.match(repair, /CONFIG_DB_NAME.*!=.*DB_NAME/s)
+  assert.match(repair, /ensure_column users username "TEXT"/)
+  assert.match(repair, /ensure_column users username_changed_at "TEXT"/)
+  assert.match(repair, /CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_ci/)
+  assert.match(deploy, /OTYA_AUTH_DB_NAME: otya-id-db/)
+  assert.match(schema, /username_changed_at: 'TEXT'/)
+  assert.match(schema, /idx_users_username_ci/)
+})

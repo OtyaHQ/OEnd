@@ -1,86 +1,60 @@
-name = "otya-next"
+name = "o"
 main = "src/scheduled-entry.mjs"
-compatibility_date = "2026-11-09"
+compatibility_date = "2026-11-11"
 compatibility_flags = ["nodejs_compat"]
-keep_vars = true
 workers_dev = false
-
+tags = ["O", "owner-workspace", "production"]
 [observability]
 enabled = true
 redact_query_string = true
 [observability.logs]
 enabled = true
-head_sampling_rate = 0.35
+head_sampling_rate = 1
 [observability.traces]
 enabled = true
-head_sampling_rate = 0.05
-
+head_sampling_rate = 0.1
 [observability.issues]
 enabled = true
-
 [vars]
 ENVIRONMENT = "production"
-APP_NAME = "Otya Next"
+APP_NAME = "O"
 WEBSITE_URL = "https://otya.site"
+OWNER_ONLY = "true"
+PUBLIC_CHAT_ENABLED = "false"
 ADMIN_REPORT_EMAIL = "otyahq@gmail.com"
 ADMIN_CRASH_ALERT_THRESHOLD = "5"
 TELEGRAM_BOT_USERNAME = "OtyaPlayerBot"
 TELEGRAM_CHANNEL_URL = "https://t.me/otyaplayer"
-AI_GATEWAY_ID = "otya-next-gateway"
-AI_PUBLIC_MODELS = "llama-fast,otya-smart,gemma-4,granite,llama-70b,gpt-oss-20b,gpt-oss-120b,nemotron,llama-4-scout,qwen3,sea-lion"
-AI_GUEST_MODEL = "llama-fast"
-AI_DEFAULT_MODEL = "otya-smart"
+AI_GATEWAY_ID = "o-gateway"
 OTYA_AI_MODEL = "@cf/zai-org/glm-4.7-flash"
 OTYA_REPORT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"
 GMAIL_GOOGLE_CLIENT_ID = "82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.googleusercontent.com"
-
 [ai]
 binding = "AI"
-
 [browser]
 binding = "BROWSER"
-
 [[ai_search]]
 binding = "AI_SEARCH"
-instance_name = "otya-knowledge"
-
+instance_name = "o-knowledge"
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
-dataset = "otya-next-analytics"
-
-# Keep the physical D1 name during the v1 cutover.
+dataset = "o-analytics"
 [[d1_databases]]
 binding = "DB"
-database_name = "otya-store-db"
-database_id = "ab157fc6-2cbb-4d46-9789-2e4392e16aea"
-
+database_name = "o-prod-db"
+database_id = "92d2af72-bb6e-401c-8240-61a0a224ee64"
 [[kv_namespaces]]
 binding = "KV"
-id = "3f179286e0fc4dbfa2332884cdf81312"
-
-# Next consumes intelligence jobs only. Otya Core is the sole owner of the
-# public push queue so an AI-worker compromise cannot broadcast notifications.
+id = "b0742c135e2243b9880bd83bf09504ad"
 [[queues.consumers]]
-queue = "otya-next-jobs"
+queue = "o-jobs"
 max_batch_size = 5
 max_batch_timeout = 30
 max_retries = 3
-dead_letter_queue = "otya-next-jobs-dlq"
-
-[triggers]
-# Hourly: lightweight admin-only exception check.
-# 05:00 UTC = 08:00 Africa/Kampala: morning operations brief + churn signals.
-# Monday 06:00 UTC = 09:00 Africa/Kampala: deeper weekly review.
-crons = ["0 * * * *", "0 5 * * *", "0 6 * * 1"]
-# Next owns intelligence and approved provider actions. Core owns Telegram and
-# push transport. Auth owns Resend delivery; Next has no direct Resend key.
-# Required on both otya-next and otya-auth: OTYA_NEXT_MAIL_SERVICE_TOKEN.
-# Optional integrations: INTERNAL_SECRET, GMAIL_GOOGLE_CLIENT_SECRET,
-# CONNECTOR_ENCRYPTION_KEY. Never commit secret values.
-
-
-# Otya Next uses Otya Auth as the shared private transactional-email gateway.
-# Both Workers require the same high-entropy OTYA_NEXT_MAIL_SERVICE_TOKEN secret.
+dead_letter_queue = "o-jobs-dlq"
 [[services]]
 binding = "AUTH"
-service = "otya-auth"
+service = "oid"
+[[services]]
+binding = "CORE"
+service = "oend"

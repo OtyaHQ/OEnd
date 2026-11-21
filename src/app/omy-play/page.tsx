@@ -7,41 +7,41 @@ import { SiteFooter } from '@/components/SiteFooter'
 import { getKV } from '@/lib/d1'
 
 export const metadata: Metadata = {
-  title: 'Otya — Offline Music & Video for Android',
+  title: 'Omy Play — Offline Music & Video for Android',
   description:
-    'Otya by Otya is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
+    'Omy Play is an offline-first Android music and video app for local media, nearby Send, Private media, playlists, subtitles and practical media tools.',
   keywords: [
     'Otya',
-    'Otya Media',
-    'Otya Android',
+    'Omy Play',
+    'Omy Play Android',
     'offline music player Android',
     'offline video player Android',
     'local music player Android',
     'local video player Android',
     'Android media player Uganda',
-    'Otya Otya',
+    'Omy Play',
   ],
-  alternates: { canonical: 'https://otya.site/otya-player' },
+  alternates: { canonical: 'https://otya.site/omy-play' },
   openGraph: {
     type: 'website',
-    url: 'https://otya.site/otya-player',
-    title: 'Otya — Offline Music & Video for Android',
+    url: 'https://otya.site/omy-play',
+    title: 'Omy Play — Offline Music & Video for Android',
     description:
-      'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Otya by Otya.',
+      'Play local music and video offline, send supported media nearby, protect Private media and use practical media tools with Omy Play.',
     images: [
       {
         url: '/otya-app-icon.webp',
         width: 512,
         height: 512,
-        alt: 'Otya by Otya',
+        alt: 'Omy Play',
         type: 'image/webp',
       },
     ],
   },
   twitter: {
     card: 'summary',
-    title: 'Otya — Offline Music & Video for Android',
-    description: 'Official Otya by Otya for local Android music and video.',
+    title: 'Omy Play — Offline Music & Video for Android',
+    description: 'Official Omy Play for local Android music and video.',
     images: ['/otya-app-icon.webp'],
   },
 }
@@ -55,7 +55,7 @@ const FEATURES = [
   ['Together', 'Use an optional connected session when you choose to watch with an invited Otya user.'],
 ]
 
-export default async function OtyaPlayerPage() {
+export default async function OmyPlayPage() {
   let appVersion = '1.0.0'
   try {
     const { env } = await getCloudflareContext()
@@ -68,16 +68,16 @@ export default async function OtyaPlayerPage() {
     <main className="flex-1 pb-24 md:pb-0">
       <section className="otya-shell py-11 sm:py-18 grid lg:grid-cols-[.9fr_1.1fr] gap-9 lg:gap-14 items-center">
         <div>
-          <div className="otya-kicker mb-4">Official Otya · Android · v{appVersion} · Otya</div>
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Otya.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
-          <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Otya is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
+          <div className="otya-kicker mb-4">Omy Play · Android · v{appVersion} · Otya</div>
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Omy Play.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
+          <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Omy Play is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <Link href="/download/otya-player" className="cosmos-button rounded-full px-6 py-3.5 text-sm font-extrabold text-center">Download Otya</Link>
+            <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3.5 text-sm font-extrabold text-center">Download Omy Play</Link>
             <Link href="/help" className="otya-quiet-button rounded-full px-6 py-3.5 text-sm font-bold text-center">Help & support</Link>
           </div>
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Offline-first</span><span>Local music & video</span><span>Nearby Send</span><span>Sign-in optional</span></div>
         </div>
-        <Image src="/brand/otya-app-preview.svg" alt="Otya Android interface showing Video, Music and Me" width={1200} height={820} priority className="w-full h-auto rounded-[30px] drop-shadow-2xl" />
+        <Image src="/brand/otya-app-preview.svg" alt="Omy Play Android interface showing Video, Music and Me" width={1200} height={820} priority className="w-full h-auto rounded-[30px] drop-shadow-2xl" />
       </section>
 
       <section className="border-y" style={{ borderColor: 'var(--cosmos-divider)', background: 'linear-gradient(120deg,color-mix(in srgb,var(--cosmos-primary) 7%,var(--cosmos-surface)),color-mix(in srgb,var(--cosmos-cyan) 6%,var(--cosmos-surface)))' }}>
@@ -96,8 +96,8 @@ export default async function OtyaPlayerPage() {
           {FEATURES.map(([title,text]) => <div key={title} className="modern-card p-5"><h3 className="font-extrabold">{title}</h3><p className="mt-2 text-sm leading-relaxed otya-muted">{text}</p></div>)}
         </div>
         <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t pt-6" style={{ borderColor: 'var(--cosmos-divider)' }}>
-          <div><div className="font-extrabold">The internet is an enhancement, not a requirement.</div><div className="mt-1 text-sm otya-muted">Local playback, library access and nearby sending remain at the center of Otya.</div></div>
-          <Link href="/download/otya-player" className="cosmos-button rounded-full px-6 py-3 text-sm font-extrabold text-center shrink-0">Download Otya v{appVersion}</Link>
+          <div><div className="font-extrabold">The internet is an enhancement, not a requirement.</div><div className="mt-1 text-sm otya-muted">Local playback, library access and nearby sending remain at the center of Omy Play.</div></div>
+          <Link href="/download/omy-play" className="cosmos-button rounded-full px-6 py-3 text-sm font-extrabold text-center shrink-0">Download Omy Play v{appVersion}</Link>
         </div>
       </section>
     </main>

@@ -1,23 +1,21 @@
 # Production release gate: deploy only after the mainline validation workflow succeeds.
-name = "otya-core"
+name = "oend"
 main = "src/production-router.mjs"
 compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 workers_dev = false
+tags = ["OEnd", "production"]
 routes = [
   { pattern = "otya.site", custom_domain = true },
   { pattern = "www.otya.site", custom_domain = true },
   { pattern = "docs.otya.site", custom_domain = true },
   { pattern = "status.otya.site", custom_domain = true },
   { pattern = "space.otya.site", custom_domain = true },
-  # Retired hostnames remain attached only to issue 308 redirects.
-  { pattern = "petersmartlink.com", custom_domain = true },
-  { pattern = "www.petersmartlink.com", custom_domain = true },
-  { pattern = "docs.petersmartlink.com", custom_domain = true },
-  { pattern = "status.petersmartlink.com", custom_domain = true },
-  { pattern = "space.petersmartlink.com", custom_domain = true }
+  { pattern = "api.otya.site", custom_domain = true },
 ]
+
+
 
 [observability]
 enabled = true
@@ -34,15 +32,15 @@ enabled = true
 
 [vars]
 ENVIRONMENT = "production"
-APP_NAME    = "Otya"
+APP_NAME    = "OEnd"
 WEBSITE_URL = "https://otya.site"
 ADMIN_REPORT_EMAIL = "otyahq@gmail.com"
 FIREBASE_PROJECT_ID = "otya-player"
 FIREBASE_PROJECT_NUMBER = "82776565585"
 FIREBASE_ANDROID_APP_ID = "1:82776565585:android:085cf9b4eecb76e9535570"
-ANDROID_PACKAGE_NAME = "com.otyaplayer.app"
+ANDROID_PACKAGE_NAME = "com.otya.omyplay"
 FIREBASE_APP_CHECK_MODE = "monitor"
-ADMIN_EMAILS = "otyahq@gmail.com"
+ADMIN_EMAILS = "petersmartlink@gmail.com"
 RESEND_WEBHOOK_ID = "ed1c9372-22ec-4f85-931d-14826a07b3cb"
 
 [assets]
@@ -69,15 +67,15 @@ id      = "3f179286e0fc4dbfa2332884cdf81312"
 
 [[d1_databases]]
 binding       = "DB"
-database_name = "otya-store-db"
-database_id   = "ab157fc6-2cbb-4d46-9789-2e4392e16aea"
+database_name = "otya-end-db"
+database_id   = "8639040c-2365-45ea-9e49-8f6228116471"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
-dataset = "otya-core-analytics"
+dataset = "oend-analytics"
 [[analytics_engine_datasets]]
 binding = "OTYA_ANALYTICS"
-dataset = "otya_system_analytics"
+dataset = "oend_system_analytics"
 
 [[unsafe.bindings]]
 type         = "ratelimit"
@@ -89,31 +87,31 @@ namespace_id = "1001"
 
 [[queues.producers]]
 binding = "PUSH_QUEUE"
-queue   = "otya-push"
+queue   = "oend-push"
 [[queues.consumers]]
-queue             = "otya-push"
+queue             = "oend-push"
 # Process one logical push at a time so one invocation cannot multiply direct
 # FCM fanout across a batch and exceed the Free Worker subrequest budget.
 max_batch_size    = 1
 max_retries       = 3
-dead_letter_queue = "otya-push-dlq"
+dead_letter_queue = "oend-push-dlq"
 
 [[queues.producers]]
 binding = "AI_QUEUE"
-queue   = "otya-next-jobs"
+queue   = "o-jobs"
 
 # Do not attach otya-release-events here yet. The dedicated idempotent release
 # intake handler must land and pass tests before the R2 event queue gets a consumer.
 
 [[services]]
 binding = "AUTH"
-service = "otya-auth"
+service = "oid"
 [[services]]
 binding = "AI_SUPPORT"
-service = "otya-next"
+service = "o"
 
 [[workflows]]
-name = "otya-release"
+name = "oend-release"
 binding = "OTYA_RELEASE_WORKFLOW"
 class_name = "OtyaReleaseWorkflow"
 
@@ -121,3 +119,11 @@ class_name = "OtyaReleaseWorkflow"
 crons = ["*/5 * * * *", "0 * * * *"]
 # Release note: Next.js 16.4.6 + OpenNext Cloudflare 1.20.16 were validated in PR #266.
 # This comment-only commit triggers the existing guarded [DEPLOY-ALL] release workflow; it does not alter runtime configuration.
+
+# Product-owned APIs remain private and are accessed only through OEnd gateways.
+[[services]]
+binding = "OPOINT_API"
+service = "opoint"
+[[services]]
+binding = "OMY_PLAY_API"
+service = "omy-play"

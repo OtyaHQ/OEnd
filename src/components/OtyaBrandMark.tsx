@@ -10,7 +10,7 @@ type Props = {
 
 /** Canonical Otya identity shared with the Android app. */
 export function OtyaBrandMark({ size = 36, thinking = false, ai = false, className = '', label }: Props) {
-  const accessibleLabel = label ?? (ai ? 'Otya assistant' : '')
+  const accessibleLabel = label ?? (ai ? 'O owner workspace' : '')
   return <img
     src="/otya-app-icon.webp"
     width={size}

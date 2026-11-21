@@ -105,8 +105,8 @@ test('website, install surfaces and build pipeline use one Otya mark and name', 
 })
 
 
-test('public Otya Player downloads do not load or require Turnstile', () => {
-  const download = read('src/app/download/otya-player/DownloadButtons.tsx')
+test('public Omy Play downloads do not load or require Turnstile', () => {
+  const download = read('src/app/download/omy-play/DownloadButtons.tsx')
 
   assert.match(download, /window\.location\.assign\(urlFor\(targetAbi\)\)/)
   assert.doesNotMatch(download, /turnstile/i)

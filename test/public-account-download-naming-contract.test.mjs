@@ -1,29 +1,20 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import test from 'node:test'
-
 const read = path => readFileSync(path, 'utf8')
-
-test('public Otya surfaces and Android download naming stay canonical', () => {
-  const apkRoute = read('src/app/apk/[file]/route.ts')
-  const canonicalDownload = read('src/app/download/otya-player/page.tsx')
-  const legacyDownload = read('src/app/download/otya/page.tsx')
-  const spaceShell = read('src/components/OtyaSpaceChrome.tsx')
-
-  assert.match(apkRoute, /Otya-arm64\.apk/)
-  assert.match(apkRoute, /Otya-arm32\.apk/)
-  assert.doesNotMatch(apkRoute, /OtyaPlayer/)
-
-  assert.doesNotMatch(canonicalDownload, /redirect\(/)
-  assert.match(canonicalDownload, /title: 'Download Otya Media for Android'/)
-  assert.match(
-    canonicalDownload,
-    /canonical: 'https:\/\/otya\.site\/download\/otya-player'/,
-  )
-  assert.match(legacyDownload, /redirect\('\/download\/otya-player'\)/)
-
-  assert.doesNotMatch(spaceShell, /label: 'Next'/)
-  assert.match(spaceShell, />Otya<\/div><div className="text-sm otya-muted">Space<\/div>/)
-  assert.match(spaceShell, /aria-label="Otya Space home"/)
-  assert.doesNotMatch(spaceShell, /Otya AI/)
+test('public Otya surfaces and Omy Play Android download naming stay canonical', () => {
+  const apk=read('src/app/apk/[file]/route.ts'), page=read('src/app/download/omy-play/page.tsx'), client=read('src/app/download/omy-play/DownloadButtons.tsx'), shell=read('src/components/OtyaSpaceChrome.tsx'), router=read('src/production-router.mjs')
+  assert.match(apk,/Otya-arm64\.apk/)
+  assert.match(apk,/Otya-arm32\.apk/)
+  assert.doesNotMatch(apk,/OtyaPlayer/)
+  assert.match(page,/title: 'Download Omy Play for Android'/)
+  assert.match(page,/canonical: 'https:\/\/otya\.site\/download\/omy-play'/)
+  assert.match(client,/Choose your Android build/)
+  assert.match(client,/Omy Play/)
+  assert.match(router,/url\.pathname === '\/download\/otya-player'/)
+  assert.match(router,/redirectToHost\(url, APP_HOST, '\/download\/omy-play', 308\)/)
+  assert.doesNotMatch(shell,/label: 'Next'/)
+  assert.match(shell,/>Otya<\/div><div className="text-sm otya-muted">Space<\/div>/)
+  assert.match(shell,/aria-label="Otya Space home"/)
+  assert.doesNotMatch(shell,/Otya AI/)
 })

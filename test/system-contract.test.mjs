@@ -125,42 +125,34 @@ test('Production auth responses normalize the immutable public Otya ID before wr
   assert.match(source, /withAuthSecurityEvent/)
 })
 
-test('Next keeps a low-cost guest model and curated signed-in catalog', () => {
+test('O is configured as a private owner-only AI product', () => {
   const config = read('ai-worker/wrangler.toml')
-  const chat = read('ai-worker/src/client-chat.mjs')
+  const worker = read('ai-worker/src/scheduled-entry.mjs')
+  const backend = read('src/entrypoint.mjs')
 
-  assert.match(config, /AI_GUEST_MODEL = "llama-fast"/)
-  assert.match(config, /AI_DEFAULT_MODEL = "otya-smart"/)
-
-  const catalogLine = config.match(/^AI_PUBLIC_MODELS\s*=\s*"([^"]+)"$/m)
-  assert.ok(catalogLine, 'AI_PUBLIC_MODELS must be present in ai-worker/wrangler.toml')
-  const configuredModels = catalogLine[1].split(',').map(value => value.trim()).filter(Boolean)
-  const expected = [
-    'llama-fast', 'otya-smart', 'gemma-4', 'granite', 'llama-70b',
-    'gpt-oss-20b', 'gpt-oss-120b', 'nemotron', 'llama-4-scout',
-    'qwen3', 'sea-lion',
-  ]
-  for (const id of expected) assert.ok(configuredModels.includes(id), `${id} must remain in AI_PUBLIC_MODELS`)
-
-  assert.match(chat, /if\(!signedIn\).*policy\.guest/)
-  assert.match(chat, /friendly general-purpose AI assistant built into Otya/)
-  assert.match(chat, /Public Next cannot see the private Admin Assistant/)
-  assert.match(chat, /Online Music\/Jamendo is retired/)
+  assert.match(config, /OWNER_ONLY = "true"/)
+  assert.match(config, /PUBLIC_CHAT_ENABLED = "false"/)
+  assert.match(config, /APP_NAME = "O"/)
+  assert.match(config, /OTYA_AI_MODEL =/)
+  assert.match(config, /OTYA_REPORT_MODEL =/)
+  assert.doesNotMatch(config, /AI_PUBLIC_MODELS|AI_GUEST_MODEL|AI_DEFAULT_MODEL/)
+  assert.match(worker, /env\.OTYA_AI_MODEL/)
+  assert.match(worker, /env\.OTYA_REPORT_MODEL/)
+  assert.match(worker, /handleOwnerConsole/)
+  assert.doesNotMatch(worker, /handlePublicChat|handlePublicChatStream/)
+  assert.match(backend, /error:'owner_only'/)
+  assert.match(backend, /O is a private owner workspace/)
 })
 
-test('Free-plan model catalog does not advertise paid-only GLM 5.3', () => {
+test('O does not expose public chat model catalogs or guest conversation routes', () => {
   const config = read('ai-worker/wrangler.toml')
-  const chat = read('ai-worker/src/client-chat.mjs')
-  assert.doesNotMatch(config, /glm-5\.3/i)
-  assert.doesNotMatch(chat, /glm-5\.3/i)
-})
+  const worker = read('ai-worker/src/index.mjs')
+  const backend = read('src/entrypoint.mjs')
 
-test('Cloudflare remains the public release and AI control plane', () => {
-  const chat = read('ai-worker/src/client-chat.mjs')
-  assert.match(chat, /Official website:/)
-  assert.match(chat, /\/latest/)
-  assert.match(chat, /Local playback, media scanning, local search and supported local transfer/)
-  assert.match(chat, /must not contact a music-provider catalog while the user types/)
+  assert.doesNotMatch(config, /AI_PUBLIC_MODELS|AI_GUEST_MODEL|AI_DEFAULT_MODEL/)
+  assert.doesNotMatch(worker, /handlePublicChat|handlePublicChatStream/)
+  assert.match(backend, /url\.pathname\.startsWith\('\/api\/ai\/chat'\)/)
+  assert.match(backend, /error:'owner_only'/)
 })
 
 test('Online Music is retired across the canonical control plane', () => {

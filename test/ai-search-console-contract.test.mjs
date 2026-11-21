@@ -10,7 +10,7 @@ test('OTYA AI Search stays a private read-only owner Console tool', () => {
   const ownerConsole = read('ai-worker/src/owner-console.mjs')
   const entry = read('ai-worker/src/scheduled-entry.mjs')
 
-  assert.match(wrangler, /\[\[ai_search\]\][\s\S]*binding\s*=\s*"AI_SEARCH"[\s\S]*instance_name\s*=\s*"otya-knowledge"/)
+  assert.match(wrangler, /\[\[ai_search\]\][\s\S]*binding\s*=\s*"AI_SEARCH"[\s\S]*instance_name\s*=\s*"o-knowledge"/)
   assert.match(consoleTools, /async function knowledgeSearch\(env, query\)/)
   assert.match(consoleTools, /env\.AI_SEARCH\.search\(/)
   assert.match(consoleTools, /'knowledge_search'/)

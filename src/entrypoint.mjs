@@ -1,10 +1,11 @@
 import worker from './queue-worker.mjs'
 import { recordRuntimeOperationalEvent } from './lib/operational-events.mjs'
+import { handleAiInternalRequest } from './lib/ai-internal-api.mjs'
 export { OtyaReleaseWorkflow } from './release-workflow.mjs'
 
 const HEALTH_CHECK_CRON = '*/5 * * * *'
 const HEALTH_INCIDENT_KEY = 'monitor:health:incident:v2'
-const HEALTH_PATHS = ['/', '/download/otya-player', '/api/version', '/latest']
+const HEALTH_PATHS = ['/', '/download/omy-play', '/api/omy-play/latest']
 const OTYA_NOREPLY_EMAIL = 'noreply@otya.site'
 const ACCESS_COOKIE = '__Secure-otya_access'
 const ADMIN_COOKIE = 'otya_admin_session'
@@ -101,15 +102,15 @@ async function runProductionHealthCheck(env,ctx){
   }
 
   results.push(await checkPrivateService(
-    'otya-auth',
+    'oid',
     env.AUTH,
-    new Request('https://otya-auth/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://oid/auth/me',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([401]),
   ))
   results.push(await checkPrivateService(
-    'otya-next',
+    'o',
     env.AI_SUPPORT,
-    new Request('https://otya-next/health',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
+    new Request('https://o/health',{method:'GET',signal:AbortSignal.timeout(SERVICE_HEALTH_TIMEOUT_MS)}),
     new Set([200]),
   ))
 
@@ -142,24 +143,6 @@ async function runProductionHealthCheck(env,ctx){
   await sendHealthEmail(env,`[OTYA Backend] ${down.length} production surface(s) unhealthy`,['OTYA production health alert','',...down.map(r=>`${r.path} — status ${r.status}, latency ${r.latency}ms${r.error?` (${r.error})`:''}`),'',`Checked at: ${new Date().toISOString()}`].join('\n'))
 }
 
-async function forwardClientAi(request,env){
-  const user=await authenticateUser(request,env)
-  const headers=new Headers(request.headers)
-  headers.delete('X-OTYA-Internal-Secret')
-  headers.delete('X-OTYA-User-ID')
-  headers.delete('X-OTYA-User-Email')
-  headers.delete('X-OTYA-Persist-Chat')
-  if(user&&env.INTERNAL_SECRET){
-    headers.set('X-OTYA-Internal-Secret',env.INTERNAL_SECRET)
-    headers.set('X-OTYA-User-ID',user.id)
-    headers.set('X-OTYA-User-Email',user.email)
-    headers.set('X-OTYA-Persist-Chat','1')
-  }else{
-    headers.delete('Authorization')
-  }
-  return serviceFetch(env.AI_SUPPORT,new Request(request,{headers}),'AI service unavailable')
-}
-
 async function forwardAdminAi(request,env){
   const user=await authenticateUser(request,env)
   if(!user)return json({error:'Sign in required'},401)
@@ -185,8 +168,12 @@ export default {
  ...worker,
  async fetch(request,env,ctx){
   const runtimeEnv=withProductionAdapters(env);const startedAt=Date.now();const url=new URL(request.url);let response
+  if(url.pathname.startsWith('/internal/ai/')){
+    response=await handleAiInternalRequest(request,runtimeEnv)
+    return response
+  }
   if(url.pathname.startsWith('/api/ai/chat')){
-    response=await forwardClientAi(request,runtimeEnv)
+    response=json({error:'owner_only',message:'O is a private owner workspace.'},410)
     writeRequestAnalytics(runtimeEnv,request,response,startedAt);return response
   }
   if(url.pathname==='/api/ai/oauth/google/callback'){

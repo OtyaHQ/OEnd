@@ -16,7 +16,11 @@ test('core service binding failures become controlled 503 responses', () => {
   assert.match(entrypoint, /async function serviceFetch\(binding,request,errorMessage\)/)
   assert.match(entrypoint, /return json\(\{error:errorMessage\},503\)/)
   assert.match(entrypoint, /serviceFetch\(runtimeEnv\.AUTH,request,'Authentication service unavailable'\)/)
-  assert.match(entrypoint, /serviceFetch\(env\.AI_SUPPORT,new Request\(request,\{headers\}\),'AI service unavailable'\)/)
+  // Public AI chat is intentionally retired; only the private O workspace and elevated admin APIs remain.
+  assert.doesNotMatch(entrypoint, /forwardClientAi/)
+  assert.match(entrypoint, /owner_only/)
+  assert.match(entrypoint, /async function forwardAdminAi\(request,env\)/)
+  assert.match(entrypoint, /serviceFetch\(env\.AI_SUPPORT,new Request\(request,\{headers\}\),'AI support service unavailable'\)/)
 })
 
 test('Telegram admin verification cannot wait indefinitely for Auth', () => {

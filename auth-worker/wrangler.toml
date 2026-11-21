@@ -1,9 +1,10 @@
-name = "otya-auth"
+name = "oid"
 main = "src/production-entrypoint-miniapp.ts"
 compatibility_date = "2026-11-09"
 compatibility_flags = ["nodejs_compat"]
 keep_vars = true
 workers_dev = false
+tags = ["OID", "identity", "production"]
 
 [observability]
 enabled = true
@@ -24,14 +25,14 @@ store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
 secret_name = "TELEGRAM_BOT_TOKEN"
 
 [[secrets_store_secrets]]
-binding = "OTYAPOINT_INVITE_SERVICE_TOKEN"
+binding = "OPOINT_INVITE_SERVICE_TOKEN"
 store_id = "a1df6b906c6e4c1da6e7687330ea0f9c"
-secret_name = "OTYAPOINT_INVITE_SERVICE_TOKEN"
+secret_name = "OPOINT_INVITE_SERVICE_TOKEN"
 
 [[d1_databases]]
 binding       = "AUTH_DB"
-database_name = "otya-auth-db"
-database_id   = "b05595f6-260a-4720-acca-4f8b13f5c43e"
+database_name = "otya-id-db"
+database_id   = "0501d1c1-7f7f-4760-9486-b594bae6436f"
 
 [[kv_namespaces]]
 binding = "AUTH_KV"
@@ -39,7 +40,7 @@ id      = "6b9faff751724fdb86c16452b9c99cf6"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
-dataset = "otya-auth-analytics"
+dataset = "oid-analytics"
 
 [vars]
 CORS_ORIGIN = "https://otya.site"
@@ -48,7 +49,8 @@ GOOGLE_WEB_CLIENT_ID = "82776565585-obr8k53b8n6djsggissv8qne81cm3u5u.apps.google
 FIREBASE_PROJECT_ID = "otya-player"
 TELEGRAM_LOGIN_REDIRECT_URI = "https://otya.site/api/auth/telegram/callback"
 TELEGRAM_LOGIN_BOT_USERNAME = "OtyaPlayerBot"
-ADMIN_EMAILS = "otyahq@gmail.com"
+APP_NAME = "OID"
+ADMIN_EMAILS = "petersmartlink@gmail.com"
 
 # Telegram browser sign-in stays OIDC + PKCE. Mini App signature verification
 # reads the same centralized Secrets Store entry through a purpose-specific

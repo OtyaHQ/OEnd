@@ -1,39 +1,26 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-
 const router = readFileSync(new URL('../src/production-router.mjs', import.meta.url), 'utf8')
+const wrangler = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8')
 const nextConfig = readFileSync(new URL('../next.config.mjs', import.meta.url), 'utf8')
 const status = readFileSync(new URL('../src/app/status/page.tsx', import.meta.url), 'utf8')
 const statusClient = readFileSync(new URL('../src/app/status/StatusClient.tsx', import.meta.url), 'utf8')
-
-test('documentation product links and help preserve their destinations', () => {
+test('documentation product links and Help preserve their canonical destinations', () => {
   assert.ok(router.includes('publicDestinations.has(publicPath)'))
-  assert.match(router, /'\/otyapoint'/)
+  assert.ok(router.includes("'/shop'"))
+  assert.ok(router.includes("'/opoint'"))
+  assert.ok(router.includes("'/omy-play'"))
+  assert.ok(router.includes("'/download/omy-play'"))
   assert.ok(router.includes('redirectToHost(url, APP_HOST, url.pathname)'))
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/help/')"))
 })
-
-test('custom domains are canonical public entry points', () => {
-  assert.ok(router.includes("const APP_HOST = 'otya.site'"))
-  assert.ok(router.includes("const DOCS_HOST = 'docs.otya.site'"))
-  assert.ok(router.includes("const STATUS_HOST = 'status.otya.site'"))
-  assert.ok(router.includes("const SPACE_HOST = 'space.otya.site'"))
-  assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/')"))
-  assert.ok(router.includes("redirectToHost(url, STATUS_HOST, '/')"))
-  assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/')"))
+test('only canonical Otya public hostnames are bound to OEnd', () => {
+  for (const hostname of ['otya.site','www.otya.site','docs.otya.site','status.otya.site','space.otya.site','api.otya.site']) assert.ok(wrangler.includes('pattern = "' + hostname + '"'))
+  assert.doesNotMatch(router, /petersmartlink\.com|LEGACY_HOST_REDIRECTS/)
+  assert.doesNotMatch(wrangler, /petersmartlink\.com/)
 })
-
-test('retired petersmartlink hostnames preserve methods and redirect to Otya canonical hosts', () => {
-  assert.ok(router.includes("['petersmartlink.com', APP_HOST]"))
-  assert.ok(router.includes("['www.petersmartlink.com', 'www.otya.site']"))
-  assert.ok(router.includes("['docs.petersmartlink.com', DOCS_HOST]"))
-  assert.ok(router.includes("['status.petersmartlink.com', STATUS_HOST]"))
-  assert.ok(router.includes("['space.petersmartlink.com', SPACE_HOST]"))
-  assert.match(router, /status:\s*308/)
-})
-
-test('Space root is a product home while Account and Admin remain Space sections', () => {
+test('Space root and signed-in account routes remain in the Space surface', () => {
   assert.ok(router.includes("url.pathname === '/' || url.pathname === '/space'"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/space/')"))
   assert.ok(router.includes("url.pathname === '/account'"))
@@ -41,19 +28,16 @@ test('Space root is a product home while Account and Admin remain Space sections
   assert.ok(router.includes("pathname.startsWith('/account/')"))
   assert.ok(router.includes("pathname === '/admin'"))
   assert.ok(router.includes("pathname.startsWith('/admin/')"))
-  assert.ok(router.includes("['admin', '/admin']"))
 })
-
-test('Space allows approved signed-in product routes instead of redirecting them away', () => {
-  assert.ok(router.includes("pathname.startsWith('/account/')"))
-  assert.ok(router.includes("pathname === '/ask'"))
-  assert.ok(router.includes("pathname.startsWith('/ask/')"))
-  assert.ok(router.includes("pathname === '/telegram/'"))
-  assert.ok(router.includes("pathname === '/admin'"))
-  assert.ok(router.includes('isSpaceSurfacePath(url.pathname)'))
+test('the retired Otya Player download URL permanently redirects to Omy Play', () => {
+  assert.ok(router.includes("url.pathname === '/download/otya-player'"))
+  assert.ok(router.includes("redirectToHost(url, APP_HOST, '/download/omy-play', 308)"))
 })
-
-test('Docs root is real documentation while Help and Status stay distinct surfaces', () => {
+test('the old O owner URL redirects into the private O console in Space', () => {
+  assert.ok(router.includes("url.pathname === '/ask' || url.pathname === '/ask/'"))
+  assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/admin/ai/')"))
+})
+test('Docs root, Help and Status remain distinct surfaces', () => {
   assert.ok(router.includes("host === DOCS_HOST"))
   assert.ok(router.includes("url.pathname === '/' || url.pathname === '/docs'"))
   assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/docs/')"))
@@ -63,44 +47,31 @@ test('Docs root is real documentation while Help and Status stay distinct surfac
   assert.ok(!router.includes("redirectToHost(url, APP_HOST, '/help')"))
   assert.ok(!router.includes("redirectToHost(url, APP_HOST, '/status')"))
 })
-
 test('surface rewrites preserve browser hostname and Next trailing slash policy', () => {
   assert.ok(nextConfig.includes('trailingSlash: true'))
   assert.ok(router.includes('async function dispatchSurface'))
   assert.ok(router.includes("headers.set('X-Forwarded-Host', url.hostname)"))
-  assert.ok(router.includes("target.pathname = pathname"))
+  assert.ok(router.includes('target.pathname = pathname'))
   assert.ok(!router.includes('target.hostname = APP_HOST'))
-  assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/space/')"))
-  assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/account/')"))
-  assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/sign-in/')"))
-  assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '/docs/')"))
+  for (const path of ['/space/','/account/','/sign-in/','/docs/']) assert.ok(router.includes("dispatchSurface(request, url, env, ctx, '" + path + "')"))
 })
-
 test('legacy apex paths converge to clean subdomains without losing intent', () => {
-  assert.ok(router.includes("url.pathname === '/docs'"))
-  assert.ok(router.includes("url.pathname === '/help'"))
-  assert.ok(router.includes("url.pathname === '/status'"))
-  assert.ok(router.includes("url.pathname === '/account'"))
-  assert.ok(router.includes("url.pathname === '/admin'"))
+  for (const path of ['/docs','/help','/status','/account','/admin']) assert.ok(router.includes("url.pathname === '" + path + "'"))
   assert.ok(router.includes("redirectToHost(url, DOCS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, STATUS_HOST, '/')"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, '/account/')"))
   assert.ok(router.includes("redirectToHost(url, SPACE_HOST, url.pathname)"))
 })
-
 test('custom surfaces keep HTTPS and generated OpenNext routing explicit', () => {
   assert.ok(router.includes("target.protocol = 'https:'"))
   assert.ok(router.includes("import openNextWorker from '../.open-next/worker.js'"))
-  assert.ok(router.includes('Response.redirect(target.toString(), 302)'))
+  assert.ok(router.includes('Response.redirect(target.toString(), status)'))
 })
-
-test('public status page exposes live state without internal monitoring details', () => {
+test('public Status exposes safe service meaning, not internal monitoring details', () => {
   assert.ok(status.includes("title: 'Otya Status'"))
   assert.ok(status.includes('LiveStatusPanel'))
-  assert.ok(status.includes('private operational metrics and internal infrastructure details are intentionally not shown here'))
   assert.ok(statusClient.includes("fetch('/api/status'"))
-  assert.ok(statusClient.includes('device-first'))
-  for (const source of [status, statusClient]) {
+  for (const source of [status,statusClient]) {
     assert.ok(!source.includes('CLOUDFLARE_ACCOUNT_ID'))
     assert.ok(!source.includes('INTERNAL_SECRET'))
     assert.ok(!source.includes('D1 database'))

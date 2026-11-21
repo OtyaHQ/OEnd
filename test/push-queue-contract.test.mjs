@@ -10,10 +10,10 @@ const releaseDelivery = read('src/lib/release-delivery.mjs')
 const releaseDispatchMigration = read('migrations/0008_release_push_dispatch.sql')
 
 test('core queue consumer matches the canonical Cloudflare push queue', () => {
-  assert.match(wrangler, /binding\s*=\s*"PUSH_QUEUE"[\s\S]*?queue\s*=\s*"otya-push"/)
-  assert.match(wrangler, /\[\[queues\.consumers\]\][\s\S]*?queue\s*=\s*"otya-push"/)
-  assert.match(queueWorker, /batch\.queue !== 'otya-push'/)
-  assert.doesNotMatch(queueWorker, /otya-push-queue/)
+  assert.match(wrangler, /binding\s*=\s*"PUSH_QUEUE"[\s\S]*?queue\s*=\s*"oend-push"/)
+  assert.match(wrangler, /\[\[queues\.consumers\]\][\s\S]*?queue\s*=\s*"oend-push"/)
+  assert.match(queueWorker, /batch\.queue !== 'oend-push'/)
+  assert.doesNotMatch(queueWorker, /oend-push-queue/)
   assert.doesNotMatch(queueWorker, /otya-store received unexpected queue/)
 })
 

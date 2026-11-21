@@ -21,7 +21,7 @@ test('Telegram keeps paragraph breaks and sends the branded photo with buttons',
     assert.equal(requests[0].body.text, 'First paragraph\n\nSecond paragraph')
     assert.match(requests[1].url, /\/sendPhoto$/)
     assert.equal(requests[1].body.photo, 'https://otya.site/otya-release-card.jpg')
-    assert.equal(requests[1].body.reply_markup.inline_keyboard[0][0].text, 'Download Otya')
+    assert.equal(requests[1].body.reply_markup.inline_keyboard[0][0].text, 'Download Omy Play')
   } finally { globalThis.fetch = original }
 })
 
