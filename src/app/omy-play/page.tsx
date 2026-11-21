@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 import Link from 'next/link'
 import type { Metadata } from 'next'
