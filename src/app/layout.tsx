@@ -6,7 +6,7 @@ import './brand-overrides.css'
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
 const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
-const OTYA_MARK = '/otya-app-icon.webp'
+const OTYA_MARK = 'https://assets.otya.site/brand/otya/v3/otya-icon.svg'\nconst OTYA_SOCIAL_MARK = 'https://assets.otya.site/brand/otya/v3/otya-logo.svg'\nconst OTYA_PWA_MARK = '/otya-app-icon.webp'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Otya — Offline Music & Video for Android',
     description: 'Official Otya for local Android media, Otya Transfer and Watch Together.',
-    images: [OTYA_MARK],
+    images: [OTYA_SOCIAL_MARK],
   },
   icons: {
     icon: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
