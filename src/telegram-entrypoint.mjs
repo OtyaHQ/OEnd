@@ -70,7 +70,7 @@ async function ensureTelegramWebhook(env, { force = false } = {}) {
   const updated = await getTelegramWebhookInfo(env)
   return { changed: true, info: updated }
 }
-async function probeNext(env) {
+async function probeO(env) {
   const bound = Boolean(env.AI_SUPPORT?.fetch)
   if (!bound) return { bound: false, ready: false }
   const controller = new AbortController()
@@ -137,18 +137,18 @@ async function authorizeAdmin(request, env) {
   return null
 }
 async function telegramStatus(env) {
-  const next = await probeNext(env)
+  const o = await probeO(env)
   try {
     const info = await getTelegramWebhookInfo(env)
     const webhookConfigured = String(info?.url || '') === TELEGRAM_WEBHOOK_URL
-    const ready = webhookConfigured && next.ready
+    const ready = webhookConfigured && o.ready
     return json({
       ok: ready,
       bot: '@OtyaPlayerBot',
       channel: '@otyaplayer',
       webhook_configured: webhookConfigured,
-      ai_service_bound: next.bound,
-      ai_service_ready: next.ready,
+      ai_service_bound: o.bound,
+      ai_service_ready: o.ready,
       pending_update_count: Number(info?.pending_update_count ?? 0),
       last_error_date: info?.last_error_date ?? null,
     }, ready ? 200 : 503)
@@ -158,8 +158,8 @@ async function telegramStatus(env) {
       bot: '@OtyaPlayerBot',
       channel: '@otyaplayer',
       webhook_configured: false,
-      ai_service_bound: next.bound,
-      ai_service_ready: next.ready,
+      ai_service_bound: o.bound,
+      ai_service_ready: o.ready,
     }, 503)
   }
 }
@@ -221,8 +221,8 @@ async function handleOwnerEnrollmentWebhook(request, env) {
   }
 
   const text = verified
-    ? 'Identity confirmed for Next. Return to the Next app; this phone will finish trusted-device enrollment automatically.'
-    : 'This Next enrollment request is invalid, expired, or belongs to a different Telegram account. Return to Next and start the trust step again.'
+    ? 'Identity confirmed for O. Return to the O workspace; this phone will finish trusted-device enrollment automatically.'
+    : 'This O enrollment request is invalid, expired, or belongs to a different Telegram account. Return to O and start the trust step again.'
   try {
     await sendTelegramMessage(enrollment.chatId, text, env)
   } catch (error) {
