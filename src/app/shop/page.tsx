@@ -101,7 +101,7 @@ export default function OtyaPage() {
           <div>
             <div className="otya-kicker">Visit us</div>
             <h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">Find us in Mbirizi.</h2>
-            <p className="mt-4 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">Otya is in the Old Market area of Mbirizi, Lwengo District, Uganda. The map link opens the Old Market area as a landmark; it is not a verified door-to-door pin.</p>
+            <p className="mt-4 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">Opoint is in the Old Market area of Mbirizi, Lwengo District, Uganda. The map link opens the Old Market area as a landmark; it is not a verified door-to-door pin.</p>
             <div className="mt-6 rounded-[24px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-5 sm:p-6">
               <div className="text-xs font-black uppercase tracking-[.12em] otya-muted">Shop location</div>
               <p className="mt-2 text-lg font-black">Old Market area</p>
@@ -124,7 +124,7 @@ export default function OtyaPage() {
           <div>
             <div className="otya-kicker">A physical-shop experience</div>
             <h2 className="mt-3 text-2xl sm:text-4xl font-black tracking-[-.05em]">This website helps you visit. It does not take online orders.</h2>
-            <p className="mt-4 max-w-[760px] text-sm sm:text-base leading-7 otya-muted">Browse the services, check the location and ask about availability. Purchases and mobile-money agency services are handled in person at Otya. There is no online cart, checkout or online payment on this site.</p>
+            <p className="mt-4 max-w-[760px] text-sm sm:text-base leading-7 otya-muted">Browse the services, check the location and ask about availability. Purchases and mobile-money agency services are handled in person at Opoint. There is no online cart, checkout or online payment on this site.</p>
           </div>
           <Link href="/apps" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/[.10] dark:border-white/[.12] px-5 text-sm font-black">Explore Otya products</Link>
         </div>
