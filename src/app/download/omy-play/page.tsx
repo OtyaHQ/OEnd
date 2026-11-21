@@ -22,7 +22,7 @@ export const metadata: Metadata = {
       'Official Android download for Omy Play by Otya — local music and video, offline playback, nearby Transfer and Private media.',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/otya-release-card.jpg',
         width: 1200,
         height: 630,
         alt: 'Omy Play for Android',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Download Omy Play for Android',
     description: 'Official Omy Play Android download from Omy Play.',
-    images: ['/og-image.jpg'],
+    images: ['/otya-release-card.jpg'],
   },
 }
 
