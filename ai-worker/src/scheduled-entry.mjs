@@ -46,7 +46,7 @@ function withAiGateway(env){
 }
 
 async function email(env,subject,text,idempotencyKey){
-  if(!env.AUTH?.fetch)throw new Error('Otya ID email service is unavailable')
+  if(!env.AUTH?.fetch)throw new Error('OID email service is unavailable')
   const serviceToken=String(env.OTYA_O_MAIL_SERVICE_TOKEN||'')
   if(serviceToken.length<32)throw new Error('OTYA_O_MAIL_SERVICE_TOKEN is not configured on O')
   if(typeof idempotencyKey!=='string'||!idempotencyKey.trim()||idempotencyKey.length>256)throw new Error('A stable email idempotency key is required')
@@ -56,9 +56,9 @@ async function email(env,subject,text,idempotencyKey){
     body:JSON.stringify({subject:clean(subject,200),text:clean(text,12000)}),
     signal:AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
   }))
-  if(!response.ok)throw new Error('Otya ID email service HTTP '+response.status)
+  if(!response.ok)throw new Error('OID email service HTTP '+response.status)
   const result=await response.json().catch(()=>null)
-  if(result?.accepted!==true||typeof result.emailId!=='string'||!result.emailId)throw new Error('Otya ID email service did not confirm acceptance')
+  if(result?.accepted!==true||typeof result.emailId!=='string'||!result.emailId)throw new Error('OID email service did not confirm acceptance')
   return result.emailId
 }
 async function supportInbox(env,limit=8){
