@@ -11,19 +11,19 @@ test('admin AI uses the approved Otya identity while generic loading stays quiet
   const brandCss = read('src/app/brand-overrides.css')
 
   assert.match(mark, /ai\?: boolean/)
-  assert.match(mark, /Otya assistant/)
+  assert.match(mark, /O owner workspace/)
   assert.match(mark, /src="\/otya-app-icon\.webp"/)
   assert.match(mark, /thinking \? 'otya-brand-thinking' : ''/)
   assert.doesNotMatch(mark, /otya-ai-thinking\.svg|otya-ai\.svg|otya-icon\.svg|otya-icon-dark\.svg/)
 
   assert.match(consoleUi, /<OtyaBrandMark ai/)
   assert.match(consoleUi, /<OtyaBrandMark ai[^>]*thinking/)
-  assert.match(consoleUi, /Next/)
+  assert.match(consoleUi, /What should O handle\?/);\n  assert.doesNotMatch(consoleUi, /Next/)
 
   assert.match(loading, />Loading<\/span>/)
   assert.match(loading, /animate-pulse/)
   assert.doesNotMatch(loading, /OtyaBrandMark/)
-  assert.doesNotMatch(loading, /Loading Otya Player/)
+  assert.doesNotMatch(loading, /Loading Omy Play/)
   assert.match(brandCss, /@keyframes otya-brand-thinking/)
   assert.match(brandCss, /prefers-reduced-motion: reduce/)
 })
@@ -34,7 +34,7 @@ test('website metadata and visual tokens match the approved app brand', () => {
   const manifest = read('public/manifest.json')
   const secondaryManifest = read('public/site.webmanifest')
   const sync = read('scripts/sync-brand-assets.mjs')
-  const download = read('src/app/download/otya-player/DownloadButtons.tsx')
+  const download = read('src/app/download/omy-play/DownloadButtons.tsx')
 
   assert.doesNotMatch(layout, /const APP_VERSION =/)
   assert.doesNotMatch(layout, /softwareVersion:/)
