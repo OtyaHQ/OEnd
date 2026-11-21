@@ -41,7 +41,7 @@ const router = read('src/production-router.mjs')
 forbidMatch('retired petersmartlink hostnames must not return', router, /petersmartlink|LEGACY_HOST_REDIRECTS/i)
 requireMatch('Core public website must use otya.site', core, /^WEBSITE_URL\s*=\s*"https:\/\/otya\.site"$/m)
 
-requireMatch('OEnd production D1 name', core, /^database_name\s*=\s*"otya-store-db"$/m)
+requireMatch('OEnd production D1 name', core, /^database_name\s*=\s*"otya-end-db"$/m)
 requireMatch('Firebase project id must be otya-player', core, /^FIREBASE_PROJECT_ID\s*=\s*"otya-player"$/m)
 requireMatch('Firebase project number must be verified', core, /^FIREBASE_PROJECT_NUMBER\s*=\s*"82776565585"$/m)
 requireMatch('Firebase Android app id must be verified', core, /^FIREBASE_ANDROID_APP_ID\s*=\s*"1:82776565585:android:085cf9b4eecb76e9535570"$/m)
