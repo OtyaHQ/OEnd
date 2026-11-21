@@ -21,7 +21,7 @@ const facts = [
   ['Public brand', 'Otya'],
   ['Intended parent entity', 'Otya Holdings Limited (URSB registration in progress)'],
   ['Product family', 'Otya'],
-  ['Current featured product', 'Otya Media for Android'],
+  ['Current featured product', 'Omy Play for Android'],
   ['Base', 'Uganda'],
   ['Design approach', 'Local-first media playback with connected services where useful'],
 ] as const
@@ -30,7 +30,7 @@ const productPoints = [
   'Local music and video playback on Android.',
   'Background playback with Android media-session controls.',
   'Nearby Send for supported local-network device-to-device workflows.',
-  'Private media storage inside the Otya Media application environment.',
+  'Private media storage inside the Omy Play application environment.',
   'An Otya account for supported connected services without making core local playback depend on the cloud.',
 ] as const
 
@@ -54,8 +54,8 @@ export default function PressPage() {
         </section>
 
         <section className="mt-10" aria-labelledby="about-otya">
-          <h2 id="about-otya" className="text-2xl font-black">About Otya Media</h2>
-          <p className="mt-3 text-sm sm:text-base leading-7 otya-muted">Otya Media is an Android media application in the Otya product family. Its core experience is designed around local media and offline use, with connected services added where they provide clear value.</p>
+          <h2 id="about-otya" className="text-2xl font-black">About Omy Play</h2>
+          <p className="mt-3 text-sm sm:text-base leading-7 otya-muted">Omy Play is an Android media application in the Otya product family. Its core experience is designed around local media and offline use, with connected services added where they provide clear value.</p>
           <ul className="mt-5 grid gap-2">
             {productPoints.map(point => <li key={point} className="rounded-[18px] border border-black/[.06] dark:border-white/[.08] bg-white/60 dark:bg-white/[.02] px-4 py-3 text-sm leading-6">{point}</li>)}
           </ul>
@@ -66,7 +66,7 @@ export default function PressPage() {
           <p className="mt-3 text-sm leading-7 otya-muted">Use these links when checking identity, product information or official statements.</p>
           <div className="mt-4 grid sm:grid-cols-2 gap-3">
             <Link href="/official" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Official identity page</strong><span className="mt-1 block text-xs otya-muted">Website, Telegram and authenticity links</span></Link>
-            <Link href="/otya-player" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Otya Media</strong><span className="mt-1 block text-xs otya-muted">Official product page</span></Link>
+            <Link href="/omy-play" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Omy Play</strong><span className="mt-1 block text-xs otya-muted">Official product page</span></Link>
             <a href={OTYA.telegramChannel} target="_blank" rel="noopener noreferrer" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Telegram channel · @otyaplayer</strong><span className="mt-1 block text-xs otya-muted">Official announcements and community updates</span></a>
             <a href={OTYA.telegramSupport} target="_blank" rel="noopener noreferrer" className="rounded-[20px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-4"><strong className="block text-sm">Telegram bot · @OtyaPlayerBot</strong><span className="mt-1 block text-xs otya-muted">Official OTYA bot</span></a>
           </div>
