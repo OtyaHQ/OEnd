@@ -15,7 +15,7 @@ export default function BlogPage() {
       <div className="max-w-3xl">
         <div className="otya-kicker">Otya</div>
         <h1 className="mt-4 text-4xl sm:text-6xl font-black tracking-[-.06em] leading-[1.03]">The Otya Journal.</h1>
-        <p className="mt-5 text-base sm:text-xl leading-8 otya-muted">Product updates, practical guides and clear release information for Otya Media.</p>
+        <p className="mt-5 text-base sm:text-xl leading-8 otya-muted">Product updates, practical guides and clear release information for the Otya ecosystem.</p>
       </div>
       <BlogIndexClient />
     </main>
