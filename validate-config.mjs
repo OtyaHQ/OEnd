@@ -7,7 +7,7 @@ function forbidMatch(label, source, pattern) { if (pattern.test(source)) failure
 
 const core = read('wrangler.toml')
 const auth = read('auth-worker/wrangler.toml')
-const next = read('ai-worker/wrangler.toml')
+const o = read('ai-worker/wrangler.toml')
 const deploy = read('.github/workflows/deploy.yml')
 const fcm = read('src/lib/fcm.ts')
 const appCheck = read('src/lib/firebase_app_check.ts')
@@ -80,22 +80,26 @@ forbidMatch('Cloudflare EMAIL binding must not return to auth Wrangler', auth, /
 requireMatch('production Google wrapper must support web audience', googleWrapper, /GOOGLE_WEB_CLIENT_ID/)
 requireMatch('production Google wrapper must reject unconfigured audiences', googleWrapper, /configuredGoogleAudiences/)
 
-requireMatch('Next Worker must be o', next, /^name\s*=\s*"o"$/m)
-requireMatch('O workers.dev must be disabled', next, /^workers_dev\s*=\s*false$/m)
-requireMatch('O must redact query strings', next, /^redact_query_string\s*=\s*true$/m)
-forbidMatch('Next must not own public push queue binding', next, /binding\s*=\s*"PUSH_QUEUE"/)
-forbidMatch('Next must not own canonical public push queue', next, /queue\s*=\s*"oend-push"/)
-requireMatch('O jobs queue canonical name', next, /\[\[queues\.consumers\]\][\s\S]*?queue\s*=\s*"o-jobs"/m)
-requireMatch('O live analytics binding', next, /^binding\s*=\s*"ANALYTICS"$/m)
-requireMatch('Next live analytics dataset', next, /^dataset\s*=\s*"o-analytics"$/m)
-requireMatch('O Browser Run binding', next, /^\[browser\]\s*\nbinding\s*=\s*"BROWSER"$/m)
-requireMatch('O AI Search binding', next, /\[\[ai_search\]\][\s\S]*?binding\s*=\s*"AI_SEARCH"[\s\S]*?instance_name\s*=\s*"o-knowledge"/m)
-requireMatch('O gateway id must use canonical name', next, /^AI_GATEWAY_ID\s*=\s*"o-gateway"$/m)
-requireMatch('owner assistant product name must use O', next, /^APP_NAME\s*=\s*"O"$/m)
-requireMatch('Next guest model remains low-cost default', next, /^AI_GUEST_MODEL\s*=\s*"llama-fast"$/m)
-requireMatch('O production D1 name', next, /^database_name\s*=\s*"o-prod-db"$/m)
-requireMatch('Next Gmail OAuth must use the verified Web client id', next, /^GMAIL_GOOGLE_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
-forbidMatch('Next Gmail OAuth must not use the Android client id', next, /^GMAIL_GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
+requireMatch('O Worker must use its canonical name', o, /^name\s*=\s*"o"$/m)
+requireMatch('O workers.dev must be disabled', o, /^workers_dev\s*=\s*false$/m)
+requireMatch('O must redact query strings', o, /^redact_query_string\s*=\s*true$/m)
+forbidMatch('O must not own the OEnd public push queue binding', o, /binding\s*=\s*"PUSH_QUEUE"/)
+forbidMatch('O must not own the OEnd canonical public push queue', o, /queue\s*=\s*"oend-push"/)
+requireMatch('O jobs queue canonical name', o, /\[\[queues\.consumers\]\][\s\S]*?queue\s*=\s*"o-jobs"/m)
+requireMatch('O live analytics binding', o, /^binding\s*=\s*"ANALYTICS"$/m)
+requireMatch('O live analytics dataset', o, /^dataset\s*=\s*"o-analytics"$/m)
+requireMatch('O Browser Run binding', o, /^\[browser\]\s*\nbinding\s*=\s*"BROWSER"$/m)
+requireMatch('O AI Search binding', o, /\[\[ai_search\]\][\s\S]*?binding\s*=\s*"AI_SEARCH"[\s\S]*?instance_name\s*=\s*"o-knowledge"/m)
+requireMatch('O gateway id must use canonical name', o, /^AI_GATEWAY_ID\s*=\s*"o-gateway"$/m)
+requireMatch('owner assistant product name must use O', o, /^APP_NAME\s*=\s*"O"$/m)
+requireMatch('O private owner mode must be explicit', o, /^OWNER_ONLY\s*=\s*"true"$/m)
+requireMatch('Public O chat must remain disabled', o, /^PUBLIC_CHAT_ENABLED\s*=\s*"false"$/m)
+requireMatch('O owner model must be selected server-side', o, /^OTYA_AI_MODEL\s*=\s*"[^"]+"$/m)
+requireMatch('O report model must be selected server-side', o, /^OTYA_REPORT_MODEL\s*=\s*"[^"]+"$/m)
+forbidMatch('O must not configure anonymous guest models', o, /AI_PUBLIC_MODELS|AI_GUEST_MODEL|AI_DEFAULT_MODEL/)
+requireMatch('O production D1 name', o, /^database_name\s*=\s*"o-prod-db"$/m)
+requireMatch('O Gmail OAuth must use the verified Web client id', o, /^GMAIL_GOOGLE_CLIENT_ID\s*=\s*"82776565585-obr8k53b8n6djsggissv8qne81cm3u5u\.apps\.googleusercontent\.com"$/m)
+forbidMatch('O Gmail OAuth must not use the Android client id', o, /^GMAIL_GOOGLE_CLIENT_ID\s*=\s*"82776565585-77b1t8epvmn3mpdvstdg1rtprlju4suv\.apps\.googleusercontent\.com"$/m)
 
 requireMatch('FCM must use HTTP v1', fcm, /https:\/\/fcm\.googleapis\.com\/v1\/projects\/\$\{projectId\}\/messages:send/)
 forbidMatch('Legacy FCM endpoint is forbidden', fcm, /fcm\.googleapis\.com\/fcm\/send/)
@@ -111,7 +115,7 @@ requireMatch('Music web page must describe local-first scope', musicPage, /Local
 const scanned = [
   core,
   auth,
-  next,
+  o,
   fcm,
   appCheck,
   googleWrapper,
