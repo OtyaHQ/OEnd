@@ -31,8 +31,8 @@ secret_name = "OPOINT_INVITE_SERVICE_TOKEN"
 
 [[d1_databases]]
 binding       = "AUTH_DB"
-database_name = "otya-auth-db"
-database_id   = "b05595f6-260a-4720-acca-4f8b13f5c43e"
+database_name = "otya-id-db"
+database_id   = "0501d1c1-7f7f-4760-9486-b594bae6436f"
 
 [[kv_namespaces]]
 binding = "AUTH_KV"
