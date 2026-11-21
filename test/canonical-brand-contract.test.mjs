@@ -28,7 +28,7 @@ test('website, admin wrappers and account email use one canonical Otya mark', ()
 
   const sync = read('scripts/sync-brand-assets.mjs')
   assert.match(sync, /assets\.otya\.site\/brand\/otya\/v4\/otya-master-icon-512\.webp/)
-  assert.match(sync, /EXPECTED_SHA256 = 'b0bd89ca87e97f35d7f0a7c2045cbe5ba354d5ca1fbc27e184075934ac33ca7a'/)
+  assert.match(sync, /EXPECTED_SHA256 = '977722e97ce4ebe6a1857c8fce31b04ac34ae35826aa413d4f1ac759cf731445'/)
   assert.match(sync, /EXPECTED_WIDTH = 512/)
   assert.match(sync, /EXPECTED_HEIGHT = 512/)
   assert.match(sync, /TARGET = 'public\/otya-app-icon\.webp'/)
