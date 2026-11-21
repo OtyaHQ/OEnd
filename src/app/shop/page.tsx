@@ -68,6 +68,7 @@ export default function OtyaPage() {
         <div className="otya-shell relative py-14 sm:py-20 lg:py-24">
           <div className="max-w-[900px]">
             <div className="inline-flex items-center gap-2 rounded-full border border-black/[.07] dark:border-white/[.10] bg-[color:var(--cosmos-surface)] px-4 py-2 text-xs font-black tracking-[.08em] uppercase otya-muted"><OtyaBrandMark product="opoint" size={26}/>Opoint · Physical shop</div>
+            <div className="mt-3 text-xs font-black tracking-wide otya-muted">Shop. Pay. More.</div>
             <h1 className="mt-7 max-w-[850px] text-[clamp(42px,7vw,82px)] font-black tracking-[-.065em] leading-[.98]">Everyday technology.<br/><span className="otya-muted">A real place to visit.</span></h1>
             <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Visit Opoint in the Old Market area of Mbirizi, Lwengo. Find phones and accessories, electronics, and mobile-money agency services at our physical shop.</p>
             <div className="mt-8 flex flex-wrap gap-3">
