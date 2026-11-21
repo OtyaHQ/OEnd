@@ -32,7 +32,7 @@ export default function HomePage() {
             <p className="mt-7 max-w-[700px] text-base sm:text-xl leading-8 otya-muted">Meet Otya, a connected product and services ecosystem built in Uganda. Explore useful digital products, private account services and Opoint&apos;s shop in Mbirizi, Lwengo.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/apps" className="cosmos-button inline-flex min-h-12 items-center rounded-full px-6 text-sm font-black">Explore products</Link>
-              <Link href="/opoint" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Visit Opoint</Link>
+              <Link href="/shop" className="inline-flex min-h-12 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black bg-white/55 dark:bg-white/[.03]">Visit Opoint</Link>
             </div>
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Digital products</span><span>Physical shop in Mbirizi</span><span>Built in Uganda</span></div>
           </div>
@@ -51,7 +51,7 @@ export default function HomePage() {
       <HomeStart />
 
       <section className="otya-shell py-10 sm:py-14">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="otya-kicker">Omy Play</div><h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">A real player, not a concept.</h2><p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Listen, organize your media and move it between nearby phones. These are screens from Omy Play on Android.</p></div><Link href="/omy-play" className="text-sm font-black">Explore Otya →</Link></div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="otya-kicker">Omy Play</div><h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">A real player, not a concept.</h2><p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Listen, organize your media and move it between nearby phones. These are screens from Omy Play on Android.</p></div><Link href="/omy-play" className="text-sm font-black">Explore Omy Play →</Link></div>
         <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {[['now-playing.svg','Now playing'],['music.svg','Music library'],['transfer.svg','Otya Transfer'],['me.svg','Your media']].map(([screen,label]) => <div key={screen} className="overflow-hidden rounded-[24px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-2 sm:p-3"><Image src={`/product/otya/${screen}`} alt={`Omy Play ${label} screen`} width={540} height={960} className="w-full h-auto rounded-[17px]" /><div className="px-2 pt-3 pb-2 text-sm font-black">{label}</div></div>)}
         </div>
