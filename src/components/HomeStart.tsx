@@ -6,7 +6,7 @@ export function HomeStart() {
       <div>
         <p className="otya-kicker">Start here</p>
         <h2 id="start-heading" className="mt-3 text-3xl sm:text-5xl font-bold tracking-[-.045em] leading-[1.1]">Digital products.<br/>Real-world services.</h2>
-        <p className="mt-4 max-w-md text-base leading-7 otya-muted">Explore Omy Play, manage your account in Space, or visit Opoint for physical shop services in Mbirizi.</p>
+        <p className="mt-4 max-w-md text-base leading-7 otya-muted">Explore Omy Play, manage your account in Space, or visit Otya for physical shop services in Mbirizi.</p>
       </div>
       <div className="grid gap-3">
         <Link href="/download/omy-play" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
@@ -21,8 +21,8 @@ export function HomeStart() {
           <p className="mt-2 text-sm leading-6 otya-muted">Review account details, signed-in devices and security settings.</p>
           <span className="mt-4 inline-flex text-sm font-black">Open Space <span aria-hidden="true" className="ml-1">→</span></span>
         </a>
-        <Link href="/opoint" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
-          <p className="text-xs font-black otya-muted">Opoint · Physical shop</p>
+        <Link href="/shop" className="group rounded-2xl border border-black/[.07] bg-[color:var(--cosmos-surface)] p-5 transition-colors hover:border-black/[.16] dark:border-white/[.09] dark:hover:border-white/[.18]">
+          <p className="text-xs font-black otya-muted">Otya · Physical shop</p>
           <h3 className="mt-1 text-xl font-black tracking-[-.03em]">Visit us in Mbirizi.</h3>
           <p className="mt-2 text-sm leading-6 otya-muted">Phones and accessories, electronics, and mobile-money agency services in the Old Market area.</p>
           <span className="mt-4 inline-flex text-sm font-black">Shop location and services <span aria-hidden="true" className="ml-1">→</span></span>
