@@ -90,7 +90,7 @@ export default function SpaceHomePage() {
         <div className="text-[11px] font-black uppercase tracking-[.18em] otya-muted">Otya Space</div>
         <h1 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.05em]">Welcome, {displayName}</h1>
         <p className="mt-4 text-sm sm:text-base leading-7 otya-muted">Your local Otya account space. Manage your identity, security, connected sign-in methods and supported recovery services.</p>
-        {user?.otya_id && <div className="mt-4 inline-flex rounded-xl border px-3 py-2 font-mono text-xs font-bold" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>Otya ID · {user.otya_id}</div>}
+        {user?.otya_id && <div className="mt-4 inline-flex rounded-xl border px-3 py-2 font-mono text-xs font-bold" style={{ borderColor: 'var(--cosmos-divider)', background: 'var(--cosmos-card)' }}>OID · {user.otya_id}</div>}
         <div className="mt-6 flex flex-wrap gap-2">
           <PrimaryLink href={accountHref}>Manage account</PrimaryLink>
           <QuietLink href={providersHref}>Sign-in methods</QuietLink>
@@ -110,7 +110,7 @@ export default function SpaceHomePage() {
         </>}
       </SpaceCard>
 
-      <SpaceCard title="Sign-in methods" eyebrow="One Otya ID" action={<Link href={providersHref} className="text-xs font-black otya-muted">Manage</Link>}>
+      <SpaceCard title="Sign-in methods" eyebrow="One OID" action={<Link href={providersHref} className="text-xs font-black otya-muted">Manage</Link>}>
         {loading ? <LoadingLine /> : <>
           <div className="text-4xl font-black">{connectedCount}</div>
           <p className="mt-1 text-sm otya-muted">connected way{connectedCount === 1 ? '' : 's'} to access this same account</p>
@@ -139,7 +139,7 @@ export default function SpaceHomePage() {
 
 
       <SpaceCard title="Telegram" eyebrow="Connected service" action={<Link href={telegramHref} className="text-xs font-black otya-muted">Open</Link>}>
-        <div className="text-lg font-black">{telegram ? 'Connected to your Otya ID' : 'Available to connect'}</div>
+        <div className="text-lg font-black">{telegram ? 'Connected to your OID' : 'Available to connect'}</div>
         <p className="mt-2 text-sm leading-6 otya-muted">Telegram is a first-class Otya identity and Mini App surface, not a separate user database.</p>
       </SpaceCard>
 
