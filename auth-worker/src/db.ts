@@ -20,6 +20,8 @@ export interface D1Database {
 export interface UserRow {
   id:                         string
   otya_id:                    string
+  username:                   string | null
+  username_changed_at:        string | null
   email:                      string | null
   password_hash:              string | null
   google_id:                  string | null
@@ -42,6 +44,8 @@ const USERS_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS users (
   id                         TEXT PRIMARY KEY,
   otya_id                    TEXT,
+  username                   TEXT,
+  username_changed_at        TEXT,
   email                      TEXT UNIQUE,
   password_hash              TEXT,
   google_id                  TEXT UNIQUE,
@@ -65,6 +69,7 @@ export const SCHEMA_SQL = `
 ${USERS_TABLE_SQL}
 CREATE INDEX IF NOT EXISTS idx_users_email  ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_google ON users(google_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_ci ON users(lower(username)) WHERE username IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS user_products (
   user_id       TEXT NOT NULL,
@@ -94,6 +99,8 @@ CREATE INDEX IF NOT EXISTS idx_linked_identities_user ON linked_identities(user_
 
 const USER_COLUMN_DEFS: Record<string, string> = {
   otya_id: 'TEXT',
+  username: 'TEXT',
+  username_changed_at: 'TEXT',
   password_hash: 'TEXT',
   google_id: 'TEXT',
   name: 'TEXT',

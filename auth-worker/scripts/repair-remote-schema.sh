@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DB_NAME="${OTYA_AUTH_DB_NAME:-otya-auth-db}"
+DB_NAME="${OTYA_AUTH_DB_NAME:-otya-id-db}"
+
+CONFIG_DB_NAME="$(sed -n 's/^[[:space:]]*database_name[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' wrangler.toml | head -n 1)"
+if [[ -z "$CONFIG_DB_NAME" || "$CONFIG_DB_NAME" != "$DB_NAME" ]]; then
+  echo "Refusing to repair requested database: Wrangler config resolves to '$CONFIG_DB_NAME'." >&2
+  exit 1
+fi
 
 run_sql() {
   npx wrangler d1 execute "$DB_NAME" --remote --command "$1" >/dev/null
@@ -37,6 +43,8 @@ has_column users id || { echo 'users.id is missing; refusing destructive repair'
 has_column users email || { echo 'users.email is missing; refusing destructive repair' >&2; exit 1; }
 
 ensure_column users otya_id "TEXT"
+ensure_column users username "TEXT"
+ensure_column users username_changed_at "TEXT"
 ensure_column users password_hash "TEXT"
 ensure_column users google_id "TEXT"
 ensure_column users name "TEXT"
@@ -85,6 +93,7 @@ ensure_column auth_security_events created_at "TEXT"
 run_sql "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)"
 run_sql "CREATE INDEX IF NOT EXISTS idx_users_google ON users(google_id)"
 run_sql "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_otya_id ON users(otya_id) WHERE otya_id IS NOT NULL"
+run_sql "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_ci ON users(lower(username)) WHERE username IS NOT NULL"
 run_sql "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_phone ON users(phone_number) WHERE phone_number IS NOT NULL"
 run_sql "CREATE INDEX IF NOT EXISTS idx_user_products_product ON user_products(product_id, last_seen_at DESC)"
 run_sql "CREATE INDEX IF NOT EXISTS idx_linked_identities_user ON linked_identities(user_id, provider)"
