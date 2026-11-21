@@ -31,8 +31,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: 'https://assets.otya.site/brand/otya/v4/icons/omy-play.webp',
-        width: 512,
-        height: 512,
+        width: 150,
+        height: 140,
         alt: 'Omy Play',
         type: 'image/webp',
       },
