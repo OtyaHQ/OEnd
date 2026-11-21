@@ -69,14 +69,14 @@ async function authenticateTogetherUser(request, env) {
   }
 }
 
-function redirectToHost(url, hostname, pathname) {
+function redirectToHost(url, hostname, pathname, status = 302) {
   const target = new URL(url)
   target.protocol = 'https:'
   target.hostname = hostname
   target.pathname = pathname
   target.search = ''
   target.hash = ''
-  return Response.redirect(target.toString(), 302)
+  return Response.redirect(target.toString(), status)
 }
 
 function isSharedAppAssetPath(pathname) {
@@ -257,6 +257,7 @@ async function routeOtyaRequest(request, env, ctx) {
       if (host === APP_HOST && (url.pathname === '/sign-in' || url.pathname === '/sign-in/')) return redirectToHost(url, SPACE_HOST, '/sign-in/')
       if (host === APP_HOST && (url.pathname === '/admin' || url.pathname.startsWith('/admin/'))) return redirectToHost(url, SPACE_HOST, url.pathname)
       if (host === APP_HOST && (url.pathname === '/ask' || url.pathname === '/ask/')) return redirectToHost(url, SPACE_HOST, '/admin/ai/')
+      if (host === APP_HOST && url.pathname === '/download/otya-player') return redirectToHost(url, APP_HOST, '/download/omy-play', 308)
       if (host === APP_HOST && (url.pathname === '/help' || url.pathname === '/help/')) return redirectToHost(url, DOCS_HOST, '/help/')
       if (host === APP_HOST && (url.pathname === '/docs' || url.pathname === '/docs/')) return redirectToHost(url, DOCS_HOST, '/')
       if (host === APP_HOST && (url.pathname === '/status' || url.pathname === '/status/')) return redirectToHost(url, STATUS_HOST, '/')
