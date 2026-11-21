@@ -39,7 +39,7 @@ export default function OfficialLinksPage() {
         <header className="mb-8">
           <div className="inline-flex items-center gap-2"><OtyaBrandMark size={36}/><span className="text-[11px] font-black uppercase tracking-[.15em] otya-muted">Otya · Official identity</span></div>
           <h1 className="mt-5 text-4xl sm:text-6xl font-black tracking-[-.06em]">Official Otya links</h1>
-          <p className="mt-4 max-w-[760px] text-sm sm:text-base leading-7 otya-muted">Otya is the developer and publisher behind Otya. This page is the authoritative public reference for the Otya website, Telegram channel, Telegram bot and support contact.</p>
+          <p className="mt-4 max-w-[760px] text-sm sm:text-base leading-7 otya-muted">Otya is the public master brand and product family. OtyaHQ develops and publishes Otya products; Otya Holdings Limited is the intended parent entity and is undergoing registration. This page is the authoritative public reference for the Otya website, Telegram channel, Telegram bot and support contact.</p>
         </header>
 
         <section className="grid gap-3" aria-label="Official Otya links">
@@ -53,15 +53,15 @@ export default function OfficialLinksPage() {
             <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official Telegram bot</span><strong className="block mt-1 text-xl">@OtyaPlayerBot</strong><span className="block mt-1 text-sm otya-muted">Official Otya assistance and supported bot services</span></span>
           </a>
 
-          <Link href="/otya-player" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
+          <Link href="/omy-play" className="rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025] p-5 sm:p-6 flex items-center gap-4">
             <span className="w-12 h-12 shrink-0 rounded-2xl grid place-items-center border border-black/[.06] dark:border-white/[.08]"><OtyaBrandMark size={34}/></span>
-            <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official product page</span><strong className="block mt-1 text-xl">Otya Media</strong><span className="block mt-1 text-sm otya-muted">Product information and official distribution links on otya.site</span></span>
+            <span><span className="block text-xs font-black uppercase tracking-[.12em] otya-muted">Official product page</span><strong className="block mt-1 text-xl">Omy Play</strong><span className="block mt-1 text-sm otya-muted">Product information and official distribution links on otya.site</span></span>
           </Link>
         </section>
 
         <section className="mt-8 rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-black/[.02] dark:bg-white/[.02] p-5 sm:p-6">
           <h2 className="text-xl font-black">Ownership and authenticity</h2>
-          <p className="mt-3 text-sm leading-7 otya-muted">The Telegram properties listed above are operated as official Otya properties by Otya. Links not listed on this page should not be assumed to represent Otya or Otya.</p>
+          <p className="mt-3 text-sm leading-7 otya-muted">The Telegram properties listed above are operated as official Otya properties by OtyaHQ. Links not listed on this page should not be assumed to represent Otya or Otya.</p>
           <p className="mt-3 text-sm leading-7 otya-muted">For verification, media or authenticity questions, contact <a className="font-black text-[color:var(--cosmos-text-primary)]" href={`mailto:${OTYA.supportEmail}`}>{OTYA.supportEmail}</a>.</p>
         </section>
 
