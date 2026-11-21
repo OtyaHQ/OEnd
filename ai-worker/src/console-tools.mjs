@@ -208,7 +208,7 @@ async function systemSnapshot(env) {
     push: Boolean(env.PUSH_QUEUE?.send),
     core_data_api: Array.isArray(core.queueDelivery),
     email: sharedEmailGatewayReady(env),
-    email_transport: 'Otya ID (shared Resend gateway)',
+    email_transport: 'OID (shared Resend gateway)',
     direct_email_provider_key_required: false,
     control_plane: await controlPlaneStatus(env),
     feedback_7d: Number(metrics.feedback || 0),
@@ -259,7 +259,7 @@ async function recentReleases(env) {
 async function supportInbox(env, limit = 12) {
   const gmail = await gmailStatus(env)
   if (!gmail.connected) return []
-  const rows = await listGmailMessages(env, 'to:support@otya.site in:inbox', Math.max(1, Math.min(limit, 20)))
+  const rows = await listGmailMessages(env, 'to:{support@otya.site support@petersmartlink.com} in:inbox', Math.max(1, Math.min(limit, 20)))
   return rows.map((x) => ({
     id: x.id,
     from: clean(x.from, 300),
