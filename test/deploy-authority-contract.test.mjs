@@ -67,5 +67,7 @@ test('production cutover verifies canonical Worker bindings and host ownership',
   assert.match(oFinal, /service == "oend"/)
   assert.match(oFinal, /service == "oid"/)
   assert.match(opoint, /service == "oid"/)
+  assert.ok(verify.includes('api.otya.site/api/omy-play/health'))
   assert.ok(verify.includes('api.otya.site/omy-play/health'))
+  assert.ok(verify.includes('api.otya.site/omy-play/latest'))
 })

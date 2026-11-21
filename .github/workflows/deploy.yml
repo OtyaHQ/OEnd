@@ -541,7 +541,9 @@ jobs:
             exit 1
           }
           check https://otya.site/ '^(200|301|302|307|308)$'
-          check https://api.otya.site/omy-play/latest '^(200|301|302|307|308)          check https://otya.site/download '^(200|301|302|307|308)$'
+          check https://api.otya.site/omy-play/health '^200$'
+          check https://api.otya.site/omy-play/latest '^200$'
+          check https://otya.site/download '^(200|301|302|307|308)$'
           check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
           check https://otya.site/opoint '^(200|301|302|307|308)$'
           check https://otya.site/api/omy-play/latest '^(200|401)$'
@@ -602,7 +604,9 @@ jobs:
           check https://status.otya.site/ '^(200|301|302|307|308)$'
           check https://space.otya.site/ '^(200|301|302|307|308)$'
 
-          check https://api.otya.site/api/omy-play/health '^200
+          check https://api.otya.site/api/omy-play/health '^200$'
+          check https://api.otya.site/omy-play/health '^200$'
+          check https://api.otya.site/omy-play/latest '^200$'
           check https://otya.site/download/omy-play '^(200|301|302|307|308)$'
           check https://otya.site/opoint '^(200|301|302|307|308)$'
           check https://otya.site/api/omy-play/latest '^(200|401)$'
