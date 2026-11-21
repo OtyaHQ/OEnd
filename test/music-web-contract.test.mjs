@@ -29,6 +29,6 @@ test('retired Online Music provider endpoints stay physically absent', () => {
 })
 test('legacy Online Music documentation redirects to the current local Music page', () => {
   const docs=read('src/app/docs/online-music/page.tsx')
-  assert.match(docs,/permanentRedirect\('\\/music'\)/)
+  assert.ok(docs.includes("permanentRedirect('/music')"))
   assert.doesNotMatch(docs,/Jamendo|streamed from the provider/i)
 })
