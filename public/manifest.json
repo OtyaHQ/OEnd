@@ -1,7 +1,7 @@
 {
   "name": "Otya",
   "short_name": "Otya",
-  "description": "Otya — one ecosystem. Endless possibilities.",
+  "description": "Otya — One ecosystem. Endless possibilities.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FFFFFF",
