@@ -101,7 +101,7 @@ const schemaOrg = {
       description: 'Uganda-based digital products and real-world services. Otya Holdings Limited is the intended parent entity and is in the process of registration.',
       url: SITE_URL,
       logo: OTYA_MARK,
-      email: 'support@otya.site',
+      email: 'info@otya.site',
     },
     {
       '@type': 'SoftwareApplication',
