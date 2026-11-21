@@ -138,21 +138,21 @@ jobs:
           COMPONENT: ${{ github.event_name == 'workflow_dispatch' && inputs.component || (contains(github.event.head_commit.message, '[DEPLOY-ALL]') && 'all' || 'validate-only') }}
         run: |
           set -euo pipefail
-          auth=false
-          next=false
-          core=false
+          oid=false
+          o=false
+          oend=false
           opoint=false
           omy_play=false
           case "$COMPONENT" in
-            oid) auth=true ;;
-            o) auth=true; core=true; next=true ;;
-            oend) auth=true; core=true; next=true ;;
-            opoint) auth=true; core=true; next=true; opoint=true ;;
-            omy-play) auth=true; core=true; next=true; omy_play=true ;;
+            oid) oid=true ;;
+            o) oid=true; o=true; oend=true ;;
+            oend) oid=true; o=true; oend=true ;;
+            opoint) oid=true; o=true; oend=true; opoint=true ;;
+            omy-play) oid=true; o=true; oend=true; omy_play=true ;;
             all)
-              auth=true
-              next=true
-              core=true
+              oid=true
+              o=true
+              oend=true
               opoint=true
               omy_play=true
               ;;
@@ -161,13 +161,13 @@ jobs:
               exit 1
               ;;
           esac
-          echo "oid=$auth" >> "$GITHUB_OUTPUT"
-          echo "o=$next" >> "$GITHUB_OUTPUT"
-          echo "oend=$core" >> "$GITHUB_OUTPUT"
+          echo "oid=$oid" >> "$GITHUB_OUTPUT"
+          echo "o=$o" >> "$GITHUB_OUTPUT"
+          echo "oend=$oend" >> "$GITHUB_OUTPUT"
           echo "opoint=$opoint" >> "$GITHUB_OUTPUT"
           echo "omy_play=$omy_play" >> "$GITHUB_OUTPUT"
           echo "any_runtime=true" >> "$GITHUB_OUTPUT"
-          echo "Deploy plan: OID=$auth O=$next OEnd=$core Opoint=$opoint OmyPlay=$omy_play"
+          echo "Deploy plan: OID=$oid O=$o OEnd=$oend Opoint=$opoint OmyPlay=$omy_play"
 
   deploy-oid:
     name: Deploy OID
@@ -190,11 +190,10 @@ jobs:
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
           bash scripts/repair-remote-schema.sh
-      - name: Configure and deploy auth
+      - name: Configure and deploy OID
         working-directory: auth-worker
         env:
           AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           TELEGRAM_LOGIN_CLIENT_ID: ${{ secrets.TELEGRAM_LOGIN_CLIENT_ID }}
           TELEGRAM_LOGIN_CLIENT_SECRET: ${{ secrets.TELEGRAM_LOGIN_CLIENT_SECRET }}
@@ -244,13 +243,12 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
-          if [ -n "${RESEND_API_KEY:-}" ]; then printf '%s' "$RESEND_API_KEY" | npx wrangler secret put RESEND_API_KEY; fi
           if [ -n "${OTYA_O_MAIL_SERVICE_TOKEN:-}" ]; then printf '%s' "$OTYA_O_MAIL_SERVICE_TOKEN" | npx wrangler secret put OTYA_O_MAIL_SERVICE_TOKEN; fi
           if [ -n "${INTERNAL_SECRET:-}" ]; then printf '%s' "$INTERNAL_SECRET" | npx wrangler secret put INTERNAL_SECRET; fi
           if [ -n "${GMAIL_GOOGLE_CLIENT_SECRET:-}" ]; then printf '%s' "$GMAIL_GOOGLE_CLIENT_SECRET" | npx wrangler secret put GMAIL_GOOGLE_CLIENT_SECRET; fi
           if [ -n "${CONNECTOR_ENCRYPTION_KEY:-}" ]; then printf '%s' "$CONNECTOR_ENCRYPTION_KEY" | npx wrangler secret put CONNECTOR_ENCRYPTION_KEY; fi
           # Core is the sole Telegram transport owner. Remove any legacy copies
-          # left on Next by older deployments while preserving every other secret.
+          # left on O by older deployments while preserving every other secret.
           printf '%s\n' '{"TELEGRAM_BOT_TOKEN":null,"TELEGRAM_WEBHOOK_SECRET":null}' | npx wrangler secret bulk
           sed 's/service = "oend"/service = "otya-core"/' wrangler.toml > wrangler.bootstrap.toml
           grep -q 'service = "otya-core"' wrangler.bootstrap.toml
@@ -300,7 +298,7 @@ jobs:
 
   deploy-o-final:
     name: Finalize O with canonical OEnd binding
-    if: \${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.deploy-o.result == 'success' && needs.deploy-oend.result == 'success' && needs.plan-deploy.outputs.o == 'true' }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.deploy-o.result == 'success' && needs.deploy-oend.result == 'success' && needs.plan-deploy.outputs.o == 'true' }}
     needs: [validate, authorize-deploy, plan-deploy, deploy-o, deploy-oend]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -312,8 +310,8 @@ jobs:
       - name: Deploy canonical O configuration
         working-directory: ai-worker
         env:
-          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
           test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
@@ -471,7 +469,7 @@ jobs:
   verify-production:
     name: Verify live Otya platform after deploy
     if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && (needs.deploy-o-final.result == 'success' || needs.deploy-o-final.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o, deploy-oend, deploy-o-final, deploy-opoint]
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o, deploy-oend, deploy-o-final, deploy-opoint, deploy-omy-play]
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
