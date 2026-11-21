@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: 'https://otya.site',
     title: 'Otya — Digital products and real-world services',
-    description: 'Explore Otya products and services, including Opoint physical shop services in Mbirizi, Uganda.',
+    description: 'Explore Otya products and services, including Otya shop services in Mbirizi, Uganda.',
     images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Otya ecosystem' }],
   },
 }
