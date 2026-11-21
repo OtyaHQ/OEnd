@@ -30,7 +30,7 @@ test('push queue bounds upstream calls and avoids whole-broadcast replay after p
   assert.match(queue, /were not replayed because/)
 })
 
-test('production health checks include private auth and Next service bindings', () => {
+test('production health checks include OID and O service bindings', () => {
   const entry = read('src/entrypoint.mjs')
   assert.match(entry, /service:\$\{name\}/)
   assert.match(entry, /'oid'/)
@@ -50,7 +50,7 @@ test('generic admin release metadata endpoint cannot bypass canonical release wo
 })
 
 
-test('Core operational alerts use the single Resend-backed email adapter', () => {
+test('OEnd operational alerts use the single Resend-backed email adapter', () => {
   const legacyCore = read('src/index.js')
   const entry = read('src/entrypoint.mjs')
 
@@ -62,10 +62,10 @@ test('Core operational alerts use the single Resend-backed email adapter', () =>
 })
 
 
-test('Core production deployment requires the Resend operational-email secret', () => {
+test('OEnd production deployment requires the Resend operational-email secret', () => {
   const workflow = read('.github/workflows/deploy.yml')
-  const coreDeploy = workflow.slice(workflow.indexOf('  deploy-core:'), workflow.indexOf('  verify-production:'))
+  const oendDeploy = workflow.slice(workflow.indexOf('  deploy-oend:'), workflow.indexOf('  verify-production:'))
 
-  assert.match(coreDeploy, /RESEND_API_KEY: \$\{\{ secrets\.RESEND_API_KEY \}\}/)
-  assert.match(coreDeploy, /test -n "\$CLOUDFLARE_ACCOUNT_ID" && test -n "\$CLOUDFLARE_API_TOKEN" && test -n "\$RESEND_API_KEY"/)
+  assert.match(oendDeploy, /RESEND_API_KEY: \$\{\{ secrets\.RESEND_API_KEY \}\}/)
+  assert.match(oendDeploy, /test -n "\$CLOUDFLARE_ACCOUNT_ID" && test -n "\$CLOUDFLARE_API_TOKEN" && test -n "\$RESEND_API_KEY"/)
 })
