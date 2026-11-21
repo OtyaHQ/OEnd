@@ -31,12 +31,14 @@ test('website, admin wrappers and account email use one canonical Otya mark', ()
   assert.match(sync, /sha256: '977722e97ce4ebe6a1857c8fce31b04ac34ae35826aa413d4f1ac759cf731445'/)
   assert.match(sync, /width: 512/)
   assert.match(sync, /height: 512/)
-  assert.match(sync, /TARGET = 'public\/otya-app-icon\.webp'/)
+  assert.match(sync, /target: 'public\/otya-app-icon\.webp'/)
 
   // The old path may appear only as a deletion target so dirty workspaces cannot
   // publish stale branding. It must never be the source or active destination.
   assert.match(sync, /RETIRED_GENERATED_TARGETS/)
   assert.match(sync, /otya-master-lockup\\.webp/)
+  assert.match(sync, /f9bff0511c552a13bb90ac50428caf1c01911ffa9835f5b06b055517f681c3b2/)
+  assert.match(sync, /height: 208/)
   assert.match(sync, /otya-product-strip\\.webp/)
   assert.match(sync, /otya-company-footer\\.webp/)
   assert.match(sync, /source-derived artwork crops/)
