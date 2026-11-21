@@ -23,12 +23,12 @@ test('website, admin wrappers and account email use one canonical Otya mark', ()
   for (const path of activeBrandConsumers) {
     const source = read(path)
     assert.doesNotMatch(source, /otya-mark-current\.png/, `${path} still references the retired mark`)
-    assert.match(source, /otya-app-icon\.webp/, `${path} must resolve to the canonical WebP`)
+    assert.match(source, /assets\.otya\.site\/brand\/otya\/v4|otya-app-icon\.webp/, `${path} must resolve to an approved Otya artwork asset`)
   }
 
   const sync = read('scripts/sync-brand-assets.mjs')
-  assert.match(sync, /assets\/branding\/otya_app_icon\.webp/)
-  assert.match(sync, /APPROVED_APP_COMMIT = '63be1b59f1a261c853aab786cef584a70e29989d'/)
+  assert.match(sync, /assets\.otya\.site\/brand\/otya\/v4\/otya-master-icon-512\.webp/)
+  assert.match(sync, /EXPECTED_SHA256 = 'b0bd89ca87e97f35d7f0a7c2045cbe5ba354d5ca1fbc27e184075934ac33ca7a'/)
   assert.match(sync, /EXPECTED_WIDTH = 512/)
   assert.match(sync, /EXPECTED_HEIGHT = 512/)
   assert.match(sync, /TARGET = 'public\/otya-app-icon\.webp'/)
@@ -45,7 +45,7 @@ test('public web manifests describe the canonical 512px WebP identity', () => {
   for (const path of ['public/manifest.json', 'public/site.webmanifest']) {
     const manifest = read(path)
     assert.match(manifest, /"name": "Otya"/)
-    assert.match(manifest, /"src": "\/otya-app-icon\.webp"/)
+    assert.match(manifest, /otya-master-icon-512\.webp/)
     assert.match(manifest, /"sizes": "512x512"/)
     assert.match(manifest, /"type": "image\/webp"/)
   }
