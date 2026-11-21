@@ -1,15 +1,21 @@
 {
   "name": "Otya",
   "short_name": "Otya",
-  "description": "Otya — offline-first music and video, Otya Transfer, Watch Together, Private media and practical media tools.",
+  "description": "Otya — one ecosystem. Endless possibilities.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#050812",
-  "theme_color": "#050812",
+  "background_color": "#FFFFFF",
+  "theme_color": "#08265C",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/otya-app-icon.webp",
+      "src": "https://assets.otya.site/brand/otya/v4/otya-master-icon-192.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://assets.otya.site/brand/otya/v4/otya-master-icon-512.webp",
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any maskable"
