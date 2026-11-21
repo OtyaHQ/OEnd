@@ -5,7 +5,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 test('admin assistant uses the approved Otya identity while generic loading stays quiet', () => {
   const mark=read('src/components/OtyaBrandMark.tsx'), ui=read('src/app/admin/ai/ConsoleClient.tsx'), loading=read('src/app/loading.tsx'), css=read('src/app/brand-overrides.css')
   assert.match(mark,/ai\?: boolean/)
-  assert.match(mark,/Otya assistant/)
+  assert.match(mark,/O owner workspace/)
   assert.match(mark,/src="\/otya-app-icon\.webp"/)
   assert.match(mark,/thinking \? 'otya-brand-thinking' : ''/)
   assert.doesNotMatch(mark,/otya-ai-thinking\.svg|otya-ai\.svg|otya-icon\.svg|otya-icon-dark\.svg/)
