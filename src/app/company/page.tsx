@@ -5,7 +5,7 @@ import { SiteFooter } from '@/components/SiteFooter'
 
 export const metadata: Metadata = {
   title: 'Otya | Company and ecosystem',
-  description: 'Discover the Otya ecosystem: Otya OS, Otya End, OtyaPoint, Otya Media, OtyaHub and Next. Built in Uganda.',
+  description: 'Discover the Otya ecosystem: Otya OS, Otya End, Opoint, Omy Play, OHub and O. Built in Uganda.',
   alternates: { canonical: 'https://otya.site/company' },
 }
 
@@ -24,7 +24,7 @@ export default function CompanyPage() {
         <div className="max-w-[900px]">
           <div className="otya-kicker">Otya · Built in Uganda</div>
           <h1 className="mt-4 text-[clamp(44px,7vw,84px)] font-black tracking-[-.065em] leading-[.94]">Practical technology, built with care.</h1>
-          <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Otya brings together practical digital products and real-world services. The ecosystem includes Otya OS, Otya End, OtyaPoint, Otya Media, OtyaHub and Next. We build technology that aims to stay useful, understandable, secure and dependable on the devices people already use.</p>
+          <p className="mt-6 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Otya brings together practical digital products and real-world services. The ecosystem includes Otya OS, OEnd, Opoint, Omy Play, OHub, OID and O. We build technology that aims to stay useful, understandable, secure and dependable on the devices people already use.</p>
         </div>
       </section>
 
@@ -42,7 +42,7 @@ export default function CompanyPage() {
           <div>
             <div className="otya-kicker">Based in Uganda</div>
             <h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">Build locally. Design for real-world use.</h2>
-            <p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Otya Media is designed around local media, offline use and direct device workflows. OtyaPoint supports shop and agency operations, while Otya End provides shared backend services. Each product has a defined purpose and access boundary.</p>
+            <p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Omy Play is designed around local media, offline use and direct device workflows. Opoint supports shop and agency operations, while Otya End provides shared backend services. Each product has a defined purpose and access boundary.</p>
           </div>
           <div className="rounded-[28px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-6 sm:p-8">
             <div className="text-sm font-black">Otya Holdings Limited</div>
