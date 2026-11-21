@@ -8,7 +8,7 @@ Base URL: https://assets.otya.site/brand/otya/v4/
 
 - Complete master lockup including the full developer credit: `otya-master-lockup.webp`
 - Master orbital mark: `otya-orbital-mark.webp`
-- Product strip reference crop (archive only; labels predate current product names): `otya-product-strip.webp`
+- The original product-strip crop is intentionally not published because its labels predate current product names.
 - Company footer: `otya-company-footer.webp`
 - Master square icons: `otya-master-icon-192.webp` and `otya-master-icon-512.webp`
 - Product icons: `icons/opoint.webp`, `icons/omy-play.webp`, `icons/otya-os.webp`, `icons/ohub.webp`, `icons/oid.webp`
