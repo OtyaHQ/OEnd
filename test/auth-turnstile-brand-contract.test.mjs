@@ -100,7 +100,7 @@ test('website, install surfaces and build pipeline use one Otya mark and name', 
   assert.match(company, /Otya Holdings Limited is the intended parent entity/)
   assert.match(company, /registration process/)
   assert.match(layout, /Omy Play/)
-  assert.match(layout, /Opoint/)
+  assert.match(layout, /Otya shop/)
   assert.doesNotMatch(component, /otya-mark-current\.png/)
 })
 
