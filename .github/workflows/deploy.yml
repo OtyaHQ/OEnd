@@ -194,6 +194,7 @@ jobs:
         working-directory: auth-worker
         env:
           AUTH_JWT_SECRET: ${{ secrets.AUTH_JWT_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           TELEGRAM_LOGIN_CLIENT_ID: ${{ secrets.TELEGRAM_LOGIN_CLIENT_ID }}
           TELEGRAM_LOGIN_CLIENT_SECRET: ${{ secrets.TELEGRAM_LOGIN_CLIENT_SECRET }}
@@ -233,7 +234,6 @@ jobs:
       - name: Configure and deploy O
         working-directory: ai-worker
         env:
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           OTYA_O_MAIL_SERVICE_TOKEN: ${{ secrets.OTYA_O_MAIL_SERVICE_TOKEN }}
           INTERNAL_SECRET: ${{ secrets.INTERNAL_SECRET }}
           GMAIL_GOOGLE_CLIENT_SECRET: ${{ secrets.GMAIL_GOOGLE_CLIENT_SECRET }}
