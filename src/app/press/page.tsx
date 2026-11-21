@@ -47,7 +47,7 @@ export default function PressPage() {
 
         <section aria-labelledby="about-company">
           <h2 id="about-company" className="text-2xl font-black">About Otya</h2>
-          <p className="mt-3 text-sm sm:text-base leading-7 otya-muted">Otya is a product and services ecosystem built in Uganda. Otya Holdings Limited is the intended parent entity and is currently undergoing registration with URSB. The ecosystem develops practical software intended to remain understandable, secure and useful on real devices and variable network conditions.</p>
+          <p className="mt-3 text-sm sm:text-base leading-7 otya-muted">Otya is a product and services ecosystem built in Uganda, developed by OtyaHQ. Otya Holdings Limited is the intended parent entity and is currently undergoing registration with URSB. The ecosystem develops practical software intended to remain understandable, secure and useful on real devices and variable network conditions.</p>
           <div className="mt-5 overflow-hidden rounded-[22px] border border-black/[.06] dark:border-white/[.08] bg-white/70 dark:bg-white/[.025]">
             {facts.map(([label, value]) => <div key={label} className="grid sm:grid-cols-[190px_1fr] gap-1 sm:gap-5 px-5 py-4 border-b border-black/[.05] dark:border-white/[.07] last:border-b-0"><span className="text-xs font-black uppercase tracking-[.1em] otya-muted">{label}</span><span className="text-sm font-bold">{value}</span></div>)}
           </div>
