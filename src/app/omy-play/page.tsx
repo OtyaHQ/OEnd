@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
@@ -69,6 +70,7 @@ export default async function OmyPlayPage() {
       <section className="otya-shell py-11 sm:py-18 grid lg:grid-cols-[.9fr_1.1fr] gap-9 lg:gap-14 items-center">
         <div>
           <div className="otya-kicker mb-4">Omy Play · Android · v{appVersion} · Otya</div>
+          <div className="otya-kicker mb-3">Watch. Enjoy.</div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-.06em] leading-[.94]">Omy Play.<br/><span style={{ color: 'var(--cosmos-primary)' }}>Your media. Still yours.</span></h1>
           <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Omy Play is an offline-first Android music and video app for the media already on your device. Play local files, send supported media nearby and protect Private media without requiring an account or internet connection for core playback.</p>
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
@@ -77,7 +79,7 @@ export default async function OmyPlayPage() {
           </div>
           <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Offline-first</span><span>Local music & video</span><span>Nearby Send</span><span>Sign-in optional</span></div>
         </div>
-        <Image src="/brand/otya-app-preview.svg" alt="Omy Play Android interface showing Video, Music and Me" width={1200} height={820} priority className="w-full h-auto rounded-[30px] drop-shadow-2xl" />
+        <div className="min-h-[340px] rounded-[30px] bg-white grid place-items-center"><OtyaBrandMark product="omy-play" size={220}/></div>
       </section>
 
       <section className="border-y" style={{ borderColor: 'var(--cosmos-divider)', background: 'linear-gradient(120deg,color-mix(in srgb,var(--cosmos-primary) 7%,var(--cosmos-surface)),color-mix(in srgb,var(--cosmos-cyan) 6%,var(--cosmos-surface)))' }}>
