@@ -61,7 +61,7 @@ export default function CompanyPage() {
           <div>
             <div className="otya-kicker">Based in Uganda</div>
             <h2 className="mt-3 text-3xl sm:text-5xl font-black tracking-[-.055em]">Build locally. Design for real-world use.</h2>
-            <p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Omy Play is designed around local media, offline use and direct device workflows. Opoint supports shop and agency operations, while Otya End provides shared backend services. Each product has a defined purpose and access boundary.</p>
+            <p className="mt-4 max-w-[680px] text-sm sm:text-base leading-7 otya-muted">Omy Play is designed around local media, offline use and direct device workflows. Opoint supports shop and agency operations, while OEnd provides shared backend services. Each product has a defined purpose and access boundary.</p>
           </div>
           <div className="rounded-[28px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-6 sm:p-8">
             <div className="text-sm font-black">Otya Holdings Limited</div>
