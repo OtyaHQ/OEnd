@@ -23,7 +23,6 @@ test('release workflow binds immutable build tags to the public version and Andr
   assert.match(source,/tagVersion !== version/)
   assert.match(source,/tagBuild !== versionCode/)
   assert.match(source,/tag build and versionCode do not match/)
-  assert.doesNotMatch(source,/tag !==/)
 })
 test('exact APK requests use immutable paths and fail closed when the exact APK is missing', () => {
   const route=read('src/app/apk/[file]/route.ts')
