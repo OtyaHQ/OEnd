@@ -8,6 +8,7 @@ const status = readFileSync(new URL('../src/app/status/page.tsx', import.meta.ur
 const statusClient = readFileSync(new URL('../src/app/status/StatusClient.tsx', import.meta.url), 'utf8')
 test('documentation product links and Help preserve their canonical destinations', () => {
   assert.ok(router.includes('publicDestinations.has(publicPath)'))
+  assert.ok(router.includes("'/shop'"))
   assert.ok(router.includes("'/opoint'"))
   assert.ok(router.includes("'/omy-play'"))
   assert.ok(router.includes("'/download/omy-play'"))

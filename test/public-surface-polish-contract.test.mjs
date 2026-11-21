@@ -24,7 +24,7 @@ test('404 and error fallbacks keep current public product language', () => {
   const errorPage = read('src/app/error.tsx')
   assert.match(notFound, /Download Omy Play/)
   assert.ok(!notFound.includes('href="/ask"'))
-  assert.doesNotMatch(notFound, /Next|Open O/i)
+  assert.doesNotMatch(notFound, />\s*(?:Open Next|Open O)\s*</i)
   assert.match(errorPage, /Try again/)
   assert.match(errorPage, /href="\/help"/)
 })

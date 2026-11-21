@@ -7,7 +7,7 @@ import { OtyaBrandMark } from '@/components/OtyaBrandMark'
 
 export const metadata: Metadata = {
   title: 'Otya products and services',
-  description: 'Explore Otya digital products, account services and the Opoint physical shop.',
+  description: 'Explore Otya digital products, account services and the Otya physical shop.',
   alternates: { canonical: 'https://otya.site/apps' },
 }
 
@@ -19,7 +19,7 @@ export default function ProductsPage() {
         <div className="max-w-[820px]">
           <div className="otya-kicker">Otya ecosystem</div>
           <h1 className="mt-3 text-[clamp(42px,7vw,78px)] font-black tracking-[-.065em] leading-[.95]">Digital products and real-world services.</h1>
-          <p className="mt-5 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Explore our digital products and the physical Opoint shop. Each experience has a clear purpose and its own customer journey.</p>
+          <p className="mt-5 max-w-[720px] text-base sm:text-xl leading-8 otya-muted">Explore our digital products and the physical Otya shop. Each experience has a clear purpose and its own customer journey.</p>
         </div>
       </section>
 
@@ -52,11 +52,11 @@ export default function ProductsPage() {
         <article className="overflow-hidden rounded-[30px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] p-7 sm:p-9 lg:p-10 grid lg:grid-cols-[1fr_auto] gap-7 items-center">
           <div>
             <div className="otya-kicker">Physical shop · Mbirizi, Lwengo</div>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-black tracking-[-.055em]">Opoint</h2>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-black tracking-[-.055em]">Otya</h2>
             <p className="mt-4 max-w-[720px] text-sm sm:text-base leading-7 otya-muted">Phones and accessories, electronics, and mobile-money agency services at our physical shop in the Old Market area of Mbirizi. Check availability before visiting.</p>
             <p className="mt-4 text-xs otya-muted">This is an in-person shop, not an online checkout.</p>
           </div>
-          <Link href="/opoint" className="cosmos-button inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-black">Visit Opoint ↗</Link>
+          <Link href="/shop" className="cosmos-button inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-black">Visit Otya ↗</Link>
         </article>
         </div>
       </section>
