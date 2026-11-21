@@ -18,7 +18,7 @@ function jobBlock(name, nextName) {
 test('production deploys require validation and an explicit deployment authorization', () => {
   assert.match(workflow, /workflow_dispatch:/)
   assert.match(workflow, /default: 'validate-only'/)
-  assert.match(workflow, /Type DEPLOY to authorize a production deployment/)
+  assert.match(workflow, /Type DEPLOY to authorize the selected production release/)
 
   const authorization = jobBlock('authorize-deploy', 'plan-deploy')
   assert.match(authorization, /github\.event_name == 'workflow_dispatch' && inputs\.component != 'validate-only'/)
@@ -27,20 +27,22 @@ test('production deploys require validation and an explicit deployment authoriza
   assert.match(authorization, /test "\$CONFIRM" = 'DEPLOY'/)
   assert.match(authorization, /case "\$COMPONENT" in/)
 
-  const plan = jobBlock('plan-deploy', 'deploy-auth')
+  const plan = jobBlock('plan-deploy', 'deploy-oid')
   assert.match(plan, /needs: \[validate, authorize-deploy\]/)
-  assert.match(plan, /auth=false/)
-  assert.match(plan, /next=false/)
-  assert.match(plan, /core=false/)
-  assert.match(plan, /all\)[\s\S]*auth=true[\s\S]*next=true[\s\S]*core=true/)
+  assert.match(plan, /oid=false/)
+  assert.match(plan, /o=false/)
+  assert.match(plan, /oend=false/)
+  assert.match(plan, /all\)[\s\S]*oid=true[\s\S]*o=true[\s\S]*oend=true/)
 })
 
 test('each production component depends on successful validation and authorization', () => {
   const blocks = [
-    jobBlock('deploy-auth', 'deploy-next'),
-    jobBlock('deploy-next', 'deploy-core'),
-    jobBlock('deploy-core', 'deploy-otyapoint'),
-    jobBlock('deploy-otyapoint', 'verify-production'),
+    jobBlock('deploy-oid', 'deploy-o'),
+    jobBlock('deploy-o', 'deploy-oend'),
+    jobBlock('deploy-oend', 'deploy-o-final'),
+    jobBlock('deploy-o-final', 'deploy-opoint'),
+    jobBlock('deploy-opoint', 'deploy-omy-play'),
+    jobBlock('deploy-omy-play', 'verify-production'),
     jobBlock('verify-production'),
   ]
   for (const block of blocks) {
