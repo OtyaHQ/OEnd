@@ -12,7 +12,13 @@ routes = [
   { pattern = "docs.otya.site", custom_domain = true },
   { pattern = "status.otya.site", custom_domain = true },
   { pattern = "space.otya.site", custom_domain = true },
-  { pattern = "api.otya.site", custom_domain = true }
+  { pattern = "api.otya.site", custom_domain = true },
+  # Retired hostnames remain attached to issue method-preserving 308 redirects.
+  { pattern = "petersmartlink.com", custom_domain = true },
+  { pattern = "www.petersmartlink.com", custom_domain = true },
+  { pattern = "docs.petersmartlink.com", custom_domain = true },
+  { pattern = "status.petersmartlink.com", custom_domain = true },
+  { pattern = "space.petersmartlink.com", custom_domain = true }
 ]
 
 
