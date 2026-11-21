@@ -12,15 +12,15 @@ test('production deployment verifies Turnstile remains usable after Cloudflare p
   assert.match(deploy, /Turnstile site key is unavailable after production deploy/)
 })
 
-test('core deploy verifies public security disclosure and sanitized live status', () => {
+test('OEnd deploy verifies public security disclosure and sanitized live status', () => {
   assert.match(deploy, /name: Verify core trust surfaces/)
-  assert.match(deploy, /needs\.plan-deploy\.outputs\.core == 'true'/)
+  assert.match(deploy, /needs\.plan-deploy\.outputs\.oend == 'true'/)
   assert.match(deploy, /https:\/\/otya\.site\/\.well-known\/security\.txt/)
   assert.match(deploy, /Contact: mailto:support@otya\.site/)
   assert.match(deploy, /https:\/\/status\.otya\.site\/api\/status/)
   assert.match(deploy, /set\(components\) != \{'website', 'accounts', 'O'\}/)
   assert.match(deploy, /public status component set changed unexpectedly/)
-  assert.match(deploy, /Core public trust surfaces are healthy and privacy-bounded/)
+  assert.match(deploy, /OEnd public trust surfaces are healthy and privacy-bounded/)
 })
 
 test('production verification stays tied to an explicitly authorized runtime deploy', () => {
