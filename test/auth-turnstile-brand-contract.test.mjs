@@ -88,11 +88,11 @@ test('website, install surfaces and build pipeline use one Otya mark and name', 
   const layout = read('src/app/layout.tsx')
 
   assert.match(component, /src="\/otya-app-icon\.webp"/)
-  assert.match(sync, /assets\/branding\/otya_app_icon\.webp/)
+  assert.match(sync, /assets\.otya\.site\/brand\/otya\/v4\/otya-master-icon-512\.webp/)
   assert.match(sync, /TARGET = 'public\/otya-app-icon\.webp'/)
   assert.equal(manifest.name, 'Otya')
   assert.equal(manifest.short_name, 'Otya')
-  assert.match(manifest.description, /Otya Transfer/)
+  assert.match(manifest.description, /One ecosystem\. Endless possibilities\./)
   assert.match(brandReadme, /^# Otya Brand Templates/m)
   assert.doesNotMatch(brandReadme, /^# OTYA/m)
   assert.match(layout, /name: 'Otya'/)
