@@ -1,7 +1,7 @@
 :root {
-  --otya-cyan: #27E8FF;
-  --otya-blue: #126BFF;
-  --otya-deep-blue: #173BFF;
+  --otya-cyan: #00BDEB;\n  --otya-teal: #14C7B8;
+  --otya-blue: #1677FF;
+  --otya-deep-blue: #08265C;
   --otya-near-black: #050812;
   --otya-surface: #0A1020;
   --otya-surface-elevated: #10182A;
@@ -93,7 +93,7 @@ a { transition: color .16s ease, border-color .16s ease, background-color .16s e
 .bg-violet-500,
 .bg-violet-600,
 .otya-accent-button {
-  background: #175CD3 !important;
+  background: #1677FF !important;
   color: #FFFFFF !important;
   border-color: transparent !important;
   border-radius: 999px !important;
