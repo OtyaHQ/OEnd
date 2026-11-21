@@ -221,8 +221,8 @@ jobs:
 
   deploy-o:
     name: Deploy O
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-oend]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && needs.plan-deploy.outputs.o == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -231,7 +231,7 @@ jobs:
         with: { node-version: '22.23.4', package-manager-cache: false }
       - working-directory: ai-worker
         run: npm ci --ignore-scripts
-      - name: Configure and deploy Next
+      - name: Configure and deploy O
         working-directory: ai-worker
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -252,12 +252,14 @@ jobs:
           # Core is the sole Telegram transport owner. Remove any legacy copies
           # left on Next by older deployments while preserving every other secret.
           printf '%s\n' '{"TELEGRAM_BOT_TOKEN":null,"TELEGRAM_WEBHOOK_SECRET":null}' | npx wrangler secret bulk
-          npx wrangler deploy
+          sed 's/service = "oend"/service = "otya-core"/' wrangler.toml > wrangler.bootstrap.toml
+          grep -q 'service = "otya-core"' wrangler.bootstrap.toml
+          npx wrangler deploy --config wrangler.bootstrap.toml
 
   deploy-oend:
     name: Deploy OEnd
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && needs.plan-deploy.outputs.oend == 'true' }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-oid]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && needs.plan-deploy.outputs.oend == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: production
@@ -295,6 +297,29 @@ jobs:
           if [ -n "${TURNSTILE_SECRET_KEY:-}" ]; then printf '%s' "$TURNSTILE_SECRET_KEY" | npx wrangler secret put TURNSTILE_SECRET_KEY; fi
           npm run deploy
           node scripts/sync-production-kv.mjs
+
+  deploy-o-final:
+    name: Finalize O with canonical OEnd binding
+    if: \${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.deploy-o.result == 'success' && needs.deploy-oend.result == 'success' && needs.plan-deploy.outputs.o == 'true' }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-o, deploy-oend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '22.23.4', package-manager-cache: false }
+      - name: Deploy canonical O configuration
+        working-directory: ai-worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: \${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$CLOUDFLARE_API_TOKEN"
+          ! grep -q 'service = "otya-core"' wrangler.toml
+          grep -q 'service = "oend"' wrangler.toml
+          npx wrangler deploy --config wrangler.toml
 
   deploy-opoint:
     name: Deploy Opoint
@@ -445,8 +470,8 @@ jobs:
 
   verify-production:
     name: Verify live Otya platform after deploy
-    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
-    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o, deploy-oend, deploy-opoint]
+    if: ${{ always() && github.ref == 'refs/heads/main' && needs.validate.result == 'success' && needs.authorize-deploy.result == 'success' && needs.plan-deploy.result == 'success' && needs.plan-deploy.outputs.any_runtime == 'true' && (needs.deploy-oid.result == 'success' || needs.deploy-oid.result == 'skipped') && (needs.deploy-o.result == 'success' || needs.deploy-o.result == 'skipped') && (needs.deploy-oend.result == 'success' || needs.deploy-oend.result == 'skipped') && (needs.deploy-o-final.result == 'success' || needs.deploy-o-final.result == 'skipped') && (needs.deploy-opoint.result == 'success' || needs.deploy-opoint.result == 'skipped') && (needs.deploy-omy-play.result == 'success' || needs.deploy-omy-play.result == 'skipped') }}
+    needs: [validate, authorize-deploy, plan-deploy, deploy-oid, deploy-o, deploy-oend, deploy-o-final, deploy-opoint]
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
@@ -504,7 +529,7 @@ jobs:
           if data.get('status') not in {'operational', 'degraded'}:
               raise SystemExit('public status has invalid overall state')
           components = data.get('components') or {}
-          if set(components) != {'website', 'accounts', 'next'}:
+          if set(components) != {'website', 'accounts', 'O'}:
               raise SystemExit('public status component set changed unexpectedly')
           if any(value not in {'operational', 'degraded'} for value in components.values()):
               raise SystemExit('public status has invalid component state')
