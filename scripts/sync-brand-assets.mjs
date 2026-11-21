@@ -1,12 +1,12 @@
-import { readFile, rm } from 'node:fs/promises'
+import { writeFile, rm } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 import sharp from 'sharp'
 
-// Immutable owner-approved cyan/blue Otya identity, vendored from
-// assets/branding/otya_app_icon.webp. Builds must work with private repositories.
-const APPROVED_APP_COMMIT = '63be1b59f1a261c853aab786cef584a70e29989d'
-const EXPECTED_SHA256 = '34f8e6568b52900d8eaa7c30cd304770d60fb56745b6e2ed3874bc61ab205c51'
+// Download the owner-approved Otya master icon from the public Cloudflare asset store.
+// The website build vendors this exact source-derived asset locally for reliable rendering.
+const SOURCE_URL = 'https://assets.otya.site/brand/otya/v4/otya-master-icon-512.webp'
+const EXPECTED_SHA256 = 'b0bd89ca87e97f35d7f0a7c2045cbe5ba354d5ca1fbc27e184075934ac33ca7a'
 const TARGET = 'public/otya-app-icon.webp'
 const EXPECTED_WIDTH = 512
 const EXPECTED_HEIGHT = 512
@@ -22,11 +22,7 @@ const RETIRED_GENERATED_TARGETS = [
 ]
 
 function readVp8Dimensions(bytes) {
-  // Canonical Otya asset is a lossy VP8 WebP. Width/height are the 14-bit
-  // little-endian values immediately after the 0x9d012a frame marker.
-  if (bytes.length < 30 || bytes.subarray(12, 16).toString('ascii') !== 'VP8 ') {
-    return null
-  }
+  if (bytes.length < 30 || bytes.subarray(12, 16).toString('ascii') !== 'VP8 ') return null
   const marker = bytes.indexOf(Buffer.from([0x9d, 0x01, 0x2a]), 20)
   if (marker < 0 || marker + 7 > bytes.length) return null
   return {
@@ -44,32 +40,36 @@ function isCanonicalWebP(bytes) {
 }
 
 async function sync() {
-  const bytes = await readFile(resolve(process.cwd(), TARGET))
+  const response = await fetch(SOURCE_URL, { cache: 'no-store' })
+  if (!response.ok) throw new Error(`Could not fetch approved Otya icon: HTTP ${response.status}`)
+  const bytes = Buffer.from(await response.arrayBuffer())
   if (createHash('sha256').update(bytes).digest('hex') !== EXPECTED_SHA256) {
-    throw new Error('Local Otya mark does not match the approved asset checksum.')
+    throw new Error('Downloaded Otya icon does not match the approved asset checksum.')
   }
   if (!isCanonicalWebP(bytes)) {
-    throw new Error('Approved Otya mark did not resolve to the expected 512x512 WebP asset.')
+    throw new Error('Approved Otya icon is not the expected 512x512 WebP asset.')
   }
+  await writeFile(resolve(process.cwd(), TARGET), bytes)
 
-  // Old builds generated malformed PNG bytes into many icon paths. Remove all
-  // retired generated names so a dirty workspace cannot publish stale branding.
+  // Remove retired generated names so stale builds cannot publish old icons.
   await Promise.all(
     RETIRED_GENERATED_TARGETS.map(target => rm(resolve(process.cwd(), target), { force: true })),
   )
 
-  console.log(`Verified canonical Otya WebP from OtyaPlayer@${APPROVED_APP_COMMIT} at ${TARGET}.`)
+  console.log(`Verified and vendored the owner-approved Otya icon at ${TARGET}.`)
   const card = Buffer.from(`<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1200" height="630" fill="#07111f"/>
-    <rect x="72" y="70" width="64" height="5" rx="2" fill="#27e8ff"/>
-    <g fill="#f5f8ff" font-family="sans-serif">
-      <text x="72" y="140" font-size="24" letter-spacing="3">OTYA</text>
-      <text x="72" y="288" font-size="94" font-weight="700">Otya</text>
-      <text x="76" y="357" font-size="34">Your next update is here.</text>
-      <text x="76" y="523" font-size="23" fill="#b9cadd">Music. Video. Your way.</text>
+    <rect width="1200" height="630" fill="#08265C"/>
+    <rect x="72" y="70" width="64" height="5" rx="2" fill="#00BDEB"/>
+    <g fill="#FFFFFF" font-family="sans-serif">
+      <text x="72" y="140" font-size="24" letter-spacing="2">Innovate | Connect | Grow</text>
+      <text x="72" y="288" font-size="82" font-weight="700">Otya</text>
+      <text x="76" y="357" font-size="32">One ecosystem. Endless possibilities.</text>
+      <text x="76" y="523" font-size="23" fill="#B9DDF5">Developed by OtyaHQ</text>
     </g></svg>`)
-  await sharp(card).composite([{ input: await sharp(bytes).resize(350, 350).toBuffer(), left: 778, top: 140 }])
-    .jpeg({ quality: 90 }).toFile(resolve(process.cwd(), 'public/otya-release-card.jpg'))
+  await sharp(card)
+    .composite([{ input: await sharp(bytes).resize(300, 300).toBuffer(), left: 820, top: 165 }])
+    .jpeg({ quality: 90 })
+    .toFile(resolve(process.cwd(), 'public/otya-release-card.jpg'))
 }
 
 await sync()
