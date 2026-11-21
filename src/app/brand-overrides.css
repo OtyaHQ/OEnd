@@ -1,7 +1,7 @@
 :root {
-  --otya-cyan: #27E8FF;
-  --otya-blue: #126BFF;
-  --otya-deep-blue: #173BFF;
+  --otya-cyan: #00BDEB;
+  --otya-blue: #1677FF;
+  --otya-deep-blue: #08265C;
   --otya-near-black: #050812;
   --otya-surface: #0A1020;
   --otya-surface-elevated: #10182A;
@@ -80,7 +80,7 @@ a { transition: color .16s ease, border-color .16s ease, background-color .16s e
 .modern-card:hover,
 .cosmos-card:hover {
   border-color: color-mix(in srgb, var(--cosmos-primary) 35%, var(--cosmos-divider)) !important;
-  box-shadow: 0 22px 64px rgba(18,107,255,.12) !important;
+  box-shadow: 0 22px 64px rgba(22,119,255,.12) !important;
 }
 
 .cosmos-pill {
@@ -97,7 +97,7 @@ a { transition: color .16s ease, border-color .16s ease, background-color .16s e
   color: #FFFFFF !important;
   border-color: transparent !important;
   border-radius: 999px !important;
-  box-shadow: 0 10px 30px rgba(18,107,255,.24), 0 0 0 1px rgba(39,232,255,.10) inset !important;
+  box-shadow: 0 10px 30px rgba(22,119,255,.24), 0 0 0 1px rgba(0,189,235,.10) inset !important;
 }
 
 .cosmos-button:hover,
@@ -105,7 +105,7 @@ a { transition: color .16s ease, border-color .16s ease, background-color .16s e
 .bg-violet-600:hover,
 .otya-accent-button:hover {
   filter: brightness(1.08);
-  box-shadow: 0 14px 36px rgba(18,107,255,.30), 0 0 0 1px rgba(39,232,255,.18) inset !important;
+  box-shadow: 0 14px 36px rgba(22,119,255,.30), 0 0 0 1px rgba(0,189,235,.18) inset !important;
 }
 
 .cosmos-button:focus-visible,
@@ -143,9 +143,9 @@ select {
   isolation: isolate;
   overflow: hidden;
   background:
-    radial-gradient(circle at 12% 8%, rgba(39,232,255,.16), transparent 24rem),
-    radial-gradient(circle at 88% 12%, rgba(18,107,255,.18), transparent 30rem),
-    radial-gradient(circle at 50% 100%, rgba(23,59,255,.14), transparent 34rem),
+    radial-gradient(circle at 12% 8%, rgba(0,189,235,.16), transparent 24rem),
+    radial-gradient(circle at 88% 12%, rgba(22,119,255,.18), transparent 30rem),
+    radial-gradient(circle at 50% 100%, rgba(8,38,92,.14), transparent 34rem),
     linear-gradient(145deg, #03050C 0%, var(--otya-near-black) 46%, #071127 100%);
 }
 
@@ -180,13 +180,13 @@ select {
 
 .otya-auth-card {
   background: linear-gradient(155deg, rgba(16,24,42,.96), rgba(7,13,28,.95));
-  border-color: rgba(39,232,255,.18) !important;
-  box-shadow: 0 32px 100px rgba(0,15,55,.46), 0 0 0 1px rgba(18,107,255,.10) inset;
+  border-color: rgba(0,189,235,.18) !important;
+  box-shadow: 0 32px 100px rgba(0,15,55,.46), 0 0 0 1px rgba(22,119,255,.10) inset;
   backdrop-filter: blur(28px) saturate(125%);
 }
 
 .otya-turnstile-shell {
-  border: 1px solid rgba(39,232,255,.16);
+  border: 1px solid rgba(0,189,235,.16);
   border-radius: 18px;
   background: linear-gradient(145deg, rgba(10,16,32,.96), rgba(16,24,42,.86));
   padding: 14px;
@@ -203,13 +203,13 @@ select {
   background: linear-gradient(135deg, var(--otya-cyan), var(--otya-blue));
   color: #04101D;
   font-weight: 900;
-  box-shadow: 0 0 22px rgba(39,232,255,.18);
+  box-shadow: 0 0 22px rgba(0,189,235,.18);
 }
 
 @keyframes otya-brand-thinking {
-  0% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 0 rgba(39,232,255,0)); }
-  50% { transform: rotate(180deg) scale(1.035); filter: drop-shadow(0 0 14px rgba(39,232,255,.24)); }
-  100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 0 rgba(39,232,255,0)); }
+  0% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 0 rgba(0,189,235,0)); }
+  50% { transform: rotate(180deg) scale(1.035); filter: drop-shadow(0 0 14px rgba(0,189,235,.24)); }
+  100% { transform: rotate(360deg) scale(1); filter: drop-shadow(0 0 0 rgba(0,189,235,0)); }
 }
 
 .otya-brand-thinking {
@@ -229,7 +229,7 @@ select {
 .border-violet-500,
 .border-violet-600 { border-color: var(--cosmos-primary) !important; }
 
-.ring-violet-500 { --tw-ring-color: rgba(39,232,255,.38) !important; }
+.ring-violet-500 { --tw-ring-color: rgba(0,189,235,.38) !important; }
 
 /* Legacy admin chrome resolves to the same approved Otya mark. */
 img[src='/android-chrome-192x192.png'],
@@ -244,6 +244,6 @@ img[src='/otya-ai-thinking-light.svg'] {
 }
 
 ::selection {
-  background: rgba(39,232,255,.24);
+  background: rgba(0,189,235,.24);
   color: var(--cosmos-text-primary);
 }
