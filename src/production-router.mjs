@@ -81,8 +81,6 @@ function isSpaceSurfacePath(pathname) {
     || pathname === '/space/'
     || pathname === '/telegram'
     || pathname === '/telegram/'
-    || pathname === '/ask'
-    || pathname.startsWith('/ask/')
     || pathname === '/account'
     || pathname.startsWith('/account/')
     || pathname === '/admin'
@@ -113,7 +111,7 @@ function matchSpaceConsoleRoute(pathname) {
     ['activity', '/account/activity/'],
     ['notifications', '/account/notifications/'],
     ['settings', '/account/settings/'],
-    ['o', '/ask/'],
+    ['o', '/admin/ai/'],
     ['telegram', '/telegram/'],
     ['admin', '/admin'],
   ])
@@ -237,6 +235,7 @@ async function routeOtyaRequest(request, env, ctx) {
       if (host === APP_HOST && (url.pathname === '/account' || url.pathname === '/account/')) return redirectToHost(url, SPACE_HOST, '/account/')
       if (host === APP_HOST && (url.pathname === '/sign-in' || url.pathname === '/sign-in/')) return redirectToHost(url, SPACE_HOST, '/sign-in/')
       if (host === APP_HOST && (url.pathname === '/admin' || url.pathname.startsWith('/admin/'))) return redirectToHost(url, SPACE_HOST, url.pathname)
+      if (host === APP_HOST && (url.pathname === '/ask' || url.pathname === '/ask/')) return redirectToHost(url, SPACE_HOST, '/admin/ai/')
       if (host === APP_HOST && (url.pathname === '/help' || url.pathname === '/help/')) return redirectToHost(url, DOCS_HOST, '/help/')
       if (host === APP_HOST && (url.pathname === '/docs' || url.pathname === '/docs/')) return redirectToHost(url, DOCS_HOST, '/')
       if (host === APP_HOST && (url.pathname === '/status' || url.pathname === '/status/')) return redirectToHost(url, STATUS_HOST, '/')
