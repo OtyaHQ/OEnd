@@ -6,7 +6,7 @@ import './brand-overrides.css'
 const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-otya' })
 const SITE_URL = 'https://otya.site'
 const ADSENSE_ID = 'ca-pub-2517163652161686'
-const OTYA_MARK = 'https://assets.otya.site/brand/otya/v4/otya-orbital-mark.webp'
+const OTYA_MARK = 'https://assets.otya.site/brand/otya/v4/otya-master-icon-512.webp'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     images: [OTYA_MARK],
   },
   icons: {
-    icon: [{ url: OTYA_MARK, sizes: '240x183', type: 'image/webp' }],
+    icon: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
     apple: [{ url: OTYA_MARK, sizes: '512x512', type: 'image/webp' }],
     shortcut: OTYA_MARK,
   },
