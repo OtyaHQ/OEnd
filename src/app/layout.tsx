@@ -15,12 +15,12 @@ export const metadata: Metadata = {
     template: '%s | Otya',
   },
   description:
-    'Explore Otya digital products, account services, official support and Opoint physical shop services in Mbirizi, Lwengo, Uganda.',
+    'Explore Otya digital products, account services, official support and Otya shop services in Mbirizi, Lwengo, Uganda.',
   keywords: [
     'Otya',
     'Omy Play',
     'Omy Play Android',
-    'Opoint',
+    'Otya shop',
     'Otya ecosystem',
     'Mbirizi physical shop',
     'Lwengo mobile money agency',
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     siteName: 'Otya',
     title: 'Otya — Digital products and real-world services',
     description:
-      'Explore Otya products and services, including Omy Play and Opoint in Mbirizi, Uganda.',
+      'Explore Otya products and services, including Omy Play and our physical shop in Mbirizi, Uganda.',
     images: [
       {
         url: '/og-image.jpg',
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary',
     title: 'Otya — Digital products and real-world services',
-    description: 'Official Otya for local Android media, Otya Transfer and Watch Together.',
+    description: 'Official Otya information, products and shop services.',
     images: ['/og-image.jpg'],
   },
   icons: {
