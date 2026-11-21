@@ -19,6 +19,7 @@ test('full OID, O, OEnd, Opoint and Omy Play validation runs before production a
   assert.match(validate, /Validate O worker/)
   assert.match(validate, /Validate Opoint backend, security boundaries and dashboard build/)
   assert.match(validate, /Verify Omy Play backend source and schema contract/)
+  assert.match(jobBlock('deploy-omy-play'), /ref: \\${\\{ needs\\.validate\\.outputs\\.omy_play_sha \\}\\}/)
   assert.ok(workflow.indexOf('  authorize-deploy:\n') > workflow.indexOf('  validate:\n'))
 })
 test('production authorization is explicit, main-branch-only and exact-token gated', () => {
