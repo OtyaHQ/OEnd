@@ -36,10 +36,10 @@ export default function ProductsPage() {
         <div className="grid md:grid-cols-2 gap-4">
           <article className="rounded-[28px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-7 sm:p-8">
             <OtyaBrandMark ai size={42}/>
-            <div className="mt-6 text-xs font-black otya-muted">Assistant</div>
+            <div className="mt-6 text-xs font-black otya-muted">Private owner workspace</div>
             <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-[-.045em]">O</h2>
-            <p className="mt-3 text-sm leading-7 otya-muted">A connected assistant for questions, Otya guidance and supported account experiences.</p>
-            <Link href="/ask" className="mt-6 inline-flex text-sm font-black">Open O →</Link>
+            <p className="mt-3 text-sm leading-7 otya-muted">O is the private owner workspace for company operations, system oversight and approved actions. Access is restricted to the owner.</p>
+            <Link href="https://space.otya.site/admin/ai" className="mt-6 inline-flex text-sm font-black">Open owner workspace →</Link>
           </article>
 
           <article className="rounded-[28px] border border-black/[.06] dark:border-white/[.08] bg-[color:var(--cosmos-surface)] p-7 sm:p-8">
