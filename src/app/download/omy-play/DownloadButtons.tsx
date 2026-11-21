@@ -80,7 +80,7 @@ export function DownloadPageClient() {
     <main className="flex-1 pb-24 md:pb-0">
       <section className="otya-shell py-11 sm:py-16 grid lg:grid-cols-[1fr_.72fr] gap-9 lg:gap-16 items-center">
         <div>
-          <div className="flex items-center gap-4 mb-7"><Image src="/otya-app-icon.webp" alt="Omy Play app icon" width={64} height={64} className="rounded-[18px]" priority/><div><div className="otya-kicker mb-1">Official Android download · Otya</div><h1 className="text-3xl font-extrabold tracking-[-.045em]">Omy Play</h1></div></div>
+          <div className="flex items-center gap-4 mb-7"><Image src="https://assets.otya.site/brand/otya/v4/icons/omy-play.webp" alt="Omy Play app icon" width={64} height={64} className="rounded-[18px]" priority/><div><div className="otya-kicker mb-1">Official Android download · Otya</div><h1 className="text-3xl font-extrabold tracking-[-.045em]">Omy Play</h1></div></div>
           <h2 className="text-4xl sm:text-6xl font-extrabold tracking-[-.055em] leading-[.96] max-w-2xl">Your media.<br/>Ready offline.</h2>
           <p className="mt-5 max-w-xl text-base sm:text-lg otya-muted">Download the official Omy Play for Android. Play local video and music, use nearby Transfer and protect Private media—without requiring an account just to play your files.</p>
           <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs otya-muted"><span>Official Omy Play release</span><span>Android ARM</span><span>Offline-first</span></div>
