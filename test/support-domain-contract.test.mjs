@@ -17,7 +17,7 @@ test('O support inbox retains inbound compatibility but sends from the canonical
   assert.match(support,/SUPPORT_FROM = 'Otya Support <support@otya\.site>'/)
   assert.match(support,/SUPPORT_ADDRESS = 'support@otya\.site'/)
   assert.match(support,/LEGACY_SUPPORT_ADDRESS = 'support@petersmartlink\.com'/)
-  assert.match(support,/to:\{support@otya\.site support@petersmartlink\.com\} in:inbox/)
+  assert.ok(support.includes("`to:{\${SUPPORT_ADDRESS} \${LEGACY_SUPPORT_ADDRESS}} in:inbox`"))
   assert.match(support,/from:SUPPORT_FROM/)
   assert.match(support,/reply_to:SUPPORT_ADDRESS/)
   assert.match(consoleTools,/to:support@otya\.site in:inbox/)
