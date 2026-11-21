@@ -24,7 +24,7 @@ export default function HomePage() {
     <SiteNav />
     <main className="flex-1">
       <section className="relative overflow-hidden border-b border-black/[.05] dark:border-white/[.07]">
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_10%,rgba(41,121,255,.07),transparent_31%),radial-gradient(circle_at_88%_18%,rgba(46,168,201,.06),transparent_27%),radial-gradient(circle_at_68%_90%,rgba(41,121,255,.04),transparent_25%)]" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_10%,rgba(22,119,255,.07),transparent_31%),radial-gradient(circle_at_88%_18%,rgba(0,189,235,.06),transparent_27%),radial-gradient(circle_at_68%_90%,rgba(22,119,255,.04),transparent_25%)]" />
         <div className="otya-shell relative py-12 sm:py-16 lg:py-20 grid lg:grid-cols-[1.02fr_.98fr] gap-8 items-center">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-black/[.06] dark:border-white/[.08] px-3 py-2 text-xs font-black bg-white/55 dark:bg-white/[.03]">Otya · Built in Uganda</div>
@@ -38,7 +38,7 @@ export default function HomePage() {
           </div>
 
           <div className="relative">
-            <div className="absolute -inset-8 rounded-full bg-[radial-gradient(circle,rgba(41,121,255,.13),transparent_65%)] blur-2xl" />
+            <div className="absolute -inset-8 rounded-full bg-[radial-gradient(circle,rgba(22,119,255,.13),transparent_65%)] blur-2xl" />
             <div className="relative rounded-[34px] border border-black/[.07] dark:border-white/[.09] bg-[color:var(--cosmos-surface)] dark:bg-white/[.035] p-4 sm:p-5 shadow-[0_30px_90px_rgba(8,11,18,.16)] backdrop-blur-xl">
               <div className="flex items-center justify-between px-2 pb-4"><div><div className="text-xs font-black otya-muted">Featured product</div><div className="mt-1 text-2xl font-black tracking-[-.04em]">Omy Play</div></div><span className="text-xs font-bold otya-muted">Watch. Enjoy.</span></div>
               <div className="mx-auto min-h-[280px] max-w-[310px] grid place-items-center rounded-[26px] bg-white shadow-2xl"><OtyaBrandMark product="omy-play" size={190}/></div>
