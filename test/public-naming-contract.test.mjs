@@ -14,7 +14,7 @@ const publicVisible = `${constants}\n${product}\n${help}`
 test('public brand uses Otya and Omy Play with Send language', () => {
   assert.match(constants, /name: 'Otya'/)
   assert.match(constants, /player: 'Omy Play'/)
-  assert.match(constants, /auth: 'Otya Account'/)
+  assert.match(constants, /auth: 'OID'/)
   assert.match(constants, /nearby Send/)
   assert.match(product, /Omy Play/)
   assert.match(product, /\['Send'/)
