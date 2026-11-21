@@ -143,24 +143,6 @@ async function runProductionHealthCheck(env,ctx){
   await sendHealthEmail(env,`[OTYA Backend] ${down.length} production surface(s) unhealthy`,['OTYA production health alert','',...down.map(r=>`${r.path} — status ${r.status}, latency ${r.latency}ms${r.error?` (${r.error})`:''}`),'',`Checked at: ${new Date().toISOString()}`].join('\n'))
 }
 
-async function forwardClientAi(request,env){
-  const user=await authenticateUser(request,env)
-  const headers=new Headers(request.headers)
-  headers.delete('X-OTYA-Internal-Secret')
-  headers.delete('X-OTYA-User-ID')
-  headers.delete('X-OTYA-User-Email')
-  headers.delete('X-OTYA-Persist-Chat')
-  if(user&&env.INTERNAL_SECRET){
-    headers.set('X-OTYA-Internal-Secret',env.INTERNAL_SECRET)
-    headers.set('X-OTYA-User-ID',user.id)
-    headers.set('X-OTYA-User-Email',user.email)
-    headers.set('X-OTYA-Persist-Chat','1')
-  }else{
-    headers.delete('Authorization')
-  }
-  return serviceFetch(env.AI_SUPPORT,new Request(request,{headers}),'AI service unavailable')
-}
-
 async function forwardAdminAi(request,env){
   const user=await authenticateUser(request,env)
   if(!user)return json({error:'Sign in required'},401)
