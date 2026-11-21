@@ -67,8 +67,8 @@ id      = "3f179286e0fc4dbfa2332884cdf81312"
 
 [[d1_databases]]
 binding       = "DB"
-database_name = "otya-store-db"
-database_id   = "ab157fc6-2cbb-4d46-9789-2e4392e16aea"
+database_name = "otya-end-db"
+database_id   = "8639040c-2365-45ea-9e49-8f6228116471"
 
 [[analytics_engine_datasets]]
 binding = "ANALYTICS"
