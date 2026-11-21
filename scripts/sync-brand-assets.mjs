@@ -106,25 +106,21 @@ async function sync() {
   const lockup = await sharp(byTarget['public/otya-master-lockup.webp']).resize({ width: 720 }).toBuffer()
   const footer = await sharp(byTarget['public/otya-company-footer.webp']).resize({ width: 720 }).toBuffer()
   const productCards = [
-    { file: 'public/otya-product-opoint.webp', name: 'Opoint', tagline: 'Shop. Pay. More.', center: 150 },
-    { file: 'public/otya-product-omy-play.webp', name: 'Omy Play', tagline: 'Watch. Enjoy.', center: 375 },
-    { file: 'public/otya-product-otya-os.webp', name: 'Otya OS', tagline: 'Your Smart Platform.', center: 600 },
-    { file: 'public/otya-product-ohub.webp', name: 'OHub', tagline: 'Build Together.', center: 825 },
-    { file: 'public/otya-product-oid.webp', name: 'OID', tagline: 'Secure Always.', center: 1050 },
+    { file: 'public/otya-product-opoint.webp', center: 150 },
+    { file: 'public/otya-product-omy-play.webp', center: 375 },
+    { file: 'public/otya-product-otya-os.webp', center: 600 },
+    { file: 'public/otya-product-ohub.webp', center: 825 },
+    { file: 'public/otya-product-oid.webp', center: 1050 },
   ]
   const productImages = await Promise.all(productCards.map(async product => ({
     input: await sharp(byTarget[product.file]).resize({ width: 68, height: 64, fit: 'contain', background: '#FFFFFF' }).toBuffer(),
     left: product.center - 34,
-    top: 292,
+    top: 330,
   })))
-  const labels = productCards.map(product => `
-    <text x="${product.center}" y="378" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700" fill="#08265C">${product.name}</text>
-    <text x="${product.center}" y="402" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="500" fill="#08265C">${product.tagline}</text>
-  `).join('')
-  const canvas = Buffer.from(`<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="630" fill="#FFFFFF"/>${labels}</svg>`)
+  const canvas = Buffer.from('<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="630" fill="#FFFFFF"/></svg>')
 
   // The master wordmark and corporate footer remain exact image crops.
-  // Product icons are exact crops; only current product names/taglines are typeset here.
+  // Product icons are exact crops; no replacement typography is added.
   await sharp(canvas)
     .composite([
       { input: lockup, left: 240, top: 0 },
@@ -135,7 +131,7 @@ async function sync() {
     .toFile(resolve(process.cwd(), 'public/otya-release-card.jpg'))
 
   console.log('Verified the approved Otya master icon, master lockup, company footer and five exact product icon crops.')
-  console.log('Generated the release card with current product names and taglines; no retired product labels are used.')
+  console.log('Generated the release card from exact master and product artwork only; no retired labels or substitute wordmarks are used.')
 }
 
 await sync()
