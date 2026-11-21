@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 type ServiceBinding = { fetch(request: Request): Promise<Response> }
 
-const ALLOWED_PATHS = new Set(['latest', 'apk/arm64', 'apk/arm32'])
+const ALLOWED_PATHS = new Set(['health', 'latest', 'apk/arm64', 'apk/arm32'])
 
 function json(data: unknown, status: number) {
   return NextResponse.json(data, {
@@ -19,7 +19,7 @@ function json(data: unknown, status: number) {
 
 /**
  * Same-origin, read-only gateway to the private Omy Play API.
- * Only latest-release metadata and the two published APK download paths
+ * Only schema health, latest-release metadata and the two published APK download paths
  * are exposed. The Worker remains private and owns release authorization.
  */
 export async function GET(
