@@ -59,9 +59,9 @@ export const metadata: Metadata = {
       'Official Otya products for local Android media, offline playback, Otya Transfer, Watch Together and Private media.',
     images: [
       {
-        url: 'https://assets.otya.site/brand/otya/v4/otya-full-artwork.webp',
-        width: 560,
-        height: 373,
+        url: 'https://otya.site/otya-release-card.jpg',
+        width: 1200,
+        height: 630,
         alt: 'Otya — One ecosystem. Endless possibilities.',
         type: 'image/webp',
       },
