@@ -61,7 +61,7 @@ export default function OfficialLinksPage() {
 
         <section className="mt-8 rounded-[24px] border border-black/[.06] dark:border-white/[.08] bg-black/[.02] dark:bg-white/[.02] p-5 sm:p-6">
           <h2 className="text-xl font-black">Ownership and authenticity</h2>
-          <p className="mt-3 text-sm leading-7 otya-muted">The Telegram properties listed above are operated as official Otya properties by OtyaHQ. Links not listed on this page should not be assumed to represent Otya or Otya.</p>
+          <p className="mt-3 text-sm leading-7 otya-muted">The Telegram properties listed above are operated as official Otya properties by OtyaHQ. Links not listed on this page should not be assumed to represent Otya or its products.</p>
           <p className="mt-3 text-sm leading-7 otya-muted">For verification, media or authenticity questions, contact <a className="font-black text-[color:var(--cosmos-text-primary)]" href={`mailto:${OTYA.supportEmail}`}>{OTYA.supportEmail}</a>.</p>
         </section>
 
