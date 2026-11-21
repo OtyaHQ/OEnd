@@ -30,7 +30,7 @@ export default function ProductsPage() {
             <p className="mt-5 max-w-[620px] text-sm sm:text-base leading-7 otya-muted">Offline-first local music and video playback, nearby Transfer, Private media and practical media tools.</p>
             <div className="mt-7 flex flex-wrap gap-3"><Link href="/omy-play" className="cosmos-button inline-flex min-h-11 items-center rounded-full px-5 text-sm font-black">Explore Omy Play</Link><Link href="/download/omy-play" className="inline-flex min-h-11 items-center rounded-full border border-black/[.08] dark:border-white/[.10] px-5 text-sm font-black">Download</Link></div>
           </div>
-          <div className="p-4 sm:p-6 lg:p-8"><Image src="/brand/otya-app-preview.svg" alt="Omy Play application preview" width={1200} height={820} className="w-full h-auto rounded-[26px]" /></div>
+          <div className="min-h-[320px] p-8 grid place-items-center bg-white rounded-[26px]"><OtyaBrandMark product="omy-play" size={190}/></div>
         </article>
 
         <div className="grid md:grid-cols-2 gap-4">
