@@ -12,8 +12,8 @@ export function SiteFooter() {
     <div className="otya-shell py-7 sm:py-8">
       <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
         <div>
-          <Link href={OTYA.website} className="inline-block text-base font-black tracking-[-.035em]">Otya</Link>
-          <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">A connected family of digital products and real-world services, built in Uganda.</p>
+          <Link href={OTYA.website} className="inline-block" aria-label="Otya home"><img src="https://assets.otya.site/brand/otya/v4/otya-master-lockup.webp" width="190" height="71" alt="Otya — One ecosystem. Endless possibilities. Developed by OtyaHQ" className="h-auto w-[190px] max-w-full object-contain" /></Link>
+          <p className="mt-2 max-w-sm text-sm leading-6 otya-muted">One ecosystem. Endless possibilities. Innovate | Connect | Grow.</p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 sm:gap-8">
           {GROUPS.map(group => <div key={group.title}>
@@ -24,9 +24,10 @@ export function SiteFooter() {
           </div>)}
         </div>
       </div>
+      <div className="mt-7 flex justify-center"><img src="https://assets.otya.site/brand/otya/v4/otya-company-footer.webp" width="560" height="85" alt="Otya Holdings Limited — Powering a smarter, more connected world." className="h-auto w-full max-w-[560px] object-contain" /></div>
       <div className="mt-6 flex flex-col gap-1 border-t border-black/[.05] pt-4 text-xs otya-muted sm:flex-row sm:items-center sm:justify-between dark:border-white/[.06]">
         <span>© {new Date().getFullYear()} Otya</span>
-        <span>Otya · Products & services</span>
+        <span>Developed by OtyaHQ</span>
       </div>
     </div>
   </footer>
