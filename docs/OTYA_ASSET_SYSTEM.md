@@ -12,14 +12,13 @@ The owner's supplied Otya banner is the single visual source of truth. Preserve 
 
 ## Canonical Cloudflare assets
 Public base: https://assets.otya.site/brand/otya/v4/
-- otya-full-artwork.webp — complete source-derived artwork (560 × 373).
-- otya-master-lockup.webp — exact master lockup crop (560 × 179).
+- otya-master-lockup.webp — exact complete master lockup crop (560 × 208).
 - otya-orbital-mark.webp — exact orbital mark crop (240 × 183).
 - otya-product-strip.webp — source-derived product strip (560 × 100).
 - otya-company-footer.webp — company footer crop (560 × 85).
 - icons/opoint.webp, icons/omy-play.webp, icons/otya-os.webp, icons/ohub.webp, icons/oid.webp — product icon crops.
 
-These are web-optimized source-derived exports. The untouched 1536 × 1024 PNG remains the high-resolution source and is not yet in R2.
+The exact logo and product crops are web-optimized source-derived exports. The untouched 1536 × 1024 PNG remains the high-resolution source and is not yet in R2.
 
 ## Palette
 - Navy: #08265C
