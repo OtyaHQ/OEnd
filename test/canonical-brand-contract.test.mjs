@@ -28,14 +28,18 @@ test('website, admin wrappers and account email use one canonical Otya mark', ()
 
   const sync = read('scripts/sync-brand-assets.mjs')
   assert.match(sync, /assets\.otya\.site\/brand\/otya\/v4\/otya-master-icon-512\.webp/)
-  assert.match(sync, /EXPECTED_SHA256 = '977722e97ce4ebe6a1857c8fce31b04ac34ae35826aa413d4f1ac759cf731445'/)
-  assert.match(sync, /EXPECTED_WIDTH = 512/)
-  assert.match(sync, /EXPECTED_HEIGHT = 512/)
+  assert.match(sync, /sha256: '977722e97ce4ebe6a1857c8fce31b04ac34ae35826aa413d4f1ac759cf731445'/)
+  assert.match(sync, /width: 512/)
+  assert.match(sync, /height: 512/)
   assert.match(sync, /TARGET = 'public\/otya-app-icon\.webp'/)
 
   // The old path may appear only as a deletion target so dirty workspaces cannot
   // publish stale branding. It must never be the source or active destination.
   assert.match(sync, /RETIRED_GENERATED_TARGETS/)
+  assert.match(sync, /otya-master-lockup\\.webp/)
+  assert.match(sync, /otya-product-strip\\.webp/)
+  assert.match(sync, /otya-company-footer\\.webp/)
+  assert.match(sync, /source-derived artwork crops/)
   assert.match(sync, /public\/otya-mark-current\.png/)
   assert.doesNotMatch(sync, /SOURCE[^\n]*otya_mark_current\.png/)
   assert.doesNotMatch(sync, /TARGET = 'public\/otya-mark-current\.png'/)
