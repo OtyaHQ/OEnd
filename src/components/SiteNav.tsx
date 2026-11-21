@@ -11,7 +11,7 @@ type Session = { authenticated?: boolean; user?: User }
 
 const publicLinks = [
   ['Products', '/apps'],
-  ['Opoint', '/opoint'],
+  ['Shop', '/shop'],
   ['Omy Play', '/omy-play'],
   ['Developers', '/developers'],
   ['Company', '/company'],
